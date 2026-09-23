@@ -44,10 +44,12 @@ export function DuelistPage() {
   }
   const { duelist, rating, record } = row
   // A tournament's carried entry rating repeats the point before it; showing it would only add duplicates.
-  const history = rating.history.filter((p) => !(p.kind === 'entry' && p.observation.source === 'derived'))
+  // As the first point it has none before it: it carries the initial rating, so it is where the history starts.
+  const carried = (p: HistoryPoint) => p.kind === 'entry' && p.observation.source === 'derived'
+  const history = rating.history.filter((p, i) => i === 0 || !carried(p))
 
   const points: ChartPoint[] = []
-  if (duelist.initialRating !== null) points.push({ x: 0, rating: duelist.initialRating, details: ['Initial rating on a fresh save'] })
+  if (duelist.initialRating !== null && !(history[0] && carried(history[0]))) points.push({ x: 0, rating: duelist.initialRating, details: ['Initial rating on a fresh save'] })
   history.forEach((p, i) => points.push({ x: i + 1, rating: p.observation.rating, details: describe(model, id, p) }))
 
   const h2h = new Map<string, { w: number; l: number }>()
