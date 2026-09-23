@@ -21,7 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5">
           <NavLink to="/" className="flex items-center gap-2 font-display text-lg font-bold">
             <span aria-hidden className="text-gold">
-              ▲
+              ▼
             </span>
             WC2008 Rating Lab
           </NavLink>

@@ -156,7 +156,7 @@ export function RosterSetupPage() {
                   <td className="num">
                     <span className="inline-flex items-center gap-1">
                       <span aria-hidden className="text-xs text-gold">
-                        ▲
+                        ▼
                       </span>
                       <input
                         data-roster-rating

@@ -516,7 +516,7 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
         {editable ? (
           <span className="flex items-center gap-1">
             <span aria-hidden className="text-xs text-gold">
-              ▲
+              ▼
             </span>
             <input
               aria-label={`Rating of ${displayName(model, id)} after the duel`}

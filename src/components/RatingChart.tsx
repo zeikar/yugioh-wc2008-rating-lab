@@ -23,7 +23,7 @@ function TooltipBody({ active, payload }: { active?: boolean; payload?: { payloa
   return (
     <div className="panel px-3 py-2 text-sm shadow-md">
       <p className="font-display text-base font-bold">
-        <span className="text-gold">▲</span> {p.rating}
+        <span className="text-gold">▼</span> {p.rating}
       </p>
       {p.details.map((d) => (
         <p key={d} className="text-ink-2">

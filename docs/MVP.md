@@ -373,10 +373,10 @@ drag-and-drop bracket editor.
 
 ```
 Tournament #13 · Level [2] · 2026-09-23 21:40
- QF1  (W) [Blowback Dragon    ] ▲1350 → ▲[1433]  +83
-      (2) [Cloudian           ] ▲1500 → ▲ 1417   −83   (filled in)
+ QF1  (W) [Blowback Dragon    ] ▼1350 → ▼[1433]  +83
+      (2) [Cloudian           ] ▼1500 → ▼ 1417   −83   (filled in)
  QF4  (1) [You                ]                        press 1/2
-      (2) [Petit Dragon       ] ▲1650
+      (2) [Petit Dragon       ] ▼1650
  …
 Semifinals / Final   (pairings fill in from the winners)
 ```

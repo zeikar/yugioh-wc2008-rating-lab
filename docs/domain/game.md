@@ -98,7 +98,8 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 ### 3.1 CPU ratings
 - **Where it shows.** Every CPU has a rating (レート). It appears on the
   pre-duel opponent card as a number next to a small yellow triangle icon.
-  [confirmed: S1 screenshot, B2]
+  [confirmed: S1 screenshot, B2] The triangle points down, shaped like the
+  Millennium Puzzle, as every opponent card in roster.md §6 shows.
 - **Documented starting values:**
   - Singles monsters: 600 to 1800 in steps of 150.
   - Anime characters: 1250.
@@ -211,7 +212,7 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 | Main mode | World Championship / WC mode | ワールドチャンピオンシップ |
 | Tournament | Tournament Level 1/2/3 (guides also say Easy/Medium/Hard), Tag Tournament | トーナメント レベル1・2・3 / タッグトーナメント |
 | Rounds | Quarterfinal / Semifinal / Final (generic; in-game labels unconfirmed) | 1回戦 / 準決勝 / 決勝 (generic) |
-| Rating | Rating (yellow triangle icon) | レート / レーティング |
+| Rating | Rating (inverted yellow triangle icon) | レート / レーティング |
 | Currency | DP, Duel Points | DP (デュエルポイント) |
 | Win bonus | Victory bonus | 勝利ボーナス |
 | Champion | Win the tournament | 優勝 |
