@@ -25,26 +25,28 @@ function matches(d: Duelist, q: string): boolean {
 }
 
 /**
- * Type-ahead seat picker. Enter picks the highlighted option; the form's
- * Enter handler then moves focus on. "You" is always the first option.
+ * Type-ahead seat picker over the unlocked duelists (only they can enter a
+ * tournament). Enter picks the highlighted option; the form's Enter handler
+ * then moves focus on. "You" is always the first option.
  */
 export function DuelistPicker({ value, onChange, duelists, tournamentLevel, taken, navIndex, label }: Props) {
   const listId = useId()
   const [query, setQuery] = useState('')
-  const [focused, setFocused] = useState(false)
+  // Open/closed is separate from focus: a mouse pick keeps focus in the input but closes the list.
+  const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(0)
 
   const options = useMemo<Option[]>(() => {
     const q = query.trim().toLowerCase()
     const you: Option[] = !q || 'you'.startsWith(q) ? [{ id: PLAYER_ID, label: 'You', hint: 'player', disabled: taken.has(PLAYER_ID) && value !== PLAYER_ID }] : []
     const cpus = duelists
-      .filter((d) => !q || matches(d, q))
+      .filter((d) => d.unlocked && (!q || matches(d, q)))
       .sort((a, b) => {
         // Documented pool levels at or below this tournament first, closest level first.
         const rank = (d: Duelist) => (d.tournamentLevel <= tournamentLevel ? tournamentLevel - d.tournamentLevel : 10 + d.tournamentLevel)
         return rank(a) - rank(b) || a.name.localeCompare(b.name)
       })
-      .map((d) => ({ id: d.id, label: d.name, hint: `LV${d.tournamentLevel}${d.unlocked ? '' : ', locked'}`, disabled: taken.has(d.id) && value !== d.id }))
+      .map((d) => ({ id: d.id, label: d.name, hint: `LV${d.tournamentLevel}`, disabled: taken.has(d.id) && value !== d.id }))
     return [...you, ...cpus]
   }, [query, duelists, tournamentLevel, taken, value])
 
@@ -58,6 +60,7 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
     flushSync(() => onChange(id))
     setQuery('')
     setHighlight(0)
+    setOpen(false)
   }
 
   return (
@@ -65,29 +68,36 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
       <input
         aria-label={label}
         role="combobox"
-        aria-expanded={focused}
+        aria-expanded={open}
         aria-controls={listId}
-        aria-activedescendant={focused && active ? `${listId}-${active.id}` : undefined}
+        aria-activedescendant={open && active ? `${listId}-${active.id}` : undefined}
         data-nav={navIndex}
         className={`field w-full ${value === PLAYER_ID ? 'font-semibold text-accent' : ''}`}
         placeholder="Type a name…"
-        value={focused ? query : selectedLabel}
-        onFocus={(e) => {
-          setFocused(true)
+        value={open ? query : selectedLabel}
+        onFocus={() => {
+          setOpen(true)
           setQuery('')
           setHighlight(0)
-          e.currentTarget.select()
         }}
-        onBlur={() => setFocused(false)}
+        onClick={() => {
+          if (open) return
+          setOpen(true)
+          setQuery('')
+          setHighlight(0)
+        }}
+        onBlur={() => setOpen(false)}
         onChange={(e) => {
           setQuery(e.target.value)
           setHighlight(0)
+          setOpen(true)
         }}
         onKeyDown={(e) => {
           // Keys that confirm an IME conversion (e.g. typing a Japanese alias) aren't commands.
           if (e.nativeEvent.isComposing) return
           if (e.key === 'ArrowDown') {
             e.preventDefault()
+            if (!open) setOpen(true)
             setHighlight((h) => Math.min(h + 1, enabled.length - 1))
           } else if (e.key === 'ArrowUp') {
             e.preventDefault()
@@ -96,14 +106,17 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
             pick(active.id)
           } else if (e.key === 'Escape') {
             setQuery('')
+            setOpen(false)
           } else if (e.key === 'Delete' && !query) {
             onChange(null)
           }
         }}
       />
-      {focused && (
+      {open && (
         <ul id={listId} role="listbox" tabIndex={-1} className="panel absolute z-20 mt-1 max-h-72 w-full min-w-64 overflow-auto py-1 shadow-lg">
-          {options.length === 0 && <li className="px-3 py-1.5 text-sm text-ink-3">No duelist matches “{query}”</li>}
+          {options.length === 0 && (
+            <li className="px-3 py-1.5 text-sm text-ink-3">No unlocked duelist matches “{query}”. Unlock it in Roster setup first.</li>
+          )}
           {options.map((o) => (
             <li
               key={o.id}
