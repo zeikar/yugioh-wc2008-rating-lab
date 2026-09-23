@@ -1,0 +1,593 @@
+# MVP Spec — Yu-Gi-Oh! WCS2008 Rating Lab
+
+A web app for recording CPU tournaments in *Yu-Gi-Oh! World Championship 2008*
+(Nintendo DS) and watching how CPU duelists' ratings change over repeated
+tournaments.
+
+Domain background, including tournament format, what is known about ratings,
+and open questions, is in [domain/game.md](domain/game.md). The CPU roster
+with initial ratings is in [domain/roster.md](domain/roster.md).
+
+## 1. Core principle
+
+**The app records ratings. It never predicts them.**
+
+The game's rating formula is unknown. The user reads rating values off the game
+screen and enters them by hand. The app stores those observations, derives
+statistics from them, and charts them. It is an observation tool, not a rating
+engine: no Elo, no prediction, no simulation.
+
+The one exception is a rule the owner confirmed in play, not a formula:
+CPU-vs-CPU duels are zero-sum. When the owner enters only one CPU's post-match
+rating, the app fills in the opponent's from that rule and saves both (§4).
+The filled-in value is stored with `source: 'derived'` so it can always be
+told apart from what was typed.
+
+## 2. Tech stack
+
+| Concern | Choice |
+|---|---|
+| UI | React + TypeScript + Vite |
+| Styling | Tailwind CSS |
+| Routing | React Router |
+| Charts | Recharts |
+| Persistence | Firebase Firestore (canonical store) |
+| Auth | Firebase Authentication, Google provider (owner-only writes) |
+| Tests | Vitest (+ Firestore emulator for rules tests) |
+
+No custom backend, no Dexie, and no separate IndexedDB layer. Offline support
+comes from Firestore's persistent local cache (`persistentLocalCache` with
+`persistentMultipleTabManager`).
+
+## 3. Access model
+
+- **Public read.** Anyone can view all data without logging in.
+- **Single admin = the owner's Google account.** Sign-in uses Firebase Auth's
+  Google provider only. Writes are allowed only for the owner's Firebase UID.
+  Firestore security rules enforce this; hiding buttons in the UI is not
+  enough.
+- The owner's UID (not their email) is what goes into the rules, so no personal
+  address lands in the repo. Setup: sign in once, copy the UID from the Firebase
+  console (Authentication → Users), put it in `firestore.rules` and
+  `VITE_ADMIN_UID`, then deploy the rules.
+- The UI shows a "Sign in with Google" control. Editing controls appear only
+  when `user.uid === VITE_ADMIN_UID`, which is a UI hint only; the rules are
+  the real gate. Anyone else, signed in or not, sees the read-only app.
+- Firebase config comes from `VITE_FIREBASE_*` env vars. Provide `.env.example`.
+
+Rules sketch (`firestore.rules`):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'OWNER_UID';
+    }
+    match /{collection}/{id} {
+      allow read: if collection in ['duelists','tournaments','matches','ratingObservations'];
+      allow write: if isAdmin()
+        && collection in ['duelists','tournaments','matches','ratingObservations'];
+    }
+  }
+}
+```
+
+Add basic field validation (types, required fields) to the rules where it is
+cheap to do.
+
+## 4. Data model
+
+Store facts and derive statistics. Never persist `currentRating`, `peakRating`,
+`winRate`, `rank`, or any other value that can be computed. If denormalized
+summaries are ever needed for performance, they are caches only, never the
+canonical history.
+
+Top-level flat collections. No subcollections.
+
+### `duelists/{slug}`
+
+Document ID is a stable slug: `spirit-of-the-pharaoh`, `blowback-dragon`,
+`cloudian-poison-cloud`.
+
+| Field | Type | Notes |
+|---|---|---|
+| name | string | English name |
+| level | 1 \| 2 \| 3 | Tournament pool level. This is a fixed attribute and is **not** a rating tier (an LV1 duelist can start at 1800). |
+| initialRating | number \| null | Rating on a fresh save. `null` = unknown. Never guess. |
+| unlocked | boolean | Don't assume everyone is unlocked |
+| category | `'monster' \| 'anime-character'` | |
+| aliases | string[]? | Japanese/Korean names and nicknames; used by search |
+| notes | string? | |
+
+**The player** is an entrant, not a duelist document. Matches refer to them by
+the reserved ID `PLAYER_ID = 'player'`, which no duelist slug may use. The
+player has no tracked rating, because offline play does not change it (see
+domain/game.md §3.2). Duels against the player don't change CPU ratings
+either, so rating stats and diagnostics cover CPUs only.
+
+### `tournaments/{id}`
+
+| Field | Type | Notes |
+|---|---|---|
+| number | number | Label only ("Tournament #12"). Assigned as max+1 at creation. Never used for ordering except as a tie-break. |
+| playedAt | Timestamp | When the tournament started (defaults to now). This is its position on the timeline. |
+| tournamentLevel | 1 \| 2 \| 3 | Singles tournaments only in the MVP |
+| entrants | string[8] | **Seats 0–7 in bracket order.** Each is a duelist slug or `'player'`. Required to save: exactly one `'player'` and 7 distinct CPUs. Seats 2*k* and 2*k*+1 meet in QF slot *k*. |
+| title | string? | |
+| notes | string? | |
+| createdAt | Timestamp | server timestamp |
+
+### `matches/{tournamentId}_{round}_{slot}`
+
+| Field | Type | Notes |
+|---|---|---|
+| tournamentId | string | |
+| round | `'quarterfinal' \| 'semifinal' \| 'final'` | The bracket is always 8 entrants, so 4 + 2 + 1 matches |
+| slot | number | Bracket position within the round: QF 0–3, SF 0–1, F 0. SF slot *k* is fed by the winners of QF slots 2*k* and 2*k*+1, and the final by the two SF winners. |
+| playerAId | string | duelist slug or `'player'` |
+| playerBId | string | must differ from A |
+| winnerId | string | must be A or B |
+| remainingLp | number? | |
+| notes | string? | |
+| createdAt | Timestamp | |
+
+Bracket invariants. The tournament form enforces these and import
+validation checks them:
+- `(tournamentId, round, slot)` is unique, which holds by construction of the
+  match ID.
+- QF slot *k* is played by `entrants[2k]` and `entrants[2k+1]`.
+- An SF or F match can be recorded only when **both of its feeding matches are
+  recorded**. Its players are their winners.
+- An entrant outside the tournament level's pool only produces a warning,
+  because pool strictness is unverified.
+
+Assumptions. These come from the owner's description and are not yet verified
+(domain/game.md §6):
+- each round is a single duel;
+- the 7 CPUs are distinct;
+- the in-game bracket pairs QF winners 1–2 and 3–4 in the semifinals.
+
+If any turns out false, the match model needs revisiting.
+
+### `ratingObservations/{id}`
+
+| Field | Type | Notes |
+|---|---|---|
+| duelistId | string | a CPU slug, never `'player'` |
+| rating | number | the value shown in-game |
+| observedAt | Timestamp | When it was observed. For tournament-written observations, this is set to the tournament's `playedAt` on every save. |
+| tournamentId | string? | see the meanings below |
+| matchId | string? | see the meanings below (requires `tournamentId`) |
+| source | `'entered' \| 'derived'` | `'entered'` = typed or accepted by the owner. `'derived'` = the opponent's post-match rating, filled in from the zero-sum rule (§4). Only post-match observations can be `'derived'`. |
+| note | string? | |
+| createdAt | Timestamp | Final tie-break. Preserved when a re-save overwrites the doc. |
+
+What an observation means depends on which links it has. No extra field is
+needed:
+
+| tournamentId | matchId | Meaning | Written by |
+|---|---|---|---|
+| set | — | **Entry rating**: the CPU's rating at the start of that tournament. The duelist must be one of the tournament's entrants. | tournament form, one per CPU entrant |
+| set | set | **Post-match rating**: the CPU's rating right after that CPU-vs-CPU match. `tournamentId` must equal the match's. | tournament form: always both CPUs when derivable (one entered, the other entered or derived) |
+| — | — | **Standalone reading** taken outside any tournament | duelist detail page |
+
+History is append-only in spirit. Editing or deleting an observation is allowed
+to correct mistakes, but no code path overwrites history with a single mutable
+value.
+
+**Deterministic IDs for tournament data.** The tournament form writes:
+- matches as `{tournamentId}_{round}_{slot}`
+- entry ratings as `{tournamentId}_entry_{duelistId}`
+- post-match ratings as `{matchId}_{duelistId}`
+
+Re-saving a tournament therefore overwrites instead of duplicating, and the
+`(tournamentId, round, slot)` invariant holds by construction. The tournament
+ID itself is generated on the client when the form opens and kept in the local
+draft, so saving twice or saving after a reload never creates a second
+tournament. Standalone readings use auto IDs.
+
+**Deleting a tournament** (admin, on the tournament page, with an inline
+two-step confirm) deletes the tournament, its matches and every observation
+with its `tournamentId`, in one batch.
+
+**Timeline rule.** Every derived value (current rating, history chart,
+pre-match rating, per-match Δ) uses one ordering, and matches share it:
+
+- **Tournaments** are ordered by `(playedAt, number)`. Within a tournament the
+  order is: entry ratings, then QF matches and their post-match ratings, then
+  SF, then F.
+- **Standalone readings** are placed by `observedAt` against tournaments'
+  `playedAt`. A tournament counts as a single point, so a reading with
+  `observedAt ≥ playedAt` sorts after that whole tournament.
+- **Remaining ties** fall back to `createdAt`.
+
+The current rating is the last point in the duelist's **effective history**
+(below), provided it is still **fresh**. If that CPU has since played a
+recorded CPU-vs-CPU match whose post-match rating is unknown, the current
+rating is unknown. The UI then shows the last value with a "stale" tag. If a
+duelist has no observations, the UI may show `initialRating`, labeled as a
+baseline and not as an observation. It is also stale once any CPU-vs-CPU match
+of that duelist is recorded.
+
+**Rating-change facts (owner-confirmed, domain/game.md §3.1):**
+1. Ratings change after **every CPU-vs-CPU duel**.
+2. Duels involving the player never change them.
+3. CPU-vs-CPU duels are **zero-sum**: the winner gains exactly the points the
+   loser loses (winner Δ = −loser Δ = *N*).
+
+Consequences:
+- **Freshness.** A rating stays a CPU's current rating until that CPU plays
+  its next CPU-vs-CPU match. Its matches against the player don't make it
+  stale.
+- **Pre-match rating** of a CPU comes only from the same tournament:
+  - for its first CPU-vs-CPU match there, that tournament's entry rating;
+  - after that, its post-match rating (entered or derived) from its previous
+    CPU-vs-CPU match there.
+
+  Earlier tournaments and standalone readings never stand in, because ratings
+  can drift between tournaments. If there is no such source, the pre-match
+  rating is unknown.
+- **Transfer.** A match's transfer *N* = an entered CPU's post-match rating
+  − its pre-match rating, with the sign flipped when that CPU is the
+  loser.
+- **Derived partner.** When only one CPU's post-match rating is entered, the
+  opponent's is `opponent pre-match ± N`.
+  - The tournament form computes it and **saves it** with
+    `source: 'derived'`, so both CPUs' post-match ratings are in Firestore.
+  - It is derived only if the opponent's pre-match rating is known. Otherwise
+    nothing is saved for the opponent.
+  - A derived rating can serve as the pre-match rating in a later round.
+- **Recomputed on every save.** A derived value depends only on data from the
+  same tournament (see Pre-match rating). So each tournament save recomputes
+  all of that tournament's derived observations from its entered ones, and a
+  corrected typo flows through the later rounds.
+- **Effective history.** Each CPU's effective history is its stored
+  observations in timeline order; derived ones are already stored. Every
+  rating stat and chart uses it. Derived points are shown differently: a
+  hollow chart point, or italic with a "derived" tag.
+- **Integrity check.** When both post-match ratings of a match are entered
+  and their Δs don't cancel out, flag the match as a probable typo instead of
+  silently picking one.
+- **Prior rating** `ratingBefore(duelist, tournament)`: the last point of the
+  effective history strictly before the tournament, and only if it is still
+  fresh at the tournament's start. Otherwise it is none; a baseline never
+  counts. One function serves the form hint, the ⚠ warning and the continuity
+  check (§7.3).
+
+## 5. Seed roster
+
+- The roster lives in `src/data/duelists.ts` as a typed static array, separate
+  from UI code, so it is easy to paste in or correct.
+- Seed it from [domain/roster.md](domain/roster.md) with the **78 singles
+  CPUs**: 24 in LV1, 24 in LV2 and 30 in LV3. Include the Japanese name as an
+  alias.
+- Where sources conflict (Dark Magician Girl, Kozaky, Heraklinos), use the
+  likely value and write the conflict into `notes`. Use `null` for anything
+  unknown. Invent nothing.
+- Leave tag teams, downloadable CPUs and Duel World opponents out of the MVP
+  seed.
+- Default `unlocked` to `false`, except for the 3 duelists available from the
+  start. The owner toggles the rest.
+- An admin-only **"Sync roster"** action in Settings upserts the roster into
+  `duelists/`. It is idempotent.
+  - It creates missing duelists with every field.
+  - On existing docs it updates only `name`, `level`, `initialRating`,
+    `category` and `aliases`. It never touches `unlocked` or `notes`, which
+    are owned by the app once the doc exists.
+
+## 6. Pages
+
+Navigation: **Dashboard · Duelists · Tournaments · Research · Data**, plus a
+prominent **"+ New tournament"** button, which is the main input flow.
+
+### 6.1 Dashboard
+- Counts: duelists, unlocked duelists, tournaments, matches, observations.
+- Highlights: current highest rating, biggest gain from initial, biggest loss
+  from initial, highest rating ever recorded, biggest upset.
+- The player's record: tournaments won per level (the game's pack rewards
+  need 5 wins per level) and overall match W/L.
+- An empty state for each item when there isn't enough data.
+
+### 6.2 Duelists (leaderboard)
+- Columns: rank, name, level, initial, current, Δ from initial, peak, lowest,
+  unlocked.
+- Sort by current rating, gain, loss, name, or level. Filter by level or
+  unlocked, plus a name/alias search.
+- Locked duelists are visibly muted. Baseline, derived and stale current
+  ratings are visibly marked (e.g. italic plus a "baseline", "derived" or
+  "stale" tag).
+
+### 6.3 Duelist detail
+- Stats: name, level, initial, current, Δ, peak, lowest, largest single
+  increase and decrease, matches, wins, losses, win rate, finals reached,
+  tournaments won.
+- **Rating history line chart.** X = position on the timeline, Y = rating.
+  It plots the effective history (§4). When `initialRating` is known, the
+  chart starts from it as a separately styled **baseline** point. Derived
+  points are hollow. The tooltip shows rating, date,
+  tournament, entered/derived, and, when linked to a match, the opponent,
+  W/L and *N*.
+- A table of the last ~10 observations.
+- Head-to-head record vs. each opponent (cheap to add, useful).
+- Admin controls, all inline:
+  - toggle `unlocked`;
+  - edit `notes`;
+  - add, edit and delete **standalone readings** (rating, observedAt
+    defaulting to now, and a note), for ratings seen outside a tournament.
+
+  Tournament-written observations are edited only through their tournament's
+  form.
+
+### 6.4 Tournaments
+- List: #/title, date, level, recorded matches (n/7), and champion: the winner
+  of the `final` match if one is recorded, shown as "You" when it is the
+  player.
+
+### 6.5 Tournament form: the core workflow
+One page records an entire tournament, filled in **live while playing**, with
+the DS in hand. The same page shows a saved tournament (read-only for
+visitors) and edits it (admin).
+
+The bracket shape is fixed, so the form is fixed too. It is not a
+drag-and-drop bracket editor.
+
+```
+Tournament #13 · Level [2] · 2026-09-23 21:40
+Entrants (seats in bracket order)   entry rating
+ QF1  [Blowback Dragon    ] [1526]   last: 1526
+      [You                ]
+ QF2  [Manju              ] [1491]   last: 1480 ⚠ changed
+      [Cloudian           ] [1309]
+ …
+Quarterfinals
+ QF1  Blowback Dragon  vs  You          winner (•)( )        LP [    ]
+ QF2  Manju  vs  Cloudian               winner ( )(•)        LP [2100]
+      after: Cloudian [1353] (+44)   Manju  1447 (−44, derived)
+ …
+Semifinals / Final   (pairings fill in from the winners)
+```
+
+1. **Header:** level, playedAt (defaults to now), and optional title and
+   notes.
+2. **Entrants:** 8 seats in bracket order, stored as `entrants`. The UI
+   labels QF1–QF4 are match `slot` 0–3, so QF1 is seats 0–1.
+   - Each seat has a type-ahead picker over name and alias. Duelists from the
+     selected level's pool are listed first.
+   - "You" must be used exactly once, and the 7 CPUs must be distinct.
+   - Each CPU seat has an **entry rating** input. When `ratingBefore` (§4)
+     exists, it is shown as a hint, and pressing Enter on an empty field
+     accepts it. Nothing is stored unless it was typed or accepted.
+   - If the entered value differs from `ratingBefore`, the seat shows
+     "⚠ changed outside recorded duels". With no `ratingBefore`, there is no
+     hint and no warning.
+3. **Matches:** each round lists its pairings. An SF or F pairing appears once
+   both of its feeding matches have a winner.
+   - Pick the winner with a click or the 1/2 keys. LP and notes are optional.
+   - A **CPU-vs-CPU** match also shows two *after* rating inputs, and **one
+     is enough**. Typing either one fills the other in as a greyed derived
+     value (§4). On save, **both are stored**: the typed one as `entered`,
+     the filled-in one as `derived`.
+   - Typing both is allowed. Both are then stored as `entered`, the integrity
+     check runs, and a mismatch is shown inline.
+   - If the chosen winner's Δ comes out ≤ 0, a warning is shown, since it
+     usually means a typo or the wrong winner.
+   - Matches involving "You" have no rating inputs.
+4. **Partial tournaments are fine.** An unknown or skipped duel is simply
+   not recorded, and the later matches that depend on it can't be recorded
+   either (§4).
+
+Input speed:
+- Tab order follows the order things happen in the game: entrants, then QF1…
+  through F.
+- Enter moves to the next field, and there are no modals.
+
+Saving:
+- The in-progress form is kept as a **local draft** (localStorage, per
+  browser), so a reload mid-tournament loses nothing.
+- **"Save tournament"** writes the tournament, its matches and its
+  observations in **one Firestore batch**, using the deterministic IDs from
+  §4. That includes both CPUs' post-match ratings for every CPU-vs-CPU match,
+  with the derived ones recomputed. A full tournament is under 30 writes. It works offline through the
+  Firestore cache.
+- Re-opening a saved tournament and saving again overwrites that
+  tournament's docs and deletes ones that were removed.
+
+This page also shows the tournament's per-match transfers (§7.3).
+
+### 6.6 Research
+See §7.3.
+
+### 6.7 Data (Settings)
+- Sign in / sign out, with the current admin status shown.
+- Sync roster (§5).
+- Export and import JSON (§8).
+
+## 7. Derived statistics
+
+All statistics are pure functions in `src/features/**/stats.ts` that take
+plain arrays and return values. Components call them through selectors or
+hooks and never reimplement the math inline.
+
+All ordering follows the timeline and freshness rules in §4.
+
+### 7.1 Rating stats (per duelist)
+- The stats: current (with its fresh/stale state), Δ from initial, peak,
+  minimum, largest single increase and largest single decrease.
+- "Single" means between consecutive points of the effective history.
+- Peak, minimum and the single-step stats cover the effective history only;
+  the `initialRating` baseline is excluded.
+- Any stat whose inputs are missing returns `null`. Never return `0` as a
+  stand-in.
+
+### 7.2 Match stats
+Wins, losses, win rate, finals appearances, and tournament wins (winner of
+`final`). Matches against the player count toward a CPU's W/L. A per-opponent
+split (vs. CPUs / vs. you) is useful, because the player has no rating.
+
+**Upsets.** A CPU-vs-CPU match is an upset when both pre-match ratings (§4)
+are known and `winnerBefore < loserBefore`. Magnitude = `loserBefore −
+winnerBefore`. Skip the match if either rating is unknown. Don't guess.
+
+### 7.3 Rating research (diagnostics)
+Zero-sum is settled (§4). The open question is **what determines the transfer
+*N***. The owner has seen it behave like Elo: beating a stronger CPU gains a
+lot, and beating a weaker one gains little (domain/game.md §3.1). The
+Research page collects the data to pin this down and only displays it; the
+MVP fits no formula.
+
+- **Transfer table.** This is the core research dataset. It has one row for
+  each CPU-vs-CPU match whose *N* is known:
+  - winner, loser, and their pre-match ratings
+  - the gap `winnerPre − loserPre`, *N*, and the tournament level
+  - whether *N* came from one entered side or two
+
+  Show a scatter of *N* against the gap, and summaries: the min, max and mode
+  of *N*, and *N* for upsets vs. favourites. Elo-like behaviour would show up
+  as *N* falling steadily as the gap grows, and the chart should make that
+  easy to see. Also show *N* for each exact gap value that recurs, since
+  repeated gaps with identical *N* would point to a deterministic formula.
+- **Integrity list.** Matches whose two entered post-match ratings don't
+  cancel out (§4).
+- **Continuity check.** For each entry rating, compare it with
+  `ratingBefore` (§4).
+  - A mismatch is listed as "changed outside recorded duels". That happens
+    with a tournament that wasn't recorded, with View CPU Duel
+    (domain/game.md §6), or with a wrong derived value upstream.
+  - When `ratingBefore` is none, the entry is listed as "unknown", not as
+    changed.
+
+## 8. Import / Export
+
+- **Export** downloads one JSON file:
+  `{ schemaVersion, exportedAt, duelists, tournaments, matches, ratingObservations }`.
+  Include document IDs, and serialize Timestamps as ISO strings.
+- **Import** (admin only):
+  1. Parse the file and validate it with a schema (zod). Check referential
+     integrity too: matches → tournaments/duelists (or `'player'`),
+     observations → duelists/tournaments/matches, and winner ∈ {A, B}. Also
+     check:
+     - the `entrants` rules and the bracket invariants (§4);
+     - that tournament doc IDs follow the deterministic scheme and match
+       their content;
+     - entry ratings only for CPU entrants;
+     - post-match observations only on CPU-vs-CPU matches, only for those two
+       CPUs, and with the match's `tournamentId`.
+
+     Derived observations are exported and imported like any other, with
+     their `source`.
+  2. Show a summary (counts per collection, errors) before anything is written.
+  3. MVP mode is **replace**. After a typed confirmation, delete the existing
+     docs and write the imported ones, keeping their IDs.
+  4. Write in chunked batches (≤ 500 ops per batch), and tell the user that a
+     failure partway through can leave partial data, so export a backup first.
+- Export works for anonymous visitors too, since the data is public.
+
+## 9. Architecture
+
+```
+src/
+  firebase/        app init, Firestore w/ persistent cache, auth
+  db/              typed repository per collection (converters, CRUD, live queries)
+  data/            duelists.ts roster
+  types/           domain types
+  features/
+    duelists/      stats.ts, hooks, components
+    tournaments/
+    ratings/
+    research/
+  pages/
+  components/      shared UI (tables, delta badge, empty state)
+  utils/
+firestore.rules
+firestore.indexes.json
+firebase.json      emulator config
+```
+
+- The repository layer is the only place that imports `firebase/firestore`.
+  It converts Firestore docs into domain types (Timestamp → Date).
+- Data loading: the collections are small (hundreds to low thousands of docs),
+  so the MVP subscribes to each collection once with `onSnapshot`, keeps it in
+  a React context, and derives everything client-side. This keeps the stats
+  logic pure and testable. Revisit if the collections grow large.
+- A central `useAuth()` hook exposes `{ user, isAdmin }`.
+
+## 10. UX
+
+- Desktop-first, responsive, and light: a clean "research dashboard" with a
+  subtle retro-stat flavor. Not dark-heavy, no elaborate animation.
+- Compact tables. Deltas are colored and signed (`+93` green, `−93` red, `±0`
+  neutral).
+- No modal-heavy flows, and good keyboard navigation.
+- Show pending or offline write state (Firestore `hasPendingWrites`) so the
+  user knows whether an entry has synced.
+
+## 11. Testing
+
+Vitest unit tests for the pure logic:
+- timeline ordering: entry → QF → SF → F inside a tournament, standalone
+  readings between tournaments, and `createdAt` ties
+- freshness: an observation goes stale after a CPU-vs-CPU match, but not
+  after a match against the player
+- pre-match rating and transfer *N*, with either side entered
+- derived partner in the form's save payload:
+  - the correct sign whether the entered side is the winner or the loser;
+  - nothing saved when the opponent's pre-match rating is unknown;
+  - chaining across rounds;
+  - never overriding an entered value;
+  - recomputed when an upstream entered value changes
+- integrity check: both sides entered with Δs that don't cancel
+- Δ from initial, including a null initial
+- peak/min and largest single increase/decrease
+- win/loss, finals, and tournament wins, including matches against the player
+- bracket derivation: SF/F pairings from QF winners and `entrants`, with SF/F
+  blocked when a feeding match is missing
+- pre-match rating limited to the same tournament; `ratingBefore` with stale
+  or baseline-only history; current-rating staleness
+- delete-tournament cascade payload
+- upset detection, skipping missing data and player matches
+- continuity check against the effective history
+- tournament form → batch payload: deterministic IDs, and re-save
+  overwrites/deletes correctly
+- import validation: a good file, a bad schema, broken references, and bracket
+  violations
+
+Rules tests with `@firebase/rules-unit-testing` against the emulator:
+anonymous read succeeds, anonymous write fails, non-admin write fails, admin
+write succeeds.
+
+Scripts: `dev`, `build`, `typecheck`, `lint`, `test`, `emulators`.
+
+## 12. README must cover
+
+What the app is and why it exists, the tech stack, Firebase setup (creating a
+project, env vars, setting the owner UID in rules and `VITE_ADMIN_UID`, deploying rules), running
+locally with the emulator, the data model, and this statement, verbatim:
+
+> The application records observed in-game ratings.
+> It does not currently attempt to reproduce the game's rating algorithm.
+
+## 13. Non-goals (MVP)
+
+A custom backend or server functions, multiplayer, scraping, emulator memory
+reading, rating prediction or Elo, AI analysis, a visual bracket editor,
+elaborate animation, a native mobile app, and merge-mode import.
+
+## 14. Later
+
+Merge import, CSV export, streaks and badges (Hot Streak, Biggest Climber,
+Biggest Collapse), a visual bracket, tag tournaments (roster in
+domain/roster.md §3), DP tracking (the win bonus may equal rating ÷ 5, see
+domain/game.md §3.3), materialized summaries if reads get heavy, and fitting
+candidate rating formulas against the collected data (the long-term research
+goal). The first candidate is an Elo-style `N = round(K · (1 − E))` with
+`E = 1 / (1 + 10^(−gap/scale))`, fitting K and the scale to the transfer
+table.
+
+## 15. Definition of done
+
+`typecheck`, `lint`, `test`, and `build` all pass. The app runs against the
+emulator: an admin can sign in, sync the roster, record a full tournament
+live in the tournament form (surviving a mid-tournament reload), see charts
+and diagnostics update, and export then re-import the data. An anonymous visitor can browse everything but write
+nothing.
