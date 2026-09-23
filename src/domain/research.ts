@@ -9,14 +9,14 @@ export interface TransferRow {
   tournament: Tournament
   winnerId: string
   loserId: string
-  winnerPre: number
-  loserPre: number
-  /** winnerPre − loserPre: negative means the underdog won. */
-  gap: number
+  winnerPre: number | null
+  loserPre: number | null
+  /** winnerPre − loserPre: negative means the underdog won. Null when either pre-match rating is unknown. */
+  gap: number | null
   transfer: number
 }
 
-/** One row per CPU-vs-CPU match whose transfer is known (MVP §7.3). */
+/** One row per CPU-vs-CPU match whose transfer is known (MVP §7.3), even if the gap isn't. */
 export function transferRows(model: Model): TransferRow[] {
   const rows: TransferRow[] = []
   for (const t of model.index.tournaments) {
@@ -24,9 +24,8 @@ export function transferRows(model: Model): TransferRow[] {
       if (!r.cpuMatch || r.transfer === null) continue
       const winnerId = r.match.winnerId
       const loserId = r.match.playerAId === winnerId ? r.match.playerBId : r.match.playerAId
-      const winnerPre = r.pre[winnerId]
-      const loserPre = r.pre[loserId]
-      if (winnerPre == null || loserPre == null) continue
+      const winnerPre = r.pre[winnerId] ?? null
+      const loserPre = r.pre[loserId] ?? null
       rows.push({
         ratings: r,
         tournament: t,
@@ -34,7 +33,7 @@ export function transferRows(model: Model): TransferRow[] {
         loserId,
         winnerPre,
         loserPre,
-        gap: winnerPre - loserPre,
+        gap: winnerPre !== null && loserPre !== null ? winnerPre - loserPre : null,
         transfer: r.transfer,
       })
     }
@@ -63,14 +62,14 @@ export function summarizeTransfers(rows: TransferRow[]): TransferSummary {
   for (const [t, c] of counts) if (c > 1 && (mode === null || c > counts.get(mode)!)) mode = t
   const mean = (xs: number[]) => (xs.length > 0 ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
   const byGap = new Map<number, number[]>()
-  for (const r of rows) byGap.set(r.gap, [...(byGap.get(r.gap) ?? []), r.transfer])
+  for (const r of rows) if (r.gap !== null) byGap.set(r.gap, [...(byGap.get(r.gap) ?? []), r.transfer])
   return {
     count: rows.length,
     min: ts.length > 0 ? Math.min(...ts) : null,
     max: ts.length > 0 ? Math.max(...ts) : null,
     mode,
-    upsetMean: mean(rows.filter((r) => r.gap < 0).map((r) => r.transfer)),
-    favouriteMean: mean(rows.filter((r) => r.gap >= 0).map((r) => r.transfer)),
+    upsetMean: mean(rows.filter((r) => r.gap !== null && r.gap < 0).map((r) => r.transfer)),
+    favouriteMean: mean(rows.filter((r) => r.gap !== null && r.gap >= 0).map((r) => r.transfer)),
     repeatedGaps: [...byGap]
       .filter(([, list]) => list.length > 1)
       .map(([gap, transfers]) => ({ gap, transfers }))

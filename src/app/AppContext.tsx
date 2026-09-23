@@ -1,11 +1,10 @@
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { subscribeAdmin, subscribeAll } from '../db/repository'
+import { subscribeAdmin, subscribeAll, subscribeOutstandingCommits } from '../db/repository'
 import { buildModel } from '../domain/stats'
 import { auth } from '../firebase'
 import type { Dataset } from '../types'
 import { AppContext, type AppState } from './context'
-
 
 const EMPTY: Dataset = { duelists: [], tournaments: [], matches: [], observations: [] }
 
@@ -13,6 +12,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Dataset>(EMPTY)
   const [loading, setLoading] = useState(true)
   const [pendingWrites, setPendingWrites] = useState(false)
+  const [outstanding, setOutstanding] = useState(0)
+  const [fromCache, setFromCache] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
   // The uid whose admins/{uid} doc exists; compared with the current user so a sign-out needs no reset.
@@ -24,15 +26,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         (s) => {
           setData(s.data)
           setPendingWrites(s.pendingWrites)
+          setFromCache(s.fromCache)
           setLoading(false)
         },
         (e) => {
-          setError(`Could not load data: ${e.message}`)
+          setError(`Could not load data: ${e.message}. Reload the page to try again.`)
+          setLoadFailed(true)
           setLoading(false)
         },
       ),
     [],
   )
+
+  useEffect(() => subscribeOutstandingCommits(setOutstanding), [])
 
   useEffect(() => onAuthStateChanged(auth, setUser), [])
 
@@ -48,7 +54,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value: AppState = {
     model,
     loading,
-    pendingWrites,
+    loadFailed,
+    synced: !loading && !loadFailed && !fromCache,
+    pendingWrites: pendingWrites || outstanding > 0,
     error,
     user,
     isAdmin,

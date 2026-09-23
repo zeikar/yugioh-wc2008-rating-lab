@@ -1,13 +1,18 @@
 import { z } from 'zod'
 import { PLAYER_ID, ROUNDS, type Dataset } from '../types'
 import { bracketErrors, entryObservationId, isCpu, isCpuMatch, matchDocId, postObservationId } from './bracket'
-import { groupBy } from './stats'
+import { analyzeAll, groupBy } from './stats'
 
 export const SCHEMA_VERSION = 1
 
 const date = z.iso.datetime().transform((s) => new Date(s))
 const level = z.union([z.literal(1), z.literal(2), z.literal(3)])
-const id = z.string().min(1).max(200)
+// Firestore doc ids: no '/', not '.' or '..', not __reserved__.
+const id = z
+  .string()
+  .min(1)
+  .max(200)
+  .regex(/^(?!\.\.?$)(?!__.*__$)[^/]+$/, 'not a valid document id')
 const opt = <T extends z.ZodType>(schema: T) => schema.optional()
 
 const duelistSchema = z.object({
@@ -160,5 +165,18 @@ export function referenceErrors(data: Dataset): string[] {
     }
     if (o.source === 'derived' && !o.matchId) errors.push(`${where}: only post-match ratings can be derived`)
   }
+  if (errors.length > 0) return errors
+
+  // Stored derived ratings must be exactly what the zero-sum rule gives from the entered ones.
+  const expected = new Map<string, number>()
+  for (const analysis of analyzeAll(data).values()) for (const d of analysis.derived) expected.set(postObservationId(d.matchId, d.duelistId), d.rating)
+  const stored = data.observations.filter((o) => o.source === 'derived')
+  for (const o of stored) {
+    const want = expected.get(o.id)
+    if (want === undefined) errors.push(`observation ${o.id}: marked derived, but the entered ratings don't derive it`)
+    else if (want !== o.rating) errors.push(`observation ${o.id}: derived rating ${o.rating} should be ${want}`)
+  }
+  const storedIds = new Set(stored.map((o) => o.id))
+  for (const idOf of expected.keys()) if (!storedIds.has(idOf)) errors.push(`observation ${idOf}: derived rating is missing`)
   return errors
 }

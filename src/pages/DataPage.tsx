@@ -8,7 +8,7 @@ import { USE_EMULATORS } from '../firebase'
 import type { Dataset } from '../types'
 
 export function DataPage() {
-  const { model, user, isAdmin, signIn, reportError } = useApp()
+  const { model, user, isAdmin, signIn, reportError, synced, loadFailed } = useApp()
   const [rosterMessage, setRosterMessage] = useState<string | null>(null)
 
   const exportJson = () => {
@@ -58,8 +58,10 @@ export function DataPage() {
             Writes the {ROSTER.length} tournament CPUs from the built-in roster. New duelists are created; existing ones get their name, level, initial rating and
             aliases refreshed. Your unlocked flags and notes are never touched.
           </p>
+          <NeedsServer synced={synced} />
           <button
             className="btn btn-primary mt-3"
+            disabled={!synced}
             onClick={() => {
               const r = syncRoster(model.data.duelists, reportError)
               setRosterMessage(`Roster synced: ${r.created} added, ${r.updated} refreshed.`)
@@ -75,17 +77,18 @@ export function DataPage() {
         <p className="max-w-prose text-sm text-ink-2">
           Downloads every duelist, tournament, match and rating as one JSON file ({model.data.observations.length} ratings right now).
         </p>
-        <button className="btn mt-3" onClick={exportJson}>
+        {loadFailed && <p className="mt-2 text-sm text-down">Loading failed, so an export now would be incomplete. Reload the page first.</p>}
+        <button className="btn mt-3" disabled={loadFailed} onClick={exportJson}>
           Export JSON
         </button>
       </Block>
 
-      {isAdmin && <ImportBlock current={model.data} exportFirst={exportJson} />}
+      {isAdmin && <ImportBlock current={model.data} exportFirst={exportJson} synced={synced} />}
     </>
   )
 }
 
-function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: () => void }) {
+function ImportBlock({ current, exportFirst, synced }: { current: Dataset; exportFirst: () => void; synced: boolean }) {
   const [parsed, setParsed] = useState<{ ok: true; data: Dataset } | { ok: false; errors: string[] } | null>(null)
   const [confirm, setConfirm] = useState('')
   const [progress, setProgress] = useState<string | null>(null)
@@ -95,7 +98,8 @@ function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: 
     <Block title="Restore from a backup">
       <p className="max-w-prose text-sm text-ink-2">
         Importing <strong>replaces all current data</strong> with the file's contents. The file is checked first and nothing is written until you confirm. The
-        write happens in several steps; if one fails partway, some data may be missing, so export a backup first.
+        file's data is written first and leftovers are removed last, so an interrupted import leaves extra data rather than missing data. Export a backup first
+        anyway.
       </p>
       <input
         type="file"
@@ -122,7 +126,7 @@ function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: 
         <div className="mt-3 space-y-3 text-sm">
           <p>
             The file is valid: {parsed.data.duelists.length} duelists, {parsed.data.tournaments.length} tournaments, {parsed.data.matches.length} matches,{' '}
-            {parsed.data.observations.length} ratings. Current data ({current.tournaments.length} tournaments, {current.observations.length} ratings) will be deleted.
+            {parsed.data.observations.length} ratings. It will replace the current data ({current.tournaments.length} tournaments, {current.observations.length} ratings).
           </p>
           <button className="btn" onClick={exportFirst}>
             Export current data first
@@ -131,9 +135,10 @@ function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: 
             Type <code className="rounded bg-paper px-1">replace</code> to confirm
             <input className="field w-32" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </label>
+          <NeedsServer synced={synced} />
           <button
             className="btn btn-danger"
-            disabled={confirm !== 'replace' || busy}
+            disabled={confirm !== 'replace' || busy || !synced}
             onClick={async () => {
               setBusy(true)
               try {
@@ -141,7 +146,7 @@ function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: 
                 setProgress('Import finished.')
                 setParsed(null)
               } catch (e) {
-                setProgress(`Import stopped partway: ${(e as Error).message}. Some data may be missing; re-import the file to finish.`)
+                setProgress(`Import stopped partway: ${(e as Error).message}. Re-import the same file to finish; nothing from it is lost.`)
               } finally {
                 setBusy(false)
               }
@@ -154,6 +159,12 @@ function ImportBlock({ current, exportFirst }: { current: Dataset; exportFirst: 
       {progress && <p className="mt-2 text-sm">{progress}</p>}
     </Block>
   )
+}
+
+/** Bulk writes decide what to change from what the app can see; a cache-only view may be incomplete. */
+function NeedsServer({ synced }: { synced: boolean }) {
+  if (synced) return null
+  return <p className="mt-2 text-sm text-warn">Waiting for a connection to the server. This works only on fully loaded data.</p>
 }
 
 function Block({ title, children }: { title: string; children: ReactNode }) {

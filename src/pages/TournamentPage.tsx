@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useApp } from '../app/context'
 import { discardDraft, loadDraft, storeDraft } from '../app/drafts'
 import { Delta } from '../components/Delta'
@@ -10,7 +10,7 @@ import { Empty } from '../components/Empty'
 import { PageTitle } from '../components/Layout'
 import { Rating, Tag } from '../components/Rating'
 import { deleteTournament, saveTournament } from '../db/repository'
-import { BRACKET_SLOTS, buildSavePayload, draftFromSaved, emptyMatchDraft, evaluateDraft, type DraftEvaluation, type TournamentDraft } from '../domain/draft'
+import { BRACKET_SLOTS, buildSavePayload, draftFingerprint, draftFromSaved, emptyMatchDraft, evaluateDraft, type DraftEvaluation, type TournamentDraft } from '../domain/draft'
 import { MATCHES_PER_ROUND, ROUND_LABEL, isCpu, matchLabel, slotKey, type Pairing } from '../domain/bracket'
 import { displayName } from '../domain/stats'
 import { buildTimeline, ratingBefore } from '../domain/timeline'
@@ -66,18 +66,30 @@ function TournamentView({ tournament }: { tournament: Tournament }) {
 }
 
 function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undefined }) {
-  const { model, reportError } = useApp()
+  const { model, reportError, synced } = useApp()
   const navigate = useNavigate()
+  const location = useLocation()
   const docs = useSavedDocs(id, saved)
-  // Local edits live in `edits` (mirrored to localStorage). With none, the form shows the saved tournament as it is now.
-  const [edits, setEdits] = useState<TournamentDraft | null>(() => loadDraft(id))
+  // Local edits live in `edits`, mirrored to localStorage. A new tournament's
+  // first draft also arrives through navigation state, for when storage is blocked.
+  const [edits, setEdits] = useState<TournamentDraft | null>(() => {
+    const passed = (location.state as { draft?: TournamentDraft } | null)?.draft
+    return loadDraft(id) ?? (passed?.id === id ? passed : null)
+  })
   const fromSaved = useMemo(() => (saved ? draftFromSaved(saved, docs.matches, docs.observations) : null), [saved, docs])
-  // Bridges the moment between saving a new tournament and its snapshot arriving.
+  // What was just saved, normalized like fromSaved. Shown until the server
+  // confirms the save, so the form never flickers to a half-arrived snapshot.
   const [justSaved, setJustSaved] = useState<TournamentDraft | null>(null)
-  const draft = edits ?? fromSaved ?? justSaved
+  const draft = edits ?? justSaved ?? fromSaved
   const dirty = edits !== null
   const [message, setMessage] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // The saved tournament changed since these edits began (another tab or device)
+  // and not to what we'd save anyway: saving would overwrite that change.
+  const savedVersion = fromSaved ? draftFingerprint(fromSaved) : null
+  const conflict = edits !== null && savedVersion !== null && savedVersion !== (edits.baseVersion ?? null) && savedVersion !== draftFingerprint(edits)
 
   const ev = useMemo(() => (draft ? evaluateDraft(draft) : null), [draft])
   // Hints depend only on where this tournament sits on the timeline, not on what's typed into it.
@@ -111,7 +123,8 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
 
   const update = (fn: (d: TournamentDraft) => void) => {
     setEdits((current) => {
-      const next = structuredClone(current ?? draft)
+      // A fresh edit session remembers which saved version it started from.
+      const next = current ? structuredClone(current) : { ...structuredClone(draft), baseVersion: justSaved ? draftFingerprint(justSaved) : savedVersion }
       fn(next)
       storeDraft(next)
       return next
@@ -120,20 +133,44 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   }
 
   const save = () => {
+    let payload
     try {
-      saveTournament(buildSavePayload(draft, docs, new Date()), reportError)
-      discardDraft(id)
-      setJustSaved(draft)
-      setEdits(null)
-      setMessage(`Saved tournament #${draft.number}.`)
+      payload = buildSavePayload(draft, docs, new Date())
     } catch (e) {
       setMessage((e as Error).message)
+      return
     }
+    // Normalized exactly as the saved version will read back, so a reload
+    // while the save is pending doesn't look like a conflicting change.
+    const sent = draftFromSaved(payload.tournament, payload.matches, payload.observations)
+    // The local copy stays in storage until the server accepts the save, so a
+    // rejected or interrupted save loses nothing.
+    storeDraft({ ...sent, baseVersion: draft.baseVersion ?? null })
+    setJustSaved(sent)
+    setEdits(null)
+    setSaving(true)
+    setMessage(null)
+    saveTournament(payload, reportError).then(
+      () => {
+        const stored = loadDraft(id)
+        if (stored && draftFingerprint(stored) === draftFingerprint(sent)) discardDraft(id)
+        setJustSaved(null)
+        setSaving(false)
+        setMessage(`Saved tournament #${sent.number}.`)
+      },
+      () => {
+        setEdits(loadDraft(id) ?? sent)
+        setJustSaved(null)
+        setSaving(false)
+        setMessage('The save was rejected, so your entries are kept here. Fix the problem above and save again.')
+      },
+    )
   }
 
   const discard = () => {
     discardDraft(id)
     setEdits(null)
+    setJustSaved(null)
     if (!saved) navigate('/tournaments')
   }
 
@@ -148,13 +185,15 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
       <PageTitle
         aside={
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-ink-2">{dirty ? (saved ? 'Unsaved changes' : 'Not saved yet') : 'All changes saved'}</span>
+            <span className="text-sm text-ink-2">
+              {dirty ? (saved ? 'Unsaved changes' : 'Not saved yet') : saving ? 'Saving… (waiting for the server)' : 'All changes saved'}
+            </span>
             {dirty && (
               <button className="btn" onClick={discard}>
                 {saved ? 'Discard changes' : 'Discard tournament'}
               </button>
             )}
-            <button className="btn btn-primary" disabled={!dirty || ev.errors.length > 0} onClick={save}>
+            <button className="btn btn-primary" disabled={!dirty || conflict || ev.errors.length > 0} onClick={save}>
               Save tournament
             </button>
           </div>
@@ -180,7 +219,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-ink-2">Played at</span>
-          <input type="datetime-local" className="field" value={draft.playedAt} onChange={(e) => update((d) => void (d.playedAt = e.target.value))} />
+          <input type="datetime-local" step={1} className="field" value={draft.playedAt} onChange={(e) => update((d) => void (d.playedAt = e.target.value))} />
         </label>
         <label className="flex min-w-48 flex-1 flex-col gap-1">
           <span className="text-ink-2">Title (optional)</span>
@@ -191,6 +230,18 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
           <input className="field" value={draft.notes} onChange={(e) => update((d) => void (d.notes = e.target.value))} />
         </label>
       </div>
+
+      {conflict && (
+        <div role="alert" className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-[#f0d9a8] bg-warn-soft px-3 py-2 text-sm text-warn">
+          This tournament was changed in another tab or on another device after you started editing here. Saving now would overwrite that.
+          <button className="btn" onClick={discard}>
+            Load the latest (drop my edits)
+          </button>
+          <button className="btn" onClick={() => update((d) => void (d.baseVersion = savedVersion))}>
+            Keep my edits
+          </button>
+        </div>
+      )}
 
       {(ev.errors.length > 0 || message) && (
         <div className="mb-4 space-y-1 text-sm">
@@ -213,7 +264,9 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
 
       {saved && (
         <div className="mt-10 border-t border-rule pt-4 text-sm">
-          {confirmDelete ? (
+          {!synced ? (
+            <span className="text-ink-3">Deleting needs a connection to the server, so every linked rating is included.</span>
+          ) : confirmDelete ? (
             <span className="flex flex-wrap items-center gap-3">
               Delete this tournament, its matches and every rating recorded in it?
               <button className="btn btn-danger" onClick={remove}>
@@ -236,7 +289,8 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
 
 /** Enter on a [data-nav] field focuses the next one in data-nav order (MVP §6.5). */
 function moveOnEnter(e: KeyboardEvent<HTMLDivElement>) {
-  if (e.key !== 'Enter') return
+  // The Enter that confirms an IME conversion (e.g. a Japanese alias) is not navigation.
+  if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
   const target = e.target as HTMLElement
   const n = Number(target.dataset.nav)
   if (target.dataset.nav === undefined || Number.isNaN(n)) return
@@ -306,8 +360,8 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
         {ready && !cpuMatch && <span>Your duel: ratings don't change</span>}
       </div>
       <div
-        role="radiogroup"
-        aria-label={`Winner of ${matchLabel(round, slot)}`}
+        role="group"
+        aria-label={`${matchLabel(round, slot)}: press 1 or 2 to pick the winner`}
         tabIndex={editable && ready ? 0 : -1}
         data-nav={editable && ready ? nav : undefined}
         onKeyDown={(e) => {
@@ -341,6 +395,9 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
       </div>
       {ratings?.mismatch && <p className="mt-2 text-xs text-down">The two new ratings don't cancel out. One of them is probably a typo.</p>}
       {ratings?.winnerNotUp && <p className="mt-2 text-xs text-down">The winner didn't gain points. Check the winner or the ratings.</p>}
+      {editable && ready && !pairing.winnerId && (result.remainingLp || result.notes) && (
+        <p className="mt-2 text-xs text-ink-3">LP and notes are saved once a winner is picked.</p>
+      )}
       {(editable || result.remainingLp || result.notes) && ready && (
         <div className="mt-2 flex gap-2 text-xs">
           {editable ? (
@@ -493,8 +550,7 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
-          role="radio"
-          aria-checked={isWinner}
+          aria-pressed={isWinner}
           aria-label={`${id ? displayName(model, id) : 'This side'} won`}
           tabIndex={-1}
           disabled={!editable || pairing.playerAId === null || pairing.playerBId === null}

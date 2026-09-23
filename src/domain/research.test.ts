@@ -14,6 +14,13 @@ describe('transferRows', () => {
     ])
     expect(summarizeTransfers(rows)).toMatchObject({ count: 4, min: 23, max: 93, mode: null, favouriteMean: 23 })
   })
+
+  it('keeps a duel whose transfer is known even if the other pre-match rating is not', () => {
+    const d = ownerTournament()
+    const obs = d.observations.filter((o) => !(o.duelistId === 'cloudian-poison-cloud' && !o.matchId))
+    const rows = transferRows(buildModel({ ...d, observations: obs }))
+    expect(rows[0]).toMatchObject({ winnerId: 'blowback-dragon', transfer: 83, loserPre: null, gap: null })
+  })
 })
 
 describe('continuity', () => {

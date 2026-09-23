@@ -81,7 +81,7 @@ they can run beside other projects' emulators.
 | `pnpm dev` | Dev server |
 | `pnpm emulators` | Auth + Firestore emulators with persisted data |
 | `pnpm test` | Unit tests for the rating, bracket, stats, research and backup logic |
-| `pnpm test:rules` | Security-rules tests (starts the Firestore emulator itself) |
+| `pnpm test:rules` | Security-rules tests (starts its own Firestore emulator on port 8185, so it can run while `pnpm emulators` is up) |
 | `pnpm typecheck` / `pnpm lint` / `pnpm build` | Type check, oxlint, production build |
 
 ## Data model

@@ -9,14 +9,13 @@ import { Rating, Tag } from '../components/Rating'
 import { RatingChart, type ChartPoint } from '../components/RatingChart'
 import { deleteReading, saveReading, updateDuelist } from '../db/repository'
 import { matchLabel } from '../domain/bracket'
-import { toLocalInput } from '../domain/draft'
 import { displayName, type Model } from '../domain/stats'
 import type { HistoryPoint } from '../domain/timeline'
 import { PLAYER_ID, type Duelist } from '../types'
 
 function describe(model: Model, duelistId: string, p: HistoryPoint): string[] {
   const lines: string[] = []
-  if (p.tournament) lines.push(`Tournament #${p.tournament.number}, Level ${p.tournament.tournamentLevel}`)
+  if (p.tournament) lines.push(`Tournament #${p.tournament.number}, Level ${p.tournament.tournamentLevel}, ${p.tournament.playedAt.toLocaleDateString()}`)
   if (p.kind === 'entry') lines.push('Rating at entry')
   if (p.kind === 'standalone') lines.push(`Reading on ${p.observation.observedAt.toLocaleDateString()}`)
   if (p.match) {
@@ -157,7 +156,8 @@ export function DuelistPage() {
               </table>
             )}
           </div>
-          {isAdmin && <AddReading duelist={duelist} />}
+          {/* Keyed so half-typed input never carries over to another duelist's page. */}
+          {isAdmin && <AddReading key={duelist.id} duelist={duelist} />}
         </section>
 
         <section>
@@ -182,7 +182,7 @@ export function DuelistPage() {
               </table>
             )}
           </div>
-          {isAdmin && <OwnerControls duelist={duelist} />}
+          {isAdmin && <OwnerControls key={duelist.id} duelist={duelist} />}
         </section>
       </div>
     </>
@@ -201,17 +201,19 @@ function Stat({ label, children }: { label: string; children: ReactNode }) {
 function AddReading({ duelist }: { duelist: Duelist }) {
   const { reportError } = useApp()
   const [rating, setRating] = useState('')
-  const [at, setAt] = useState(() => toLocalInput(new Date()))
+  // Empty means "when I press Add": a reading must not predate a tournament saved since the page opened.
+  const [at, setAt] = useState('')
   const [note, setNote] = useState('')
-  const valid = /^\d{1,5}$/.test(rating.trim()) && !Number.isNaN(new Date(at).getTime())
+  const valid = /^\d{1,5}$/.test(rating.trim()) && (at === '' || !Number.isNaN(new Date(at).getTime()))
   return (
     <form
       className="mt-3 flex flex-wrap items-end gap-2 text-sm"
       onSubmit={(e) => {
         e.preventDefault()
         if (!valid) return
-        saveReading({ duelistId: duelist.id, rating: Number(rating), observedAt: new Date(at), note: note.trim() || undefined }, reportError)
+        saveReading({ duelistId: duelist.id, rating: Number(rating), observedAt: at === '' ? new Date() : new Date(at), note: note.trim() || undefined }, reportError)
         setRating('')
+        setAt('')
         setNote('')
       }}
     >
@@ -220,8 +222,8 @@ function AddReading({ duelist }: { duelist: Duelist }) {
         <input className="field w-28" inputMode="numeric" placeholder="e.g. 1141" value={rating} onChange={(e) => setRating(e.target.value)} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-ink-2">Seen at</span>
-        <input type="datetime-local" className="field" value={at} onChange={(e) => setAt(e.target.value)} />
+        <span className="text-ink-2">Seen at (empty = now)</span>
+        <input type="datetime-local" step={1} className="field" value={at} onChange={(e) => setAt(e.target.value)} />
       </label>
       <label className="flex min-w-40 flex-1 flex-col gap-1">
         <span className="text-ink-2">Note (optional)</span>

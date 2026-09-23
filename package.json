@@ -10,7 +10,7 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "test": "vitest run",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-wcs2008 \"vitest run --config vitest.rules.config.ts\"",
+    "test:rules": "firebase emulators:exec --config firebase.test.json --only firestore --project demo-wcs2008 \"vitest run --config vitest.rules.config.ts\"",
     "preview": "vite preview"
   },
   "dependencies": {

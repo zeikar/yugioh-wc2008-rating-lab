@@ -10,7 +10,7 @@ import {
   type WriteBatch,
 } from 'firebase/firestore'
 import { ROSTER } from '../data/duelists'
-import type { SavePayload } from '../domain/draft'
+import { tournamentCascade, type SavePayload } from '../domain/draft'
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR_PORT, db } from '../firebase'
 import type { Dataset, Duelist, Match, RatingObservation, Tournament } from '../types'
 
@@ -45,6 +45,7 @@ export interface Snapshot {
   data: Dataset
   /** Local writes not yet acknowledged by the server (offline or syncing). */
   pendingWrites: boolean
+  /** Some collection is served from the local cache only, so it may be incomplete. */
   fromCache: boolean
 }
 
@@ -52,7 +53,18 @@ export interface Snapshot {
 export function subscribeAll(onChange: (s: Snapshot) => void, onError: (e: Error) => void): () => void {
   const names: CollectionName[] = ['duelists', 'tournaments', 'matches', 'ratingObservations']
   const state = new Map<CollectionName, { docs: unknown[]; pending: boolean; cache: boolean }>()
+  // One batch write fires several collection listeners in a row; emit once
+  // after they settle so the UI never shows a half-applied save.
+  let scheduled = false
   const emit = () => {
+    if (scheduled) return
+    scheduled = true
+    setTimeout(() => {
+      scheduled = false
+      flush()
+    }, 0)
+  }
+  const flush = () => {
     if (state.size < names.length) return
     const get = <T,>(n: CollectionName) => state.get(n)!.docs as T[]
     onChange({
@@ -96,32 +108,52 @@ export function newTournamentId(): string {
   return doc(collection(db, 'tournaments')).id
 }
 
-/**
- * Commits without waiting for the server: offline, a Firestore commit only
- * resolves once it syncs, but the local cache (and every listener) already
- * has the write. Failures are reported through onError.
- */
-function commitInBackground(batch: WriteBatch, onError: (e: Error) => void): void {
-  batch.commit().catch(onError)
+// Commits the server hasn't acknowledged yet. Snapshot metadata alone misses
+// pending deletes, so the "Syncing…" indicator also counts these.
+let outstanding = 0
+const outstandingListeners = new Set<(n: number) => void>()
+
+export function subscribeOutstandingCommits(onChange: (n: number) => void): () => void {
+  outstandingListeners.add(onChange)
+  onChange(outstanding)
+  return () => outstandingListeners.delete(onChange)
 }
 
-export function saveTournament(p: SavePayload, onError: (e: Error) => void): void {
+function setOutstanding(delta: number) {
+  outstanding += delta
+  outstandingListeners.forEach((l) => l(outstanding))
+}
+
+/**
+ * Commits without blocking the UI: offline, a Firestore commit only resolves
+ * once it syncs, but the local cache (and every listener) already has the
+ * write. Failures go to onError; the returned promise settles with the server.
+ */
+function commitInBackground(batch: WriteBatch, onError: (e: Error) => void): Promise<void> {
+  setOutstanding(1)
+  const done = batch.commit().finally(() => setOutstanding(-1))
+  done.catch(onError)
+  return done
+}
+
+export function saveTournament(p: SavePayload, onError: (e: Error) => void): Promise<void> {
   const batch = writeBatch(db)
   batch.set(doc(db, 'tournaments', p.tournament.id), toDoc('tournaments', p.tournament))
   for (const m of p.matches) batch.set(doc(db, 'matches', m.id), toDoc('matches', m))
   for (const o of p.observations) batch.set(doc(db, 'ratingObservations', o.id), toDoc('ratingObservations', o))
   for (const id of p.deleteMatchIds) batch.delete(doc(db, 'matches', id))
   for (const id of p.deleteObservationIds) batch.delete(doc(db, 'ratingObservations', id))
-  commitInBackground(batch, onError)
+  return commitInBackground(batch, onError)
 }
 
 /** Deletes a tournament with its matches and every observation linked to it (MVP §4). */
 export function deleteTournament(tournamentId: string, data: Dataset, onError: (e: Error) => void): void {
   const batch = writeBatch(db)
+  const cascade = tournamentCascade(tournamentId, data)
   batch.delete(doc(db, 'tournaments', tournamentId))
-  for (const m of data.matches) if (m.tournamentId === tournamentId) batch.delete(doc(db, 'matches', m.id))
-  for (const o of data.observations) if (o.tournamentId === tournamentId) batch.delete(doc(db, 'ratingObservations', o.id))
-  commitInBackground(batch, onError)
+  for (const id of cascade.matchIds) batch.delete(doc(db, 'matches', id))
+  for (const id of cascade.observationIds) batch.delete(doc(db, 'ratingObservations', id))
+  void commitInBackground(batch, onError)
 }
 
 /**
@@ -141,7 +173,7 @@ export function syncRoster(existing: Duelist[], onError: (e: Error) => void): { 
       created++
     }
   }
-  commitInBackground(batch, onError)
+  void commitInBackground(batch, onError)
   return { created, updated: ROSTER.length - created }
 }
 
@@ -154,35 +186,39 @@ export function saveReading(reading: Omit<RatingObservation, 'id' | 'source' | '
   const value: RatingObservation = { ...reading, id: ref.id, source: 'entered', createdAt: reading.createdAt ?? new Date() }
   const batch = writeBatch(db)
   batch.set(ref, toDoc('ratingObservations', value))
-  commitInBackground(batch, onError)
+  void commitInBackground(batch, onError)
 }
 
 export function deleteReading(id: string, onError: (e: Error) => void): void {
   const batch = writeBatch(db)
   batch.delete(doc(db, 'ratingObservations', id))
-  commitInBackground(batch, onError)
+  void commitInBackground(batch, onError)
 }
 
 const BATCH_LIMIT = 450
 
 /**
- * Replace-mode import (MVP §8): deletes every current doc, then writes the
- * backup with its ids, in chunks under Firestore's 500-op batch limit. Chunks
- * commit in order; a failure partway leaves partial data, which the UI warns
- * about before starting.
+ * Replace-mode import (MVP §8): writes every doc of the backup with its id,
+ * then deletes current docs the backup doesn't have, in chunks under
+ * Firestore's 500-op batch limit. Writing first means an interrupted import
+ * leaves extra docs behind, never missing ones. Only run it against a
+ * server-synced view (the UI checks), so `current` really is everything.
  */
 export async function replaceAll(current: Dataset, next: Dataset, onProgress: (done: number, total: number) => void): Promise<void> {
   const ops: ((b: WriteBatch) => void)[] = []
-  const del = (name: CollectionName, items: { id: string }[]) => items.forEach((x) => ops.push((b) => b.delete(doc(db, name, x.id))))
   const put = (name: CollectionName, items: { id: string }[]) => items.forEach((x) => ops.push((b) => b.set(doc(db, name, x.id), toDoc(name, x))))
-  del('ratingObservations', current.observations)
-  del('matches', current.matches)
-  del('tournaments', current.tournaments)
-  del('duelists', current.duelists)
+  const dropMissing = (name: CollectionName, now: { id: string }[], keep: { id: string }[]) => {
+    const kept = new Set(keep.map((x) => x.id))
+    now.filter((x) => !kept.has(x.id)).forEach((x) => ops.push((b) => b.delete(doc(db, name, x.id))))
+  }
   put('duelists', next.duelists)
   put('tournaments', next.tournaments)
   put('matches', next.matches)
   put('ratingObservations', next.observations)
+  dropMissing('ratingObservations', current.observations, next.observations)
+  dropMissing('matches', current.matches, next.matches)
+  dropMissing('tournaments', current.tournaments, next.tournaments)
+  dropMissing('duelists', current.duelists, next.duelists)
   for (let i = 0; i < ops.length; i += BATCH_LIMIT) {
     const batch = writeBatch(db)
     ops.slice(i, i + BATCH_LIMIT).forEach((op) => op(batch))

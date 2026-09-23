@@ -1,4 +1,4 @@
-import type { Match, RatingObservation, Tournament, TournamentLevel } from '../types'
+import { PLAYER_ID, type Dataset, type Match, type RatingObservation, type Tournament, type TournamentLevel } from '../types'
 import {
   SEATS,
   allSlots,
@@ -25,7 +25,7 @@ export interface MatchDraft {
 export interface TournamentDraft {
   id: string
   number: number
-  /** `YYYY-MM-DDTHH:mm` in local time, as used by datetime-local inputs. */
+  /** Local `YYYY-MM-DDTHH:mm:ss` (older drafts may lack seconds), as datetime-local inputs use. */
   playedAt: string
   tournamentLevel: TournamentLevel
   title: string
@@ -35,15 +35,28 @@ export interface TournamentDraft {
   entryRatings: Record<string, string>
   /** Keyed by slotKey(round, slot). */
   results: Record<string, MatchDraft>
+  /**
+   * draftFingerprint of the saved tournament when editing began; null for a
+   * tournament that was never saved. Lets Save notice that the saved version
+   * changed underneath (another tab or device) instead of overwriting it.
+   */
+  baseVersion?: string | null
 }
 
 export function emptyMatchDraft(): MatchDraft {
   return { winnerId: null, remainingLp: '', notes: '', post: {} }
 }
 
+/** Local `YYYY-MM-DDTHH:mm:ss`, as datetime-local inputs with step=1 use; seconds keep same-minute events in order. */
 export function toLocalInput(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+/** Identity of a draft's content, ignoring its own baseVersion. */
+export function draftFingerprint(d: TournamentDraft): string {
+  const { baseVersion: _ignored, ...content } = d
+  return JSON.stringify(content)
 }
 
 export function newDraft(id: string, number: number, tournamentLevel: TournamentLevel, now: Date): TournamentDraft {
@@ -106,6 +119,8 @@ export interface DraftEvaluation {
 
 export function evaluateDraft(draft: TournamentDraft, createdAt: Date = new Date(0)): DraftEvaluation {
   const errors = entrantErrors(draft.entrants)
+  // A live tournament always has you in it; backfilled ones may leave seats unknown.
+  if (draft.entrants.every((e) => e !== null) && !draft.entrants.includes(PLAYER_ID)) errors.push('one seat must be "You"')
   const playedAt = new Date(draft.playedAt)
   if (Number.isNaN(playedAt.getTime())) errors.push('date/time is invalid')
 
@@ -149,8 +164,15 @@ export function evaluateDraft(draft: TournamentDraft, createdAt: Date = new Date
       if (posts.size > 0) enteredPost.set(id, posts)
     }
   }
-  return { pairings, matches, entryRatings, enteredPost, errors, ratings: analyzeTournament(matches, entryRatings, enteredPost) }
+  const ratings = analyzeTournament(matches, entryRatings, enteredPost)
+  // A typo upstream can push a zero-sum fill out of range; the rules would reject the whole save.
+  for (const d of ratings.derived) {
+    if (d.rating < 0 || d.rating > MAX_RATING) errors.push(`${d.matchId.slice(draft.id.length + 1)}: the filled-in rating for ${d.duelistId} would be ${d.rating}; check the ratings for a typo`)
+  }
+  return { pairings, matches, entryRatings, enteredPost, errors, ratings }
 }
+
+export const MAX_RATING = 99999
 
 export interface ExistingTournamentDocs {
   tournament?: Tournament
@@ -214,3 +236,11 @@ export function buildSavePayload(draft: TournamentDraft, existing: ExistingTourn
 
 /** Every recordable (round, slot) in play order, for iterating the form. */
 export const BRACKET_SLOTS = allSlots()
+
+/** What deleting a tournament removes (MVP §4): its matches and every observation linked to it. */
+export function tournamentCascade(tournamentId: string, data: Pick<Dataset, 'matches' | 'observations'>): { matchIds: string[]; observationIds: string[] } {
+  return {
+    matchIds: data.matches.filter((m) => m.tournamentId === tournamentId).map((m) => m.id),
+    observationIds: data.observations.filter((o) => o.tournamentId === tournamentId).map((o) => o.id),
+  }
+}

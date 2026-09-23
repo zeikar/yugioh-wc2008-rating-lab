@@ -67,6 +67,7 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
         role="combobox"
         aria-expanded={focused}
         aria-controls={listId}
+        aria-activedescendant={focused && active ? `${listId}-${active.id}` : undefined}
         data-nav={navIndex}
         className={`field w-full ${value === PLAYER_ID ? 'font-semibold text-accent' : ''}`}
         placeholder="Type a name…"
@@ -83,6 +84,8 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
           setHighlight(0)
         }}
         onKeyDown={(e) => {
+          // Keys that confirm an IME conversion (e.g. typing a Japanese alias) aren't commands.
+          if (e.nativeEvent.isComposing) return
           if (e.key === 'ArrowDown') {
             e.preventDefault()
             setHighlight((h) => Math.min(h + 1, enabled.length - 1))
@@ -99,11 +102,12 @@ export function DuelistPicker({ value, onChange, duelists, tournamentLevel, take
         }}
       />
       {focused && (
-        <ul id={listId} role="listbox" className="panel absolute z-20 mt-1 max-h-72 w-full min-w-64 overflow-auto py-1 shadow-lg">
+        <ul id={listId} role="listbox" tabIndex={-1} className="panel absolute z-20 mt-1 max-h-72 w-full min-w-64 overflow-auto py-1 shadow-lg">
           {options.length === 0 && <li className="px-3 py-1.5 text-sm text-ink-3">No duelist matches “{query}”</li>}
           {options.map((o) => (
             <li
               key={o.id}
+              id={`${listId}-${o.id}`}
               role="option"
               aria-selected={o === active}
               aria-disabled={o.disabled}

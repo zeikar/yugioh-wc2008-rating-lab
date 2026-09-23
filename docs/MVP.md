@@ -108,7 +108,7 @@ either, so rating stats and diagnostics cover CPUs only.
 | number | number | Label only ("Tournament #12"). Assigned as max+1 at creation. Never used for ordering except as a tie-break. |
 | playedAt | Timestamp | When the tournament started (defaults to now). This is its position on the timeline. |
 | tournamentLevel | 1 \| 2 \| 3 | Singles tournaments only in the MVP |
-| entrants | (string \| null)[8] | **Seats 0–7 in bracket order.** Each is a duelist slug, `'player'` or `null` (unknown). Seats 2*k* and 2*k*+1 meet in QF slot *k*. Known seats must be distinct, with at most one `'player'`. A live tournament fills all 8. `null` exists for backfilling past tournaments from notes. |
+| entrants | (string \| null)[8] | **Seats 0–7 in bracket order.** Each is a duelist slug, `'player'` or `null` (unknown). Seats 2*k* and 2*k*+1 meet in QF slot *k*. Known seats must be distinct, with at most one `'player'`. A live tournament fills all 8, and once all 8 are filled the form requires one to be `'player'`. `null` exists for backfilling past tournaments from notes. |
 | title | string? | |
 | notes | string? | |
 | createdAt | Timestamp | creation time (client clock, so it works offline) |
@@ -189,7 +189,8 @@ tournament. Standalone readings use auto IDs.
 
 **Deleting a tournament** (admin, on the tournament page, with an inline
 two-step confirm) deletes the tournament, its matches and every observation
-with its `tournamentId`, in one batch.
+with its `tournamentId`, in one batch. It is offered only while the app is
+synced with the server, so the linked docs it sees are all of them.
 
 **Timeline rule.** Every derived value (current rating, history chart,
 pre-match rating, per-match Δ) uses one ordering, and matches share it:
@@ -278,7 +279,9 @@ Consequences:
 - Default `unlocked` to `false`, except for the 3 duelists available from the
   start. The owner toggles the rest.
 - An admin-only **"Sync roster"** action in Settings upserts the roster into
-  `duelists/`. It is idempotent.
+  `duelists/`. It is idempotent. It runs only while synced with the server: a
+  duelist missing from a cache-only view would otherwise be recreated from
+  scratch, losing its `unlocked` and `notes`.
   - It creates missing duelists with every field.
   - On existing docs it updates only `name`, `tournamentLevel`,
     `initialRating`, `category` and `aliases`. It never touches `unlocked` or `notes`, which
@@ -388,13 +391,18 @@ Semifinals / Final   (pairings fill in from the winners)
    either (§4).
 
 Input speed:
-- Tab order follows the order things happen in the game: entrants, then QF1…
-  through F.
-- Enter moves to the next field, and there are no modals.
+- **Enter follows the order things happen in the game**: all entrants and
+  their ratings, then QF1… through F. Tab follows the page layout, card by
+  card.
+- There are no modals.
+- A form error that would make the server reject the save blocks Save and is
+  shown inline, e.g. a typo that pushes a zero-sum fill below 0.
 
 Saving:
 - The in-progress form is kept as a **local draft** (localStorage, per
-  browser), so a reload mid-tournament loses nothing.
+  browser), so a reload mid-tournament loses nothing. The draft is removed
+  only once the server accepts the save. If the save is rejected, the edits
+  come back into the form.
 - **"Save tournament"** writes the tournament, its matches and its
   observations in **one Firestore batch**, using the deterministic IDs from
   §4. That includes both CPUs' post-match ratings for every CPU-vs-CPU match,
@@ -402,6 +410,10 @@ Saving:
   Firestore cache.
 - Re-opening a saved tournament and saving again overwrites that
   tournament's docs and deletes ones that were removed.
+- **Conflicts:** a draft remembers which saved version it started from. If
+  the saved tournament changes in another tab or on another device before
+  Save, the form says so. The owner then either loads the latest (dropping
+  the edits) or keeps the edits and overwrites.
 
 This page also shows the tournament's per-match transfers (§7.3).
 
@@ -495,10 +507,16 @@ and only displays it; the MVP fits no formula. The main questions:
      Derived observations are exported and imported like any other, with
      their `source`.
   2. Show a summary (counts per collection, errors) before anything is written.
-  3. MVP mode is **replace**. After a typed confirmation, delete the existing
-     docs and write the imported ones, keeping their IDs.
-  4. Write in chunked batches (≤ 500 ops per batch), and tell the user that a
-     failure partway through can leave partial data, so export a backup first.
+  3. MVP mode is **replace**. After a typed confirmation, write the imported
+     docs with their IDs, then delete current docs the file doesn't have.
+     Writing first means an interrupted import leaves extra docs, never
+     missing ones, and re-importing the same file finishes it.
+  4. Write in chunked batches (≤ 500 ops per batch). Import runs only while
+     synced with the server, since it decides what to delete from what the
+     app can see.
+  5. Also validate IDs Firestore can store (no `/`, not `.`/`..`/`__x__`),
+     and that stored derived ratings are exactly what the zero-sum rule gives
+     from the entered ones.
 - Export works for anonymous visitors too, since the data is public.
 
 ## 9. Architecture

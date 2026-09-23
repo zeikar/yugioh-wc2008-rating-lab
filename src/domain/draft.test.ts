@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PLAYER_ID } from '../types'
-import { buildSavePayload, draftFromSaved, evaluateDraft, newDraft, type TournamentDraft } from './draft'
+import { buildSavePayload, draftFingerprint, draftFromSaved, evaluateDraft, newDraft, tournamentCascade, type TournamentDraft } from './draft'
 
 const NOW = new Date('2026-09-23T12:00:00Z')
 
@@ -22,6 +22,20 @@ describe('evaluateDraft', () => {
     const e = evaluateDraft(liveDraft())
     expect(e.matches.map((m) => m.id)).toEqual(['t9_quarterfinal_0', 't9_quarterfinal_1', 't9_quarterfinal_3', 't9_semifinal_0'])
     expect(e.errors).toEqual([])
+  })
+
+  it('blocks a save whose zero-sum fill would go negative (a typo upstream)', () => {
+    const d = liveDraft()
+    d.results.quarterfinal_0.post['blowback-dragon'] = '13400'
+    expect(evaluateDraft(d).errors.join()).toMatch(/cloudian.*-10658/)
+  })
+
+  it('requires a "You" seat once all 8 seats are filled, but not while backfilling', () => {
+    const d = liveDraft()
+    d.entrants[6] = 'other-cpu'
+    expect(evaluateDraft(d).errors.join()).toMatch(/You/)
+    d.entrants[6] = null
+    expect(evaluateDraft(d).errors).toEqual([])
   })
 
   it('reports ratings that are not whole numbers', () => {
@@ -72,9 +86,36 @@ describe('buildSavePayload', () => {
     expect(again.deleteObservationIds).toEqual([])
   })
 
+  it('drops later rounds and their ratings when a QF winner changes', () => {
+    const first = buildSavePayload(liveDraft(), { matches: [], observations: [] }, NOW)
+    const draft = draftFromSaved(first.tournament, first.matches, first.observations)
+    draft.results.quarterfinal_0.winnerId = 'cloudian' // SF1's recorded winner, Blowback, is out
+    const second = buildSavePayload(draft, first, NOW)
+    expect(second.deleteMatchIds).toEqual(['t9_semifinal_0'])
+    expect(second.observations.some((o) => o.matchId === 't9_semifinal_0')).toBe(false)
+    expect(second.deleteObservationIds.sort()).toEqual(['t9_semifinal_0_blowback-dragon', 't9_semifinal_0_manju'])
+  })
+
+  it('fingerprints content, not the base version', () => {
+    const d = liveDraft()
+    expect(draftFingerprint({ ...d, baseVersion: 'x' })).toBe(draftFingerprint({ ...d, baseVersion: null }))
+    expect(draftFingerprint({ ...d, title: 'x' })).not.toBe(draftFingerprint(d))
+  })
+
   it('refuses to save an invalid draft', () => {
     const d = liveDraft()
     d.entrants[1] = 'blowback-dragon'
     expect(() => buildSavePayload(d, { matches: [], observations: [] }, NOW)).toThrow(/duplicate/)
+  })
+})
+
+describe('tournamentCascade', () => {
+  it('lists every match and observation linked to the tournament, and nothing else', () => {
+    const p = buildSavePayload(liveDraft(), { matches: [], observations: [] }, NOW)
+    const standalone = { ...p.observations[0], id: 'reading', tournamentId: undefined, matchId: undefined }
+    const c = tournamentCascade('t9', { matches: p.matches, observations: [...p.observations, standalone] })
+    expect(c.matchIds).toHaveLength(p.matches.length)
+    expect(c.observationIds).toHaveLength(p.observations.length)
+    expect(c.observationIds).not.toContain('reading')
   })
 })

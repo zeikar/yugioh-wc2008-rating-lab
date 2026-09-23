@@ -14,6 +14,8 @@ export function ResearchPage() {
   const { model } = useApp()
   const rows = transferRows(model)
   const summary = summarizeTransfers(rows)
+  // Duels whose transfer is known but one pre-match rating isn't stay in the table, not the plot.
+  const plotted = rows.filter((r): r is typeof r & { gap: number } => r.gap !== null)
   const issues = integrityIssues(model)
   const cont = continuity(model)
   const contChanged = cont.filter((c) => c.status === 'changed')
@@ -44,7 +46,7 @@ export function ResearchPage() {
               xLabel="Rating gap (winner − loser, before the duel)"
               yLabel="Points moved"
               xRef={0}
-              points={rows.map((r) => ({
+              points={plotted.map((r) => ({
                 x: r.gap,
                 y: r.transfer,
                 label: `${displayName(model, r.winnerId)} beat ${displayName(model, r.loserId)}`,
@@ -93,11 +95,11 @@ export function ResearchPage() {
                         <td>
                           <DuelistLink id={r.winnerId} />
                         </td>
-                        <td className="num">{r.winnerPre}</td>
+                        <td className="num">{r.winnerPre ?? '—'}</td>
                         <td>
                           <DuelistLink id={r.loserId} />
                         </td>
-                        <td className="num">{r.loserPre}</td>
+                        <td className="num">{r.loserPre ?? '—'}</td>
                         <td className="num">
                           <Delta value={r.gap} />
                         </td>
