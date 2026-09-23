@@ -43,6 +43,11 @@ Source keys are listed in §8.
   [owner, 2026-09-23].
 - **CPU-vs-CPU bracket duels:** these are simulated and can be watched at
   Normal or Fast speed. [confirmed: R1, G1]
+- **After the player is knocked out,** the tournament still plays through to
+  a CPU champion [owner, 2026-09-23]. Losing the first duel therefore gives 6
+  CPU-vs-CPU duels, against 4 when the player wins the tournament.
+- **Surrender** is available only from turn 10 of a duel. The quick way to
+  lose is to pass every turn [owner, 2026-09-23].
 - **Opponents:** drawn at random, and the player cannot choose them
   [single: R1]. Whether only *unlocked* duelists are eligible is unclear. It
   is implied by the unlock requirement.
@@ -232,6 +237,7 @@ The Korean release's labels are not researched yet.
 - CPU duels cannot be skipped.
 - Higher levels mix in lower-level duelists.
 - LP does not carry over between rounds; every duel starts fresh.
+- The tournament continues to a CPU champion after the player is knocked out.
 
 **Still open:**
 
@@ -243,8 +249,7 @@ The Korean release's labels are not researched yet.
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.
 3. **Bracket:** is there a bracket screen, and what order are the quarterfinal
-   pairings in? Does the tournament continue to a CPU champion after you are
-   knocked out?
+   pairings in?
 4. **Entrants:** are the 7 CPUs always distinct? How are they drawn: which
    lower levels mix in, and how often? Are only unlocked duelists eligible?
    Can DL duelists appear?
