@@ -1,4 +1,5 @@
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type DotProps } from 'recharts'
+import { RatingMark } from './Rating'
 
 export interface ChartPoint {
   x: number
@@ -23,7 +24,7 @@ function TooltipBody({ active, payload }: { active?: boolean; payload?: { payloa
   return (
     <div className="panel px-3 py-2 text-sm shadow-md">
       <p className="font-display text-base font-bold">
-        <span className="text-gold">▼</span> {p.rating}
+        <RatingMark className="inline size-[1.05em] align-[-0.15em]" /> {p.rating}
       </p>
       {p.details.map((d) => (
         <p key={d} className="text-ink-2">

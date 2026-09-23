@@ -8,7 +8,7 @@ import { DuelistLink } from '../components/DuelistLink'
 import { DuelistPicker } from '../components/DuelistPicker'
 import { Empty } from '../components/Empty'
 import { PageTitle } from '../components/Layout'
-import { Rating } from '../components/Rating'
+import { Rating, RatingMark } from '../components/Rating'
 import { deleteTournament, saveTournament } from '../db/repository'
 import {
   BRACKET_SLOTS,
@@ -515,9 +515,7 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
         <span className="text-ink-3">→</span>
         {editable ? (
           <span className="flex items-center gap-1">
-            <span aria-hidden className="text-xs text-gold">
-              ▼
-            </span>
+            <RatingMark className="size-3.5" />
             <input
               aria-label={`Rating of ${displayName(model, id)} after the duel`}
               className="field w-16 text-right placeholder:text-ink-2"

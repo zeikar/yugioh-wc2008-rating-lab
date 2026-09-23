@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useApp } from '../app/context'
 import { Empty } from '../components/Empty'
 import { PageTitle } from '../components/Layout'
-import { Rating } from '../components/Rating'
+import { Rating, RatingMark } from '../components/Rating'
 import { ROSTER } from '../data/duelists'
 import { saveRosterSetup } from '../db/repository'
 import { rosterSetupPayload, type RosterRowEdit } from '../domain/roster'
@@ -155,9 +155,7 @@ export function RosterSetupPage() {
                   <td className="num">{known && known.kind !== 'baseline' ? <Rating value={known.value} stale={known.stale} /> : <span className="text-ink-3">—</span>}</td>
                   <td className="num">
                     <span className="inline-flex items-center gap-1">
-                      <span aria-hidden className="text-xs text-gold">
-                        ▼
-                      </span>
+                      <RatingMark className="size-3.5" />
                       <input
                         data-roster-rating
                         aria-label={`Current rating of ${d.name}`}

@@ -3,6 +3,7 @@ import { NavLink } from 'react-router'
 import { useApp } from '../app/context'
 import { useStartTournament } from '../app/useStartTournament'
 import { USE_EMULATORS } from '../firebase'
+import { RatingMark } from './Rating'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
@@ -20,9 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="border-b border-rule bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5">
           <NavLink to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-            <span aria-hidden className="text-gold">
-              ▼
-            </span>
+            <RatingMark className="size-5.5" />
             WC2008 Rating Lab
           </NavLink>
           <nav className="flex flex-wrap gap-1">
