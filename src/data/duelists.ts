@@ -63,7 +63,7 @@ export const ROSTER: readonly Duelist[] = [
   { id: "ancient-gear-gadjiltron-dragon", name: "Ancient Gear Gadjiltron Dragon", tournamentLevel: 3, initialRating: 1800, unlocked: false, category: "monster", aliases: ["古代の機械巨竜"] },
   { id: "cyberdark-dragon", name: "Cyberdark Dragon", tournamentLevel: 3, initialRating: 1650, unlocked: false, category: "monster", aliases: ["鎧黒竜－サイバー・ダーク・ドラゴン"] },
   { id: "demise-king-of-armageddon", name: "Demise, King of Armageddon", tournamentLevel: 3, initialRating: 1800, unlocked: false, category: "monster", aliases: ["終焉の王デミス"] },
-  { id: "gladiator-beast-heraklinos", name: "Gladiator Beast Heraklinos", tournamentLevel: 3, initialRating: 1800, unlocked: false, category: "monster", aliases: ["剣闘獣ヘラクレイノス"], notes: "Initial rating blank on atwiki; 1800 per Yugipedia and GameFAQs. Verify in-game." },
+  { id: "gladiator-beast-heraklinos", name: "Gladiator Beast Heraklinos", tournamentLevel: 3, initialRating: 1800, unlocked: false, category: "monster", aliases: ["剣闘獣ヘラクレイノス"], notes: "Initial rating 1800 confirmed by the owner's save file (2026-09-24). atwiki had it blank; Yugipedia and GameFAQs said 1800." },
   { id: "jaden-yuki", name: "Jaden Yuki", tournamentLevel: 3, initialRating: 1250, unlocked: false, category: "anime-character", aliases: ["遊城十代"] },
   { id: "chazz-princeton", name: "Chazz Princeton", tournamentLevel: 3, initialRating: 1250, unlocked: false, category: "anime-character", aliases: ["万丈目準"] },
   { id: "alexis-rhodes", name: "Alexis Rhodes", tournamentLevel: 3, initialRating: 1250, unlocked: false, category: "anime-character", aliases: ["天上院明日香"] },

@@ -13,9 +13,10 @@ with initial ratings is in [domain/roster.md](domain/roster.md).
 **The app records ratings. It never predicts them.**
 
 The game's rating formula is unknown. The user reads rating values off the game
-screen and enters them by hand. The app stores those observations, derives
-statistics from them, and charts them. It is an observation tool, not a rating
-engine: no Elo, no prediction, no simulation.
+screen and enters them by hand, or loads them from the game's save file (§5).
+The app stores those observations, derives statistics from them, and charts
+them. It is an observation tool, not a rating engine: no Elo, no prediction,
+no simulation.
 
 The one exception is a game rule, not a formula: **CPU-vs-CPU duels are
 zero-sum**. The app treats this as fixed. When the owner enters only one CPU's
@@ -279,9 +280,9 @@ Consequences:
   CPUs**: 24 in LV1, 24 in LV2 and 30 in LV3. Include the Japanese name as an
   alias.
 - Where sources conflict, use the likely value and write the conflict into
-  `notes`. Heraklinos is still unverified; Dark Magician Girl and Kozaky are
-  now confirmed in-game. Use `null` for anything
-  unknown. Invent nothing.
+  `notes`. Dark Magician Girl and Kozaky are confirmed in-game, and the
+  owner's save file confirms the rest (domain/roster.md). Use `null` for
+  anything unknown. Invent nothing.
 - Leave tag teams, downloadable CPUs and Duel World opponents out of the MVP
   seed. They are separate entities even when they share a name (a DL Blowback
   Dragon has its own deck and rating). If they are ever added, they get their
@@ -295,6 +296,21 @@ Consequences:
   - Each row has an **Unlocked** checkbox (plus "all" and "none") and a
     **current rating** input. Enter moves down the rating column, and typing
     a rating ticks Unlocked.
+  - **Fill from save file** reads a save (the raw 256 KiB file, such as
+    Delta's `.dsv`) in the browser, following domain/internals.md. It fills
+    the rating input of every CPU whose save value tells the app something
+    new: the value differs from the app's current rating (the initial rating
+    when the CPU has no history yet), or that current rating is stale. It
+    fills nothing else and doesn't tick Unlocked. The owner reviews the
+    filled values and saves as usual.
+  - The file is refused when:
+    - it has no `TDGY` block with a matching CRC;
+    - it doesn't decompress to 0x26F0 bytes;
+    - its 78 ratings don't add up to the documented initial sum. CPU duels
+      are zero-sum, so a wrong sum means a wrong file or a layout that
+      doesn't match, such as another region's.
+  - Use a save exported after the last recorded tournament. The readings are
+    timestamped when saved, like typed ones.
 - One **Save roster** batch does four things:
   - creates duelists missing from the database, with every field;
   - on existing docs, updates only changed `name`, `tournamentLevel`,
@@ -629,9 +645,9 @@ locally with the emulator, the data model, and this statement, verbatim:
 
 ## 13. Non-goals (MVP)
 
-A custom backend or server functions, multiplayer, scraping, emulator memory
-reading, rating prediction or Elo, AI analysis, a visual bracket editor,
-elaborate animation, a native mobile app, and merge-mode import.
+A custom backend or server functions, multiplayer, scraping, rating
+prediction or Elo, AI analysis, a visual bracket editor, elaborate animation,
+a native mobile app, and merge-mode import.
 
 ## 14. Later
 
@@ -645,6 +661,12 @@ goal). The first candidate is the logistic curve in domain/game.md §3.1,
 `N = K / (1 + 10^(gap / S))` with K ≈ 160 and S ≈ 1000. A Research view could
 show each match's residual against it, clearly labeled as a hypothesis and
 never used as rating data.
+
+Emulator automation: a runner that plays tournaments on a forked save, loses
+its own duels, and reads every rating from the save or emulator RAM
+(domain/internals.md). A forked save is a separate rating ecosystem. Its data
+needs its own dataset in the same Firebase project, never mixed with the main
+save's.
 
 ## 15. Definition of done
 

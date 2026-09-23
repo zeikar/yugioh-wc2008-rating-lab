@@ -57,15 +57,18 @@ Source keys (full URLs in §7):
 |---|---|---|
 | Dark Magician Girl | 600 (YP-D, GF-M) vs 750 (AT6) | **600, confirmed in-game** by the owner (2026-09-23) |
 | Kozaky | 1350 (YP-D, AT6, GF-M) vs 1200 (its own YP-C page) | **1350, confirmed in-game** by the owner (2026-09-23) |
-| Gladiator Beast Heraklinos | blank (AT6) vs 1800 (YP-D, GF-M) | 1800, still to verify |
-| Anime characters | all 1250 | 1250, still to verify |
+| Gladiator Beast Heraklinos | blank (AT6) vs 1800 (YP-D, GF-M) | **1800, confirmed by the owner's save file** (2026-09-24) |
+| Anime characters | all 1250 | **1250, confirmed by the owner's save file** (2026-09-24) |
 
-The owner's save also backs the documented initial ratings of 35 more CPUs:
-- These are the 35 CPUs whose current rating was recorded at roster setup.
-- Their current ratings add up to exactly their documented initial sum, 40200
-  (see [game.md](game.md) §3.1).
-- A wrong initial value would have broken that sum, unless it happened to be
-  offset by another wrong value.
+The owner's save file ([internals.md](internals.md)) backs every other
+documented initial rating too:
+- The 42 CPUs with no recorded rating, Heraklinos and the 25 anime
+  characters among them, still sit at exactly their documented initial
+  rating. If a documented value were wrong, the CPU would have had to move
+  from its true start to exactly that value, so these are confirmed.
+- The 36 CPUs whose rating has moved add up to exactly their documented
+  initial sum, as all 78 do together (94800). A wrong initial value would
+  have broken that sum, unless another wrong value happened to offset it.
 
 Two more notes:
 - **The "Tournament LV" column is a classification, not a limit.** Higher

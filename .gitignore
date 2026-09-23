@@ -33,3 +33,6 @@ ui-debug.log*
 
 # Local browser-automation output
 .playwright-mcp/
+
+# hyperclaude plans and research artifacts
+.hyperclaude/
