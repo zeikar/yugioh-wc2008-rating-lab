@@ -67,8 +67,18 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 
   Membership is fixed per duelist and is **independent of rating**.
   [confirmed] Full lists are in [roster.md](roster.md).
-- **Pool strictness is unclear.** One real LV3 bracket (5CH) included an LV2
-  duelist, and an early guide (G1) lists LV1 duelists met in Level 2.
+- **Pools are not strict: higher levels mix in lower-level duelists.**
+  - The owner's save has Level 2 tournaments with LV1 duelists in them: Reaper
+    on the Nightmare, Petit Dragon, Spirit of the Pharaoh and Dark Scorpion -
+    Meanae.
+  - This matches a real LV3 bracket with an LV2 duelist (5CH), and G1's list
+    of LV1 duelists met in Level 2.
+  - So a duelist's tournament level is its documented classification and
+    unlock tier, **not** a limit on where it can appear. How entrants are
+    actually selected is something to observe, not assume.
+- **Tournament level ≠ Free Duel list page.** The Free Duel opponent screen
+  groups opponents into many numbered pages or levels. That is unrelated to
+  tournament levels 1–3, so never infer tournament level from it.
 - **Tag tournament:** its bracket size and format are not documented. A 5CH
   question hints that tag tournaments may also have levels. [unclear]
 
@@ -98,18 +108,55 @@ Sources: A1, G2, G3, B1. atwiki's wording:
   one number per duelist, which looks like the value on a fresh save. No
   source says ratings move, and none says they stay fixed.
 - **Confirmed by the owner's own play (2026-09-23):**
-  - CPU ratings **change after every duel**, not only once per tournament.
+  - CPU ratings form a **persistent, evolving ecosystem**. They change after
+    **every CPU-vs-CPU duel**, and the new value persists after the
+    tournament.
   - **Only CPU-vs-CPU duels** change them. Duels involving the player leave
-    both CPUs' ratings untouched.
-  - CPU-vs-CPU duels are **zero-sum**: the winner takes exactly the points
-    the loser loses (winner +N, loser −N).
+    the CPU's rating untouched.
+  - CPU-vs-CPU bracket duels are simulated for real and **cannot be
+    skipped**, only sped up, so every one is a rating event.
   - The ratings are readable on the in-game screens during a tournament, so
     they can be recorded live.
-  - **N behaves like Elo** (qualitative, not yet measured): beating a
-    stronger CPU gives a large N, and beating a weaker one a small N.
-- **Still open:** the exact formula for N, meaning the constants and whether
-  anything besides the rating gap (the level, for example) matters. This is
-  the question the app exists to investigate.
+  - Tournament duels also count toward the game's own per-CPU W/L records.
+    The app's W/L covers only the matches it recorded, so it can differ.
+- **CPU-vs-CPU duels are zero-sum.** The winner takes exactly the points the
+  loser loses. Every observed pair fits, and the owner has fixed this as a rule
+  of the app (2026-09-23). Data that contradicts it is treated as a bug.
+
+  | Winner (pre → post) | Loser (pre → post) | N | gap (winner − loser pre) |
+  |---|---|---|---|
+  | Blowback Dragon 1350 → 1433 | Cloudian - Poison Cloud 1392 → 1309 | 83 | −42 |
+  | Manju of the Ten Thousand Hands 1561 → 1584 | Reaper on the Nightmare 792 → 769 | 23 | +769 |
+  | Elemental Hero Lady Heat 1290 → 1370 | Great Shogun Shien 1296 → 1216 | 80 | −6 |
+  | Blowback Dragon 1433 → 1526 | Manju 1584 → 1491 | 93 | −151 |
+
+- **N depends on the pre-match ratings.** Beating a much weaker CPU moves few
+  points; an upset moves many. The formula is unknown, and it should not be
+  called Elo until the data shows it.
+- **Candidate hypothesis, fitted to only these 4 pairs:** a logistic curve,
+  `N = K / (1 + 10^(gap / S))`, reproduces all four exactly.
+  - It fits with K ≈ 158–160 and S ≈ 1000, using integer rounding (round,
+    floor or ceil, each for a slightly different K and S).
+  - The standard Elo scale S = 400 does **not** fit: it predicts about 2
+    instead of 23 for the +769 gap.
+  - With 2 free parameters, 4 points are suggestive, not proof. More pairs,
+    especially large negative gaps (big upsets), will confirm or break it.
+- **Snapshots are valid data on their own.** A reading like "Spirit of the
+  Pharaoh is 1141 now" is worth recording even if the matches that led there
+  are unknown. For example, the owner saw Spirit of the Pharaoh (initial 1050)
+  at 1216, then 1120, 1073 and 1141.
+- **Initial rating is a baseline.** It is not a strength measure. Examples
+  from the owner's save:
+  - Elemental Hero Lady Heat: initial 750, seen above 1300.
+  - Gravekeeper's Chief: initial 1050, seen above 1600.
+  - Cloudian - Poison Cloud: initial 1500, fell a long way after repeated
+    losses.
+  - Blowback Dragon: initial 1350, rose above 1500 and has repeatedly reached
+    finals.
+- **Deck variance is large.** Bricked hands, ritual and tribute requirements,
+  coin and dice effects, AI choices and matchups all matter. Manju's ritual
+  deck is strong when it works but can brick. Cloudian is hard for a human
+  but does poorly against CPUs. So long-run results matter, not single duels.
 
 ### 3.2 The player's rating
 - The player has a rating too, shown with the same yellow triangle. [confirmed:
@@ -165,24 +212,27 @@ The Korean release's labels are not researched yet.
 **Answered (owner, 2026-09-23):**
 - Ratings change per duel.
 - Only CPU-vs-CPU duels count.
-- The change is zero-sum.
-- N is Elo-like: bigger for beating a stronger CPU (qualitative).
+- The change is zero-sum (fixed as a rule).
+- N depends on the pre-match ratings (see the candidate curve in §3.1).
 - Ratings are readable in-game during a tournament.
+- CPU duels cannot be skipped.
+- Higher levels mix in lower-level duelists.
 
 **Still open:**
 
-1. **What is the exact formula for N?** It behaves like Elo, but the K
-   factor, the scale, the rounding and any floor or cap are unknown, and so is
-   whether anything besides the rating gap matters. The app's transfer table
-   (MVP §7.3) is built to answer this.
+1. **What is the exact formula for N?** Does the logistic candidate
+   (K ≈ 160, S ≈ 1000) hold for more pairs, and what are its rounding and any
+   floor or cap? Does anything besides the rating gap matter? The app's
+   transfer table (MVP §7.3) is built to answer this.
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.
 3. **Bracket:** is there a bracket screen, and what order are the quarterfinal
    pairings in? Does the tournament continue to a CPU champion after you are
-   knocked out? Can CPU duels be skipped?
-4. **Entrants:** are the 7 CPUs always distinct and drawn only from that
-   level's unlocked pool? Can lower-level or DL duelists appear?
+   knocked out?
+4. **Entrants:** are the 7 CPUs always distinct? How are they drawn: which
+   lower levels mix in, and how often? Are only unlocked duelists eligible?
+   Can DL duelists appear?
 5. **Format:** one duel per round or best-of-3? Does LP carry over?
 6. **Labels:** what are the in-game names for levels, rounds and rating in the
    version you play (JP, EN or KR)?
@@ -196,18 +246,21 @@ The Korean release's labels are not researched yet.
   matches**: 4 quarterfinals, 2 semifinals and 1 final.
 - **The player is an entrant, not a rated duelist.** Matches can involve the
   player, but rating statistics and diagnostics use CPUs only.
-- **Tournament level (1–3) and a duelist's pool level are separate facts.**
-  Don't validate entrants against the pool strictly; show a warning instead,
-  because pool strictness is unverified.
-- **Ratings change only in zero-sum CPU-vs-CPU duels.** So a tournament's
-  rating data is complete with:
+- **A tournament's level and a duelist's classification are separate facts.**
+  Never validate entrants against the classification. Record who actually
+  appeared, and let the Research page show the mix.
+- **Ratings change only in CPU-vs-CPU duels.** So a tournament's rating data
+  is complete with:
   - each CPU's rating at entry
-  - **one** CPU's rating after each CPU-vs-CPU match
-
-  The opponent's post-match rating, pre-match ratings and N are all derived.
-  The whole tournament is entered in one live form.
+  - one CPU's rating after each CPU-vs-CPU match, with the opponent filled in
+    by zero-sum and marked derived
+- **Snapshots stand alone.** A rating reading with no known match is valid
+  data.
+- **Same name ≠ same entity.** DL "ghost" and tag versions reuse names (for
+  example a DL Blowback Dragon) but have their own decks and ratings. If they
+  are ever added, they get separate IDs.
 - **Tag tournaments, DL opponents and Duel World** are out of scope for the
-  MVP. The roster file can be extended later.
+  MVP.
 
 ## 8. Sources
 

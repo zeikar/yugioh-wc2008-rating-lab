@@ -60,12 +60,14 @@ Source keys (full URLs in §6):
 | Gladiator Beast Heraklinos | blank (AT6) vs 1800 (YP-D, GF-M) | 1800 |
 | Anime characters | all 1250 | 1250, not independently verified |
 
-Two more points need checking in-game:
-- **Pool strictness:** can a level's bracket draw duelists from outside its
-  own pool? Two sources show it happening.
-  - 5CH #23 lists a real LV3 bracket that includes Luster Dragon #2, an LV2
-    duelist.
-  - GF-P's list of Level 2 opponents includes LV1 duelists.
+Two more notes:
+- **The "Tournament LV" column is a classification, not a limit.** Higher
+  levels mix in lower-level duelists.
+  - The owner's Level 2 runs have included LV1 duelists.
+  - 5CH #23 shows an LV3 bracket with Luster Dragon #2, an LV2 duelist.
+
+  See [game.md](game.md) §2.2. This column is also unrelated to the page
+  numbers of the Free Duel opponent list.
 - **Names:** English and Japanese names are below. The Korean release's names
   are not researched yet.
 
@@ -143,7 +145,7 @@ Column notes:
 | 61 | Tyranno Hassleberry | ティラノ剣山 | Anime character | 3 | 1250 | 75/38/25/38/75 | Dino Evolution / 恐竜の繁栄と進化 | Grace: clear Master of Oz seal challenge |
 | 62 | Aster Phoenix | エド・フェニックス | Anime character | 3 | 1250 | 50/40/75/25/65 | Destiny Beatdown / デステニーデス | Darkness: beat all decks of Underworld Guardian - Moley & Dark World Guardian - Gigori |
 | 63 | Dark Zane | ヘルカイザー亮 | Anime character | 3 | 1250 | 100/25/75/25/25 | Underworld Deck / 裏サイバー流 | Order: win Sky Guardian - Sefolile 5-duel gauntlet |
-| 64 | Jesse Anderson | ヨハン・アンデルセン | Anime character | 3 | 1250 | 50/25/63/50/63 | Eternal Crystal / 永遠の宝玉の輝き | Order: clear Rainbow Dragon seal challenge |
+| 64 | Jesse Anderson (also spelled Andersen) | ヨハン・アンデルセン | Anime character | 3 | 1250 | 50/25/63/50/63 | Eternal Crystal / 永遠の宝玉の輝き | Order: clear Rainbow Dragon seal challenge |
 | 65 | Axel Brodie | オースチン・オブライエン | Anime character | 3 | 1250 | 63/63/25/50/50 | Lava Explosion / 噴出す溶岩流 | Darkness: beat Mythical Beast Cerberus & Darkblaze Dragon |
 | 66 | Adrian Gecko | アモン・ガラム | Anime character | 3 | 1250 | 50/25/50/75/50 | Cover the Sun / 太陽を覆うもの | Order: clear Exodius seal challenge |
 | 67 | Marcel Bonaparte | 加納マルタン | Anime character | 3 | 1250 | 25/50/100/50/25 | Lost Parts / 失われたパーツ | Sunlight: clear Exxod, Master of The Guard seal challenge |

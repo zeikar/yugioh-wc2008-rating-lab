@@ -17,11 +17,12 @@ screen and enters them by hand. The app stores those observations, derives
 statistics from them, and charts them. It is an observation tool, not a rating
 engine: no Elo, no prediction, no simulation.
 
-The one exception is a rule the owner confirmed in play, not a formula:
-CPU-vs-CPU duels are zero-sum. When the owner enters only one CPU's post-match
-rating, the app fills in the opponent's from that rule and saves both (§4).
-The filled-in value is stored with `source: 'derived'` so it can always be
-told apart from what was typed.
+The one exception is a game rule, not a formula: **CPU-vs-CPU duels are
+zero-sum**. The app treats this as fixed. When the owner enters only one CPU's
+post-match rating, the app fills in the opponent's from that rule and saves
+both (§4). The filled-in value is stored with `source: 'derived'` so it can be
+told apart from what was typed. If data ever contradicts the rule, it is
+handled as a bug report, not by the app.
 
 ## 2. Tech stack
 
@@ -93,7 +94,7 @@ Document ID is a stable slug: `spirit-of-the-pharaoh`, `blowback-dragon`,
 | Field | Type | Notes |
 |---|---|---|
 | name | string | English name |
-| level | 1 \| 2 \| 3 | Tournament pool level. This is a fixed attribute and is **not** a rating tier (an LV1 duelist can start at 1800). |
+| tournamentLevel | 1 \| 2 \| 3 | The documented tournament classification and unlock tier. It is **not** a rating tier (an LV1 duelist can start at 1800), **not** a limit on which tournaments the duelist appears in (higher levels mix in lower ones), and **not** the Free Duel list page number. |
 | initialRating | number \| null | Rating on a fresh save. `null` = unknown. Never guess. |
 | unlocked | boolean | Don't assume everyone is unlocked |
 | category | `'monster' \| 'anime-character'` | |
@@ -113,7 +114,7 @@ either, so rating stats and diagnostics cover CPUs only.
 | number | number | Label only ("Tournament #12"). Assigned as max+1 at creation. Never used for ordering except as a tie-break. |
 | playedAt | Timestamp | When the tournament started (defaults to now). This is its position on the timeline. |
 | tournamentLevel | 1 \| 2 \| 3 | Singles tournaments only in the MVP |
-| entrants | string[8] | **Seats 0–7 in bracket order.** Each is a duelist slug or `'player'`. Required to save: exactly one `'player'` and 7 distinct CPUs. Seats 2*k* and 2*k*+1 meet in QF slot *k*. |
+| entrants | (string \| null)[8] | **Seats 0–7 in bracket order.** Each is a duelist slug, `'player'` or `null` (unknown). Seats 2*k* and 2*k*+1 meet in QF slot *k*. Known seats must be distinct, with at most one `'player'`. A live tournament fills all 8. `null` exists for backfilling past tournaments from notes. |
 | title | string? | |
 | notes | string? | |
 | createdAt | Timestamp | server timestamp |
@@ -136,11 +137,16 @@ Bracket invariants. The tournament form enforces these and import
 validation checks them:
 - `(tournamentId, round, slot)` is unique, which holds by construction of the
   match ID.
-- QF slot *k* is played by `entrants[2k]` and `entrants[2k+1]`.
+- QF slot *k* is played by `entrants[2k]` and `entrants[2k+1]`, so it can be
+  recorded only when both seats are known.
 - An SF or F match can be recorded only when **both of its feeding matches are
   recorded**. Its players are their winners.
-- An entrant outside the tournament level's pool only produces a warning,
-  because pool strictness is unverified.
+- No check against duelist `tournamentLevel`. Higher levels mix in
+  lower-level duelists (domain/game.md §2.2), and the actual mix is research
+  data (§7.3).
+- When backfilling a past tournament whose bracket positions are unknown, any
+  seat order consistent with the known pairings is acceptable. Seat positions
+  only matter for which matches feed which.
 
 Assumptions. These come from the owner's description and are not yet verified
 (domain/game.md §6):
@@ -210,11 +216,12 @@ duelist has no observations, the UI may show `initialRating`, labeled as a
 baseline and not as an observation. It is also stale once any CPU-vs-CPU match
 of that duelist is recorded.
 
-**Rating-change facts (owner-confirmed, domain/game.md §3.1):**
-1. Ratings change after **every CPU-vs-CPU duel**.
-2. Duels involving the player never change them.
+**Rating-change facts (domain/game.md §3.1):**
+1. Ratings change after **every CPU-vs-CPU duel** (owner-confirmed).
+2. Duels involving the player never change them (owner-confirmed).
 3. CPU-vs-CPU duels are **zero-sum**: the winner gains exactly the points the
-   loser loses (winner Δ = −loser Δ = *N*).
+   loser loses (winner Δ = −loser Δ = *N*). This is a fixed rule of the
+   model.
 
 Consequences:
 - **Freshness.** A rating stays a CPU's current rating until that CPU plays
@@ -266,14 +273,16 @@ Consequences:
   likely value and write the conflict into `notes`. Use `null` for anything
   unknown. Invent nothing.
 - Leave tag teams, downloadable CPUs and Duel World opponents out of the MVP
-  seed.
+  seed. They are separate entities even when they share a name (a DL Blowback
+  Dragon has its own deck and rating). If they are ever added, they get their
+  own slugs, e.g. `blowback-dragon-dl`.
 - Default `unlocked` to `false`, except for the 3 duelists available from the
   start. The owner toggles the rest.
 - An admin-only **"Sync roster"** action in Settings upserts the roster into
   `duelists/`. It is idempotent.
   - It creates missing duelists with every field.
-  - On existing docs it updates only `name`, `level`, `initialRating`,
-    `category` and `aliases`. It never touches `unlocked` or `notes`, which
+  - On existing docs it updates only `name`, `tournamentLevel`,
+    `initialRating`, `category` and `aliases`. It never touches `unlocked` or `notes`, which
     are owned by the app once the doc exists.
 
 ## 6. Pages
@@ -287,21 +296,25 @@ prominent **"+ New tournament"** button, which is the main input flow.
   from initial, highest rating ever recorded, biggest upset.
 - The player's record: tournaments won per level (the game's pack rewards
   need 5 wins per level) and overall match W/L.
+- All W/L figures are labeled **recorded**. The game's own per-CPU records
+  also count matches the app never saw, so the numbers can differ.
 - An empty state for each item when there isn't enough data.
 
 ### 6.2 Duelists (leaderboard)
-- Columns: rank, name, level, initial, current, Δ from initial, peak, lowest,
-  unlocked.
-- Sort by current rating, gain, loss, name, or level. Filter by level or
-  unlocked, plus a name/alias search.
+- Columns: rank, name, tournament level, initial, current, Δ from initial,
+  peak, lowest, finals, titles, unlocked.
+- Sort by current rating, gain, loss, name, tournament level, finals or
+  titles. Filter by tournament level or unlocked, plus a name/alias search.
 - Locked duelists are visibly muted. Baseline, derived and stale current
   ratings are visibly marked (e.g. italic plus a "baseline", "derived" or
   "stale" tag).
 
 ### 6.3 Duelist detail
-- Stats: name, level, initial, current, Δ, peak, lowest, largest single
-  increase and decrease, matches, wins, losses, win rate, finals reached,
-  tournaments won.
+- Stats: name, tournament level, initial, current, Δ, peak, lowest, largest
+  single increase and decrease, recorded matches, wins, losses, win rate,
+  longest win streak (recorded CPU-vs-CPU and player matches in timeline
+  order), finals reached, tournaments won, and the tournament levels it
+  appeared in.
 - **Rating history line chart.** X = position on the timeline, Y = rating.
   It plots the effective history (§4). When `initialRating` is known, the
   chart starts from it as a separately styled **baseline** point. Derived
@@ -352,8 +365,9 @@ Semifinals / Final   (pairings fill in from the winners)
    notes.
 2. **Entrants:** 8 seats in bracket order, stored as `entrants`. The UI
    labels QF1–QF4 are match `slot` 0–3, so QF1 is seats 0–1.
-   - Each seat has a type-ahead picker over name and alias. Duelists from the
-     selected level's pool are listed first.
+   - Each seat has a type-ahead picker over name and alias. Duelists
+     classified at or below the tournament's level are listed first, and any
+     duelist can be picked.
    - "You" must be used exactly once, and the 7 CPUs must be distinct.
    - Each CPU seat has an **entry rating** input. When `ratingBefore` (§4)
      exists, it is shown as a hint, and pressing Enter on an empty field
@@ -430,11 +444,11 @@ are known and `winnerBefore < loserBefore`. Magnitude = `loserBefore −
 winnerBefore`. Skip the match if either rating is unknown. Don't guess.
 
 ### 7.3 Rating research (diagnostics)
-Zero-sum is settled (§4). The open question is **what determines the transfer
-*N***. The owner has seen it behave like Elo: beating a stronger CPU gains a
-lot, and beating a weaker one gains little (domain/game.md §3.1). The
-Research page collects the data to pin this down and only displays it; the
-MVP fits no formula.
+The Research page collects data for the open questions (domain/game.md §6)
+and only displays it; the MVP fits no formula. The main questions:
+- What determines the transfer *N*? It grows with upsets, and a candidate
+  curve is in domain/game.md §3.1.
+- How does the ecosystem evolve?
 
 - **Transfer table.** This is the core research dataset. It has one row for
   each CPU-vs-CPU match whose *N* is known:
@@ -443,10 +457,9 @@ MVP fits no formula.
   - whether *N* came from one entered side or two
 
   Show a scatter of *N* against the gap, and summaries: the min, max and mode
-  of *N*, and *N* for upsets vs. favourites. Elo-like behaviour would show up
-  as *N* falling steadily as the gap grows, and the chart should make that
-  easy to see. Also show *N* for each exact gap value that recurs, since
-  repeated gaps with identical *N* would point to a deterministic formula.
+  of *N*, and *N* for upsets vs. favourites. Also show *N* for each exact gap
+  value that recurs, since repeated gaps with identical *N* would point to a
+  deterministic formula.
 - **Integrity list.** Matches whose two entered post-match ratings don't
   cancel out (§4).
 - **Continuity check.** For each entry rating, compare it with
@@ -456,6 +469,16 @@ MVP fits no formula.
     (domain/game.md §6), or with a wrong derived value upstream.
   - When `ratingBefore` is none, the entry is listed as "unknown", not as
     changed.
+- **Entrant mix.** For each tournament level, the distribution of its
+  entrants' `tournamentLevel`. This answers whether and how often higher
+  levels mix in lower-level duelists.
+- **Ecosystem views:**
+  - initial rating vs. current rating (a scatter, answering "does initial
+    rating predict long-run performance?");
+  - biggest risers and fallers relative to initial;
+  - finals and titles leaderboard;
+  - head-to-head matrix for pairs that met at least twice;
+  - biggest upsets.
 
 ## 8. Import / Export
 
@@ -541,7 +564,8 @@ Vitest unit tests for the pure logic:
 - peak/min and largest single increase/decrease
 - win/loss, finals, and tournament wins, including matches against the player
 - bracket derivation: SF/F pairings from QF winners and `entrants`, with SF/F
-  blocked when a feeding match is missing
+  blocked when a feeding match is missing, and QF blocked on `null` seats
+- entrant mix, win streaks, and finals/titles counts
 - pre-match rating limited to the same tournament; `ratingBefore` with stale
   or baseline-only history; current-rating staleness
 - delete-tournament cascade payload
@@ -575,14 +599,16 @@ elaborate animation, a native mobile app, and merge-mode import.
 
 ## 14. Later
 
-Merge import, CSV export, streaks and badges (Hot Streak, Biggest Climber,
-Biggest Collapse), a visual bracket, tag tournaments (roster in
+Merge import, CSV export, badges (Hot Streak, Biggest Climber, Biggest
+Collapse), entering the game's own per-CPU W/L records as separate snapshots
+(kept distinct from recorded matches), a visual bracket, tag tournaments (roster in
 domain/roster.md §3), DP tracking (the win bonus may equal rating ÷ 5, see
 domain/game.md §3.3), materialized summaries if reads get heavy, and fitting
 candidate rating formulas against the collected data (the long-term research
-goal). The first candidate is an Elo-style `N = round(K · (1 − E))` with
-`E = 1 / (1 + 10^(−gap/scale))`, fitting K and the scale to the transfer
-table.
+goal). The first candidate is the logistic curve in domain/game.md §3.1,
+`N = K / (1 + 10^(gap / S))` with K ≈ 160 and S ≈ 1000. A Research view could
+show each match's residual against it, clearly labeled as a hypothesis and
+never used as rating data.
 
 ## 15. Definition of done
 
