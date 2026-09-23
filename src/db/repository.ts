@@ -9,8 +9,8 @@ import {
   type QueryDocumentSnapshot,
   type WriteBatch,
 } from 'firebase/firestore'
-import { ROSTER } from '../data/duelists'
 import { tournamentCascade, type SavePayload } from '../domain/draft'
+import type { RosterSetupPayload } from '../domain/roster'
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR_PORT, db } from '../firebase'
 import type { Dataset, Duelist, Match, RatingObservation, Tournament } from '../types'
 
@@ -157,24 +157,20 @@ export function deleteTournament(tournamentId: string, data: Dataset, onError: (
 }
 
 /**
- * Upserts the static roster (MVP §5): new duelists get every field; existing
- * ones only get their static fields, so in-app `unlocked` and `notes` survive.
+ * Writes a roster setup (MVP §5) in one batch: creates missing duelists,
+ * refreshes changed ones (never `notes`), and saves typed current ratings as
+ * standalone readings. Well under the 500-op limit: 78 duelists + 78 readings.
  */
-export function syncRoster(existing: Duelist[], onError: (e: Error) => void): { created: number; updated: number } {
-  const have = new Set(existing.map((d) => d.id))
+export function saveRosterSetup(p: RosterSetupPayload, now: Date, onError: (e: Error) => void): Promise<void> {
   const batch = writeBatch(db)
-  let created = 0
-  for (const d of ROSTER) {
-    const ref = doc(db, 'duelists', d.id)
-    if (have.has(d.id)) {
-      batch.update(ref, { name: d.name, tournamentLevel: d.tournamentLevel, initialRating: d.initialRating, category: d.category, aliases: d.aliases ?? [] })
-    } else {
-      batch.set(ref, toDoc('duelists', d))
-      created++
-    }
+  for (const d of p.create) batch.set(doc(db, 'duelists', d.id), toDoc('duelists', d))
+  for (const u of p.update) batch.update(doc(db, 'duelists', u.id), u.fields)
+  for (const r of p.readings) {
+    const ref = doc(collection(db, 'ratingObservations'))
+    const reading: RatingObservation = { id: ref.id, duelistId: r.duelistId, rating: r.rating, observedAt: now, source: 'entered', note: 'Roster setup', createdAt: now }
+    batch.set(ref, toDoc('ratingObservations', reading))
   }
-  void commitInBackground(batch, onError)
-  return { created, updated: ROSTER.length - created }
+  return commitInBackground(batch, onError)
 }
 
 export function updateDuelist(id: string, patch: Partial<Pick<Duelist, 'unlocked' | 'notes'>>, onError: (e: Error) => void): void {

@@ -55,7 +55,7 @@ Then in the app:
 1. **Sign in with Google.** The emulator shows a fake sign-in page; add any
    account.
 2. On **Data**, press **Make me the owner (emulator only)**.
-3. Press **Sync roster** to load the 78 CPUs.
+3. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings, and press **Save roster**.
 4. Press **+ New tournament** and start recording.
 
 The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
@@ -83,8 +83,9 @@ they can run beside other projects' emulators.
   - Authentication → Get started → Sign-in method → **Google** → Enable.
   - Authentication → Settings → Authorized domains → add **zeikar.dev**.
 - **Becoming the owner:** sign in once on the site, then create the Firestore
-  document `admins/<your uid>`. The uid is shown on the Data page. Then run
-  **Sync roster** on the Data page.
+  document `admins/<your uid>`. The uid is shown on the Data page. Then open
+  **Roster setup** from the Data page, tick the unlocked CPUs, type their
+  current ratings, and save.
 
 ## Scripts
 

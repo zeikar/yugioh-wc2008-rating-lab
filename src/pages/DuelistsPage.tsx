@@ -81,7 +81,9 @@ export function DuelistsPage() {
       </div>
       <div className="panel overflow-x-auto">
         {model.rows.length === 0 ? (
-          <Empty>The roster is empty. Sign in as the owner and run “Sync roster” on the Data page.</Empty>
+          <Empty>
+            The roster is empty. The owner sets it up in <Link to="/roster" className="text-accent underline">Roster setup</Link>.
+          </Empty>
         ) : (
           <table className="table">
             <thead>

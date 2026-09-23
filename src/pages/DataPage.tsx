@@ -1,15 +1,15 @@
 import { useState, type ReactNode } from 'react'
 import { useApp } from '../app/context'
 import { PageTitle } from '../components/Layout'
+import { Link } from 'react-router'
 import { ROSTER } from '../data/duelists'
-import { grantAdminInEmulator, replaceAll, syncRoster } from '../db/repository'
+import { grantAdminInEmulator, replaceAll } from '../db/repository'
 import { parseBackup, toBackup } from '../domain/backup'
 import { USE_EMULATORS } from '../firebase'
 import type { Dataset } from '../types'
 
 export function DataPage() {
   const { model, user, isAdmin, signIn, reportError, synced, loadFailed } = useApp()
-  const [rosterMessage, setRosterMessage] = useState<string | null>(null)
 
   const exportJson = () => {
     const blob = new Blob([toBackup(model.data, new Date())], { type: 'application/json' })
@@ -55,21 +55,13 @@ export function DataPage() {
       {isAdmin && (
         <Block title="Roster">
           <p className="max-w-prose text-sm text-ink-2">
-            Writes the {ROSTER.length} tournament CPUs from the built-in roster. New duelists are created; existing ones get their name, level, initial rating and
-            aliases refreshed. Your unlocked flags and notes are never touched.
+            {model.data.duelists.length === 0
+              ? `The roster isn't set up yet. Add the ${ROSTER.length} tournament CPUs, mark which are unlocked in your save and record their current ratings.`
+              : 'Mark which CPUs are unlocked in your save and record their current ratings, all in one list in the game\'s order.'}
           </p>
-          <NeedsServer synced={synced} />
-          <button
-            className="btn btn-primary mt-3"
-            disabled={!synced}
-            onClick={() => {
-              const r = syncRoster(model.data.duelists, reportError)
-              setRosterMessage(`Roster synced: ${r.created} added, ${r.updated} refreshed.`)
-            }}
-          >
-            Sync roster
-          </button>
-          {rosterMessage && <p className="mt-2 text-sm">{rosterMessage}</p>}
+          <Link to="/roster" className="btn btn-primary mt-3 inline-block">
+            Open roster setup
+          </Link>
         </Block>
       )}
 

@@ -277,15 +277,26 @@ Consequences:
   Dragon has its own deck and rating). If they are ever added, they get their
   own slugs, e.g. `blowback-dragon-dl`.
 - Default `unlocked` to `false`, except for the 3 duelists available from the
-  start. The owner toggles the rest.
-- An admin-only **"Sync roster"** action in Settings upserts the roster into
-  `duelists/`. It is idempotent. It runs only while synced with the server: a
-  duelist missing from a cache-only view would otherwise be recreated from
-  scratch, losing its `unlocked` and `notes`.
-  - It creates missing duelists with every field.
-  - On existing docs it updates only `name`, `tournamentLevel`,
-    `initialRating`, `category` and `aliases`. It never touches `unlocked` or `notes`, which
-    are owned by the app once the doc exists.
+  start.
+- **Roster setup** (`/roster`, owner only) sets up and maintains the roster
+  in one list:
+  - All 78 CPUs appear in the game's own list order, with their initial
+    rating and last known rating.
+  - Each row has an **Unlocked** checkbox (plus "all" and "none") and a
+    **current rating** input. Enter moves down the rating column, and typing
+    a rating ticks Unlocked.
+- One **Save roster** batch does four things:
+  - creates duelists missing from the database, with every field;
+  - on existing docs, updates only changed `name`, `tournamentLevel`,
+    `initialRating`, `category` and `aliases`, plus the `unlocked` flag set on
+    the page (`notes` is never touched);
+  - records each typed current rating as a standalone reading taken now;
+  - keeps typed values on the page until the server accepts the save.
+- Those readings are where each CPU's history starts when tracking begins in
+  a save that is already under way. The documented `initialRating` stays the
+  fresh-save baseline.
+- Saving runs only while synced with the server. Otherwise a duelist missing
+  from a cache-only view would be recreated from scratch, losing its `notes`.
 
 ## 6. Pages
 
@@ -422,7 +433,7 @@ See §7.3.
 
 ### 6.7 Data (Settings)
 - Sign in / sign out, with the current admin status shown.
-- Sync roster (§5).
+- A link to Roster setup (§5).
 - Export and import JSON (§8).
 
 ## 7. Derived statistics

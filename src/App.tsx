@@ -5,6 +5,7 @@ import { DataPage } from './pages/DataPage'
 import { DuelistPage } from './pages/DuelistPage'
 import { DuelistsPage } from './pages/DuelistsPage'
 import { ResearchPage } from './pages/ResearchPage'
+import { RosterSetupPage } from './pages/RosterSetupPage'
 import { TournamentPage } from './pages/TournamentPage'
 import { TournamentsPage } from './pages/TournamentsPage'
 
@@ -19,6 +20,7 @@ export function App() {
         <Route path="/tournaments/:id" element={<TournamentPage />} />
         <Route path="/research" element={<ResearchPage />} />
         <Route path="/data" element={<DataPage />} />
+        <Route path="/roster" element={<RosterSetupPage />} />
         <Route path="*" element={<p className="text-ink-2">No page here. Use the navigation above.</p>} />
       </Routes>
     </Layout>
