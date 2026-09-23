@@ -7,30 +7,51 @@ import { PageTitle } from '../components/Layout'
 import { Rating } from '../components/Rating'
 import type { DuelistRow } from '../domain/stats'
 
-const SORTS = {
-  current: { label: 'Current rating', key: (r: DuelistRow) => r.rating.current.value, dir: -1 },
-  gain: { label: 'Biggest gain', key: (r: DuelistRow) => r.rating.deltaFromInitial, dir: -1 },
-  loss: { label: 'Biggest loss', key: (r: DuelistRow) => r.rating.deltaFromInitial, dir: 1 },
-  titles: { label: 'Titles', key: (r: DuelistRow) => r.record.titles, dir: -1 },
-  finals: { label: 'Finals', key: (r: DuelistRow) => r.record.finals, dir: -1 },
-  level: { label: 'Tournament level', key: (r: DuelistRow) => r.duelist.tournamentLevel, dir: 1 },
-  name: { label: 'Name', key: (r: DuelistRow) => r.duelist.name, dir: 1 },
+type Value = string | number | null
+
+/** Sortable columns: what each sorts by, and the direction a first click uses. */
+const COLUMNS = {
+  name: { label: 'Duelist', value: (r: DuelistRow): Value => r.duelist.name, firstDir: 1, num: false },
+  level: { label: 'LV', value: (r: DuelistRow): Value => r.duelist.tournamentLevel, firstDir: 1, num: false },
+  initial: { label: 'Initial', value: (r: DuelistRow): Value => r.duelist.initialRating, firstDir: -1, num: true },
+  current: { label: 'Current', value: (r: DuelistRow): Value => r.rating.current.value, firstDir: -1, num: true },
+  delta: { label: 'Δ initial', value: (r: DuelistRow): Value => r.rating.deltaFromInitial, firstDir: -1, num: true },
+  peak: { label: 'Peak', value: (r: DuelistRow): Value => r.rating.peak, firstDir: -1, num: true },
+  low: { label: 'Low', value: (r: DuelistRow): Value => r.rating.low, firstDir: -1, num: true },
+  wins: { label: 'W–L', value: (r: DuelistRow): Value => (r.record.played > 0 ? r.record.wins : null), firstDir: -1, num: true },
+  finals: { label: 'Finals', value: (r: DuelistRow): Value => r.record.finals, firstDir: -1, num: true },
+  titles: { label: 'Titles', value: (r: DuelistRow): Value => r.record.titles, firstDir: -1, num: true },
 } as const
-type SortKey = keyof typeof SORTS
+type ColumnKey = keyof typeof COLUMNS
 
 /** Unknown values always sort last, whatever the direction. */
-function compare(a: string | number | null, b: string | number | null, dir: number): number {
+function compare(a: Value, b: Value, dir: number): number {
   if (a === null && b === null) return 0
   if (a === null) return 1
   if (b === null) return -1
   return (typeof a === 'string' ? a.localeCompare(b as string) : a - (b as number)) * dir
 }
 
+function SortHeader({ column, sort, onSort }: { column: ColumnKey; sort: { key: ColumnKey; dir: number }; onSort: (k: ColumnKey) => void }) {
+  const c = COLUMNS[column]
+  const active = sort.key === column
+  return (
+    <th className={c.num ? 'num' : ''} aria-sort={active ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none'}>
+      <button className={`inline-flex items-center gap-1 hover:text-ink ${active ? 'text-ink' : ''}`} onClick={() => onSort(column)}>
+        {c.label}
+        <span aria-hidden className={`text-[0.65rem] ${active ? 'text-accent' : 'invisible'}`}>
+          {sort.dir > 0 ? '▲' : '▼'}
+        </span>
+      </button>
+    </th>
+  )
+}
+
 export function DuelistsPage() {
   const { model } = useApp()
-  const [sort, setSort] = useState<SortKey>('current')
+  const [sort, setSort] = useState<{ key: ColumnKey; dir: number }>({ key: 'current', dir: -1 })
   const [level, setLevel] = useState<'all' | '1' | '2' | '3'>('all')
-  const [lock, setLock] = useState<'all' | 'unlocked' | 'locked'>('all')
+  const [lock, setLock] = useState<'all' | 'unlocked' | 'locked'>('unlocked')
   const [query, setQuery] = useState('')
 
   const rankById = useMemo(() => {
@@ -38,28 +59,22 @@ export function DuelistsPage() {
     return new Map(ranked.map((r, i) => [r.duelist.id, i + 1]))
   }, [model.rows])
 
+  // First click sorts a column its natural way; clicking it again flips it.
+  const sortBy = (key: ColumnKey) => setSort((s) => (s.key === key ? { key, dir: -s.dir } : { key, dir: COLUMNS[key].firstDir }))
+
   const q = query.trim().toLowerCase()
+  const column = COLUMNS[sort.key]
   const rows = model.rows
     .filter((r) => level === 'all' || r.duelist.tournamentLevel === Number(level))
     .filter((r) => lock === 'all' || r.duelist.unlocked === (lock === 'unlocked'))
     .filter((r) => !q || [r.duelist.name, ...(r.duelist.aliases ?? [])].some((n) => n.toLowerCase().includes(q)))
-    .sort((a, b) => compare(SORTS[sort].key(a), SORTS[sort].key(b), SORTS[sort].dir) || a.duelist.name.localeCompare(b.duelist.name))
+    .sort((a, b) => compare(column.value(a), column.value(b), sort.dir) || a.duelist.name.localeCompare(b.duelist.name))
 
   return (
     <>
       <PageTitle>Duelists</PageTitle>
       <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
         <input className="field w-56" placeholder="Search name or alias" aria-label="Search duelists" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <label className="flex items-center gap-1.5">
-          Sort by
-          <select className="field" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-            {Object.entries(SORTS).map(([k, s]) => (
-              <option key={k} value={k}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <label className="flex items-center gap-1.5">
           Level
           <select className="field" value={level} onChange={(e) => setLevel(e.target.value as typeof level)}>
@@ -72,33 +87,28 @@ export function DuelistsPage() {
         <label className="flex items-center gap-1.5">
           Show
           <select className="field" value={lock} onChange={(e) => setLock(e.target.value as typeof lock)}>
-            <option value="all">All</option>
             <option value="unlocked">Unlocked</option>
+            <option value="all">All</option>
             <option value="locked">Locked</option>
           </select>
         </label>
-        <span className="ml-auto text-ink-3">W/L counts recorded matches only.</span>
+        <span className="ml-auto text-ink-3">Click a column to sort. W/L counts recorded matches only.</span>
       </div>
       <div className="panel overflow-x-auto">
         {model.rows.length === 0 ? (
           <Empty>
             The roster is empty. The owner sets it up in <Link to="/roster" className="text-accent underline">Roster setup</Link>.
           </Empty>
+        ) : rows.length === 0 ? (
+          <Empty>No duelist matches these filters.</Empty>
         ) : (
           <table className="table">
             <thead>
               <tr>
                 <th className="num">Rank</th>
-                <th>Duelist</th>
-                <th>LV</th>
-                <th className="num">Initial</th>
-                <th className="num">Current</th>
-                <th className="num">Δ initial</th>
-                <th className="num">Peak</th>
-                <th className="num">Low</th>
-                <th className="num">W–L</th>
-                <th className="num">Finals</th>
-                <th className="num">Titles</th>
+                {(Object.keys(COLUMNS) as ColumnKey[]).map((k) => (
+                  <SortHeader key={k} column={k} sort={sort} onSort={sortBy} />
+                ))}
               </tr>
             </thead>
             <tbody>
