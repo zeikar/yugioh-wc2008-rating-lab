@@ -51,14 +51,21 @@ Source keys (full URLs in §6):
   Man, Winged Kuriboh). Everything else unlocks through Duel World (story
   mode), stone-monument "seal" challenges, or play counters. [confirmed]
 
-### Values to verify in-game
+### Values checked in-game
 
-| Duelist | Conflict | Likely value |
+| Duelist | Sources said | Value |
 |---|---|---|
-| Dark Magician Girl | 600 (YP-D, GF-M) vs 750 (AT6) | 600 (its stats sum to ~620) |
-| Kozaky | 1350 (YP-D, AT6, GF-M) vs 1200 (its own YP-C page) | 1350 (its stats sum to ~1360) |
-| Gladiator Beast Heraklinos | blank (AT6) vs 1800 (YP-D, GF-M) | 1800 |
-| Anime characters | all 1250 | 1250, not independently verified |
+| Dark Magician Girl | 600 (YP-D, GF-M) vs 750 (AT6) | **600, confirmed in-game** by the owner (2026-09-23) |
+| Kozaky | 1350 (YP-D, AT6, GF-M) vs 1200 (its own YP-C page) | **1350, confirmed in-game** by the owner (2026-09-23) |
+| Gladiator Beast Heraklinos | blank (AT6) vs 1800 (YP-D, GF-M) | 1800, still to verify |
+| Anime characters | all 1250 | 1250, still to verify |
+
+The owner's save also backs the documented initial ratings of 35 more CPUs:
+- These are the 35 CPUs whose current rating was recorded at roster setup.
+- Their current ratings add up to exactly their documented initial sum, 40200
+  (see [game.md](game.md) §3.1).
+- A wrong initial value would have broken that sum, unless it happened to be
+  offset by another wrong value.
 
 Two more notes:
 - **The "Tournament LV" column is a classification, not a limit.** Higher
@@ -162,8 +169,8 @@ Column notes:
 | 78 | Ishizu Ishtar | イシズ・イシュタール | Anime character | 3 | 1250 | 63/38/75/38/38 | The Keepers / 守護者の集団 | Play time over 100 hours |
 
 Rating conflicts in the table:
-- **#21 Dark Magician Girl.** AT6 says 750. YP-D and GF-M both say 600, and the YP-C stats sum to 124, about 620. **600 is more likely** [unclear].
-- **#43 Kozaky.** YP-D, AT6 and GF-M say 1350. The Kozaky YP-C page's stat table says 1200, but its stats sum to 272 (about 1360). **1350 is more likely** [unclear].
+- **#21 Dark Magician Girl.** AT6 says 750. YP-D and GF-M both say 600, and the YP-C stats sum to 124, about 620. **600, confirmed in-game** by the owner.
+- **#43 Kozaky.** YP-D, AT6 and GF-M say 1350. The Kozaky YP-C page's stat table says 1200, but its stats sum to 272 (about 1360). **1350, confirmed in-game** by the owner.
 - **#54 Gladiator Beast Heraklinos.** AT6 leaves the rating blank. YP-D and GF-M say 1800 [confirmed by 2 sources]. JAWP: to unlock it you must beat many duelists 6 times each; the first printing of the strategy guide wrongly said 5.
 - **Voltanis & Airknight Parshath.** JAWP: if you *lose* the one-time Voltanis duel in the World of Order, these two never appear in WC mode.
 

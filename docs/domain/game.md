@@ -122,6 +122,17 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 - **CPU-vs-CPU duels are zero-sum.** The winner takes exactly the points the
   loser loses. Every observed pair fits, and the owner has fixed this as a rule
   of the app (2026-09-23). Data that contradicts it is treated as a bug.
+- **The whole ecosystem conserves rating since a fresh save.** At roster
+  setup (2026-09-23) the owner recorded the current rating of 35 CPUs.
+  - Their ratings had moved by between −354 and +620 since a fresh save.
+  - Yet their current ratings add up to exactly their documented initial
+    sum: **40200 = 40200**.
+  - This is consistent with every duel since the save began being zero-sum.
+  - Strictly, it shows no net points flowed between these 35 and the other
+    17 unlocked CPUs. Most likely those 17 have simply not played; they could
+    only have traded points among themselves.
+  - Barring errors that happen to cancel out, the documented initial ratings
+    of those 35 CPUs are right as well.
 
   | Winner (pre → post) | Loser (pre → post) | N | gap (winner − loser pre) |
   |---|---|---|---|
@@ -236,8 +247,8 @@ The Korean release's labels are not researched yet.
 5. **Format:** one duel per round or best-of-3? Does LP carry over?
 6. **Labels:** what are the in-game names for levels, rounds and rating in the
    version you play (JP, EN or KR)?
-7. **Initial values:** Dark Magician Girl (600 or 750), Heraklinos (1800?),
-   and all anime characters at 1250?
+7. **Initial values:** Heraklinos (1800?) and all anime characters at 1250?
+   Dark Magician Girl (600) and Kozaky (1350) are confirmed.
 8. **Your own rating:** is it 0, and does it ever change offline?
 
 ## 7. What this means for the app

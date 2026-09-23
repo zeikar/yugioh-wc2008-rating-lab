@@ -269,8 +269,9 @@ Consequences:
 - Seed it from [domain/roster.md](domain/roster.md) with the **78 singles
   CPUs**: 24 in LV1, 24 in LV2 and 30 in LV3. Include the Japanese name as an
   alias.
-- Where sources conflict (Dark Magician Girl, Kozaky, Heraklinos), use the
-  likely value and write the conflict into `notes`. Use `null` for anything
+- Where sources conflict, use the likely value and write the conflict into
+  `notes`. Heraklinos is still unverified; Dark Magician Girl and Kozaky are
+  now confirmed in-game. Use `null` for anything
   unknown. Invent nothing.
 - Leave tag teams, downloadable CPUs and Duel World opponents out of the MVP
   seed. They are separate entities even when they share a name (a DL Blowback
