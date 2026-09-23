@@ -45,7 +45,7 @@ against the Firestore emulator. There is no custom backend.
 
 ## Run it locally
 
-You need Node 20+, pnpm and Java (for the Firestore emulator). No Firebase
+You need Node 22.12+, pnpm and Java (for the Firestore emulator). No Firebase
 project is needed for local work.
 
 ```sh
