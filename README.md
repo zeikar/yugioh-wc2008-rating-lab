@@ -66,10 +66,10 @@ they can run beside other projects' emulators.
 
 ## Deployment
 
-- **Web app:** GitHub Pages at https://zeikar.dev/yugioh-wcs2008-rating-lab/.
+- **Web app:** GitHub Pages at https://zeikar.dev/yugioh-wc2008-rating-lab/.
   [.github/workflows/ci.yml](.github/workflows/ci.yml) runs typecheck, lint,
   unit tests and rules tests on every pull request and push. On `main` it
-  builds with `BASE_PATH=/yugioh-wcs2008-rating-lab/` and deploys to Pages. The
+  builds with `BASE_PATH=/yugioh-wc2008-rating-lab/` and deploys to Pages. The
   build also copies `index.html` to `404.html`, so deep links work without SPA
   rewrites.
 - **Data:** Firebase project `yugioh-wcs2008-rating-lab`. Its public web config

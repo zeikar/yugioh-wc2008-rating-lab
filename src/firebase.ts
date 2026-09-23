@@ -5,7 +5,7 @@ import { connectFirestoreEmulator, initializeFirestore, persistentLocalCache, pe
 export const USE_EMULATORS = import.meta.env.VITE_USE_EMULATORS === 'true'
 
 /** A `demo-` project needs no real Firebase project; the emulators accept it. */
-export const EMULATOR_PROJECT_ID = 'demo-wcs2008'
+export const EMULATOR_PROJECT_ID = 'demo-wc2008'
 // Non-default ports (firebase.json) so this can run beside other projects' emulators.
 export const FIRESTORE_EMULATOR_PORT = 8085
 const AUTH_EMULATOR_PORT = 9098

@@ -1,4 +1,4 @@
-# MVP Spec — Yu-Gi-Oh! WCS2008 Rating Lab
+# MVP Spec — Yu-Gi-Oh! WC2008 Rating Lab
 
 A web app for recording CPU tournaments in *Yu-Gi-Oh! World Championship 2008*
 (Nintendo DS) and watching how CPU duelists' ratings change over repeated

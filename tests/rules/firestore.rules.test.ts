@@ -8,7 +8,7 @@ let env: RulesTestEnvironment
 const observation = { duelistId: 'blowback-dragon', rating: 1433, observedAt: Timestamp.now(), source: 'entered', createdAt: Timestamp.now() }
 
 beforeAll(async () => {
-  env = await initializeTestEnvironment({ projectId: 'demo-wcs2008', firestore: { rules: readFileSync('firestore.rules', 'utf8') } })
+  env = await initializeTestEnvironment({ projectId: 'demo-wc2008', firestore: { rules: readFileSync('firestore.rules', 'utf8') } })
 })
 
 afterAll(async () => {

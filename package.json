@@ -1,16 +1,16 @@
 {
-  "name": "yugioh-wcs2008-rating-lab",
+  "name": "yugioh-wc2008-rating-lab",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "emulators": "firebase emulators:start --only auth,firestore --project demo-wcs2008 --import .emulator-data --export-on-exit",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-wc2008 --import .emulator-data --export-on-exit",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "test": "vitest run",
-    "test:rules": "firebase emulators:exec --config firebase.test.json --only firestore --project demo-wcs2008 \"vitest run --config vitest.rules.config.ts\"",
+    "test:rules": "firebase emulators:exec --config firebase.test.json --only firestore --project demo-wc2008 \"vitest run --config vitest.rules.config.ts\"",
     "preview": "vite preview",
     "deploy:rules": "firebase deploy --only firestore --project yugioh-wcs2008-rating-lab"
   },
