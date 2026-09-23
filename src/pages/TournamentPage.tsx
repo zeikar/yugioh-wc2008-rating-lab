@@ -435,30 +435,13 @@ function MatchCard({ draft, ev, editable, update, round, slot }: BracketProps & 
       </div>
       {ratings?.mismatch && <p className="mt-2 text-xs text-down">The two new ratings don't cancel out. One of them is probably a typo.</p>}
       {ratings?.winnerNotUp && <p className="mt-2 text-xs text-down">The winner didn't gain points. Check the winner or the ratings.</p>}
-      {editable && ready && !pairing.winnerId && (result.remainingLp || result.notes) && (
-        <p className="mt-2 text-xs text-ink-3">LP and notes are saved once a winner is picked.</p>
-      )}
-      {(editable || result.remainingLp || result.notes) && ready && (
-        <div className="mt-2 flex gap-2 text-xs">
+      {editable && ready && !pairing.winnerId && result.notes && <p className="mt-2 text-xs text-ink-3">Notes are saved once the match has a winner.</p>}
+      {ready && (editable || result.notes) && (
+        <div className="mt-2 text-xs">
           {editable ? (
-            <>
-              <input
-                aria-label="Winner's remaining LP"
-                className="field w-20"
-                placeholder="Winner's LP"
-                inputMode="numeric"
-                data-nav={nav + 3}
-                value={result.remainingLp}
-                onChange={(e) => setResult((r) => void (r.remainingLp = e.target.value))}
-              />
-              <input aria-label="Match notes" className="field flex-1" placeholder="Notes" value={result.notes} onChange={(e) => setResult((r) => void (r.notes = e.target.value))} />
-            </>
+            <input aria-label="Match notes" className="field w-full" placeholder="Notes" value={result.notes} onChange={(e) => setResult((r) => void (r.notes = e.target.value))} />
           ) : (
-            <span className="text-ink-2">
-              {result.remainingLp && `${result.remainingLp} LP left`}
-              {result.remainingLp && result.notes && ', '}
-              {result.notes}
-            </span>
+            <span className="text-ink-2">{result.notes}</span>
           )}
         </div>
       )}

@@ -38,7 +38,6 @@ export interface Match {
   playerAId: string
   playerBId: string
   winnerId: string
-  remainingLp?: number
   notes?: string
   createdAt: Date
 }

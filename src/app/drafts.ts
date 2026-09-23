@@ -10,8 +10,9 @@ export function loadDraft(id: string): TournamentDraft | null {
   try {
     const raw = localStorage.getItem(PREFIX + id)
     if (!raw) return null
-    // Drafts from before entry ratings were carried automatically had typed ones; they no longer apply.
+    // Older drafts had typed entry ratings and an LP per match; neither exists any more.
     const { entryRatings: _legacy, ...draft } = JSON.parse(raw) as TournamentDraft & { entryRatings?: unknown }
+    for (const r of Object.values(draft.results)) delete (r as { remainingLp?: unknown }).remainingLp
     return draft
   } catch {
     return null

@@ -110,7 +110,7 @@ rating, peak, win rate, rank and so on) is derived when the page loads.
 |---|---|---|
 | `duelists` | slug, e.g. `blowback-dragon` | name, documented tournament level, initial rating, unlocked, category, aliases, notes |
 | `tournaments` | generated | number, playedAt, level, the 8 entrants in bracket order (`player` is you) |
-| `matches` | `{tournament}_{round}_{slot}` | round (quarterfinal, semifinal, final), slot, both players, winner, optional LP and notes |
+| `matches` | `{tournament}_{round}_{slot}` | round (quarterfinal, semifinal, final), slot, both players, winner, optional notes |
 | `ratingObservations` | `{tournament}_entry_{cpu}`, `{match}_{cpu}`, or generated | one rating seen in-game, and whether it was `entered` or `derived` |
 
 What an observation means depends on its links:

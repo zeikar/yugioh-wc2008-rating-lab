@@ -45,7 +45,6 @@ const matchSchema = z.object({
   playerAId: id,
   playerBId: id,
   winnerId: id,
-  remainingLp: opt(z.number().int().nonnegative()),
   notes: opt(z.string()),
   createdAt: date,
 })

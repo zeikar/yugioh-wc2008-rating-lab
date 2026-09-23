@@ -16,7 +16,6 @@ import { analyzeTournament, ratingEnteringRound, type TournamentRatings } from '
 
 export interface MatchDraft {
   winnerId: string | null
-  remainingLp: string
   notes: string
   /** Typed post-match rating per CPU id. */
   post: Record<string, string>
@@ -43,7 +42,7 @@ export interface TournamentDraft {
 }
 
 export function emptyMatchDraft(): MatchDraft {
-  return { winnerId: null, remainingLp: '', notes: '', post: {} }
+  return { winnerId: null, notes: '', post: {} }
 }
 
 /** Local `YYYY-MM-DDTHH:mm:ss`, as datetime-local inputs with step=1 use; seconds keep same-minute events in order. */
@@ -80,7 +79,6 @@ export function draftFromSaved(t: Tournament, matches: Match[], observations: Ra
   for (const m of matches) {
     draft.results[slotKey(m.round, m.slot)] = {
       winnerId: m.winnerId,
-      remainingLp: m.remainingLp?.toString() ?? '',
       notes: m.notes ?? '',
       post: {},
     }
@@ -173,8 +171,6 @@ export function evaluateDraft(draft: TournamentDraft, entryRatings: ReadonlyMap<
       }
       winners.set(key, winner)
       if (winner === null) continue
-      const lp = r.remainingLp.trim()
-      if (lp !== '' && !/^\d{1,5}$/.test(lp)) errors.push(`${label}: LP is not a whole number`)
       matches.push({
         id,
         tournamentId: draft.id,
@@ -183,7 +179,6 @@ export function evaluateDraft(draft: TournamentDraft, entryRatings: ReadonlyMap<
         playerAId: a,
         playerBId: b,
         winnerId: winner,
-        remainingLp: lp !== '' && /^\d{1,5}$/.test(lp) ? Number(lp) : undefined,
         notes: r.notes.trim() || undefined,
         createdAt,
       })

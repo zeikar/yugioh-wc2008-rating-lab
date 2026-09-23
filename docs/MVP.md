@@ -123,7 +123,6 @@ either, so rating stats and diagnostics cover CPUs only.
 | playerAId | string | duelist slug or `'player'` |
 | playerBId | string | must differ from A |
 | winnerId | string | must be A or B |
-| remainingLp | number? | |
 | notes | string? | |
 | createdAt | Timestamp | |
 
@@ -373,11 +372,6 @@ Tournament #13 · Level [2] · 2026-09-23 21:40
  QF4  (1) [You                ]                        press 1/2
       (2) [Petit Dragon       ] ▲1650
  …
-Quarterfinals
- QF1  Blowback Dragon  vs  You          winner (•)( )        LP [    ]
- QF2  Manju  vs  Cloudian               winner ( )(•)        LP [2100]
-      after: Cloudian [1353] (+44)   Manju  1447 (−44, derived)
- …
 Semifinals / Final   (pairings fill in from the winners)
 ```
 
@@ -403,7 +397,7 @@ Semifinals / Final   (pairings fill in from the winners)
    - Typing both is allowed. Both are then stored as `entered`, the integrity
      check runs, and a mismatch is shown inline.
    - For "You" matches, which have no rating inputs, pick the winner with a
-     click or the 1/2 keys. Winner's LP and notes are optional.
+     click or the 1/2 keys. Notes per match are optional.
 4. **Partial tournaments are fine.** An unknown or skipped duel is simply
    not recorded, and the later matches that depend on it can't be recorded
    either (§4).

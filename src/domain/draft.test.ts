@@ -20,11 +20,11 @@ function liveDraft(): TournamentDraft {
   const d = newDraft('t9', 9, 2, new Date('2026-09-23T21:40:00'))
   d.entrants = ['blowback-dragon', 'cloudian', 'manju', 'reaper', 'lady-heat', 'shien', PLAYER_ID, 'petit']
   d.results = {
-    quarterfinal_0: { winnerId: null, remainingLp: '', notes: '', post: { 'blowback-dragon': '1433' } },
-    quarterfinal_1: { winnerId: null, remainingLp: '2100', notes: '', post: { reaper: '769' } },
-    quarterfinal_2: { winnerId: null, remainingLp: '', notes: '', post: { 'lady-heat': '1370', shien: '1216' } },
-    quarterfinal_3: { winnerId: PLAYER_ID, remainingLp: '', notes: '', post: {} },
-    semifinal_0: { winnerId: null, remainingLp: '', notes: '', post: { manju: '1491' } },
+    quarterfinal_0: { winnerId: null, notes: '', post: { 'blowback-dragon': '1433' } },
+    quarterfinal_1: { winnerId: null, notes: '', post: { reaper: '769' } },
+    quarterfinal_2: { winnerId: null, notes: '', post: { 'lady-heat': '1370', shien: '1216' } },
+    quarterfinal_3: { winnerId: PLAYER_ID, notes: '', post: {} },
+    semifinal_0: { winnerId: null, notes: '', post: { manju: '1491' } },
   }
   return d
 }
@@ -114,7 +114,6 @@ describe('buildSavePayload', () => {
     expect(entries).toHaveLength(7)
     expect(entries.every((o) => o.source === 'derived' && o.rating === ENTRY.get(o.duelistId))).toBe(true)
     expect(p.observations.every((o) => o.observedAt.getTime() === p.tournament.playedAt.getTime())).toBe(true)
-    expect(p.matches.find((m) => m.round === 'quarterfinal' && m.slot === 1)?.remainingLp).toBe(2100)
   })
 
   it('keeps createdAt, recomputes zero-sum fills, and deletes what the draft dropped', () => {
@@ -159,7 +158,7 @@ describe('buildSavePayload', () => {
 
   it('drops a later round whose manual winner no longer plays in it', () => {
     const d = liveDraft()
-    d.results.semifinal_0 = { winnerId: 'blowback-dragon', remainingLp: '', notes: '', post: {} }
+    d.results.semifinal_0 = { winnerId: 'blowback-dragon', notes: '', post: {} }
     const first = buildSavePayload(d, ENTRY, { matches: [], observations: [] }, NOW)
     const draft = draftFromSaved(first.tournament, first.matches, first.observations)
     draft.results.quarterfinal_0.post = { cloudian: '1475' }
