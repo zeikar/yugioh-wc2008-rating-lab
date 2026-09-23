@@ -44,34 +44,28 @@ comes from Firestore's persistent local cache (`persistentLocalCache` with
 
 - **Public read.** Anyone can view all data without logging in.
 - **Single admin = the owner's Google account.** Sign-in uses Firebase Auth's
-  Google provider only. Writes are allowed only for the owner's Firebase UID.
-  Firestore security rules enforce this; hiding buttons in the UI is not
-  enough.
-- The owner's UID (not their email) is what goes into the rules, so no personal
-  address lands in the repo. Setup: sign in once, copy the UID from the Firebase
-  console (Authentication → Users), put it in `firestore.rules` and
-  `VITE_ADMIN_UID`, then deploy the rules.
+  Google provider only. Writes are allowed only for a signed-in user who has a
+  doc at `admins/{uid}`. Firestore security rules enforce this; hiding buttons
+  in the UI is not enough.
+- Clients can never write `admins/`. Setup: sign in once, then create
+  `admins/<uid>` in the Firebase console; the Data page shows the uid. Neither
+  the UID nor an email lands in the repo, and the same rules work in the
+  emulator. There, a dev-only button creates the doc through the emulator's
+  owner bypass.
 - The UI shows a "Sign in with Google" control. Editing controls appear only
-  when `user.uid === VITE_ADMIN_UID`, which is a UI hint only; the rules are
-  the real gate. Anyone else, signed in or not, sees the read-only app.
+  when the user's own `admins/{uid}` doc exists, which the rules let that user
+  read. Anyone else, signed in or not, sees the read-only app.
 - Firebase config comes from `VITE_FIREBASE_*` env vars. Provide `.env.example`.
 
-Rules sketch (`firestore.rules`):
+Rules (`firestore.rules`) in outline:
 
 ```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{db}/documents {
-    function isAdmin() {
-      return request.auth != null && request.auth.uid == 'OWNER_UID';
-    }
-    match /{collection}/{id} {
-      allow read: if collection in ['duelists','tournaments','matches','ratingObservations'];
-      allow write: if isAdmin()
-        && collection in ['duelists','tournaments','matches','ratingObservations'];
-    }
-  }
+function isAdmin() {
+  return request.auth != null
+    && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
 }
+// every collection: allow read: if true; allow write: if isAdmin() && <field checks>
+// admins/{uid}: allow get: if request.auth.uid == uid; allow list, write: if false
 ```
 
 Add basic field validation (types, required fields) to the rules where it is
@@ -117,7 +111,7 @@ either, so rating stats and diagnostics cover CPUs only.
 | entrants | (string \| null)[8] | **Seats 0–7 in bracket order.** Each is a duelist slug, `'player'` or `null` (unknown). Seats 2*k* and 2*k*+1 meet in QF slot *k*. Known seats must be distinct, with at most one `'player'`. A live tournament fills all 8. `null` exists for backfilling past tournaments from notes. |
 | title | string? | |
 | notes | string? | |
-| createdAt | Timestamp | server timestamp |
+| createdAt | Timestamp | creation time (client clock, so it works offline) |
 
 ### `matches/{tournamentId}_{round}_{slot}`
 
@@ -212,9 +206,10 @@ The current rating is the last point in the duelist's **effective history**
 (below), provided it is still **fresh**. If that CPU has since played a
 recorded CPU-vs-CPU match whose post-match rating is unknown, the current
 rating is unknown. The UI then shows the last value with a "stale" tag. If a
-duelist has no observations, the UI may show `initialRating`, labeled as a
-baseline and not as an observation. It is also stale once any CPU-vs-CPU match
-of that duelist is recorded.
+duelist has no observations, the UI shows `initialRating` as its current value.
+Stats still treat it as a baseline, not an observation: it gives no Δ from
+initial, and it goes stale once any CPU-vs-CPU match of that duelist is
+recorded.
 
 **Rating-change facts (domain/game.md §3.1):**
 1. Ratings change after **every CPU-vs-CPU duel** (owner-confirmed).
@@ -251,8 +246,12 @@ Consequences:
   corrected typo flows through the later rounds.
 - **Effective history.** Each CPU's effective history is its stored
   observations in timeline order; derived ones are already stored. Every
-  rating stat and chart uses it. Derived points are shown differently: a
-  hollow chart point, or italic with a "derived" tag.
+  rating stat and chart uses it.
+- **Provenance stays in the data, not the UI.** Since zero-sum is a fixed
+  rule, the UI shows entered and derived ratings the same way. `source` is
+  kept in Firestore and the backup so the two can still be told apart later.
+  The one exception is the tournament form: an empty post-match input shows
+  its zero-sum fill as the placeholder.
 - **Integrity check.** When both post-match ratings of a match are entered
   and their Δs don't cancel out, flag the match as a probable typo instead of
   silently picking one.
@@ -305,9 +304,8 @@ prominent **"+ New tournament"** button, which is the main input flow.
   peak, lowest, finals, titles, unlocked.
 - Sort by current rating, gain, loss, name, tournament level, finals or
   titles. Filter by tournament level or unlocked, plus a name/alias search.
-- Locked duelists are visibly muted. Baseline, derived and stale current
-  ratings are visibly marked (e.g. italic plus a "baseline", "derived" or
-  "stale" tag).
+- Locked duelists are visibly muted. A current rating that may be out of date
+  gets a "stale" tag. There are no other provenance labels (§4).
 
 ### 6.3 Duelist detail
 - Stats: name, tournament level, initial, current, Δ, peak, lowest, largest
@@ -316,11 +314,9 @@ prominent **"+ New tournament"** button, which is the main input flow.
   order), finals reached, tournaments won, and the tournament levels it
   appeared in.
 - **Rating history line chart.** X = position on the timeline, Y = rating.
-  It plots the effective history (§4). When `initialRating` is known, the
-  chart starts from it as a separately styled **baseline** point. Derived
-  points are hollow. The tooltip shows rating, date,
-  tournament, entered/derived, and, when linked to a match, the opponent,
-  W/L and *N*.
+  It plots the effective history (§4) and starts from `initialRating` when
+  that is known. The tooltip shows the rating, date and tournament, and, when
+  the point is linked to a match, the opponent, W/L and *N*.
 - A table of the last ~10 observations.
 - Head-to-head record vs. each opponent (cheap to add, useful).
 - Admin controls, all inline:
@@ -419,7 +415,7 @@ See §7.3.
 
 ## 7. Derived statistics
 
-All statistics are pure functions in `src/features/**/stats.ts` that take
+All statistics are pure functions in `src/domain/` that take
 plain arrays and return values. Components call them through selectors or
 hooks and never reimplement the math inline.
 
@@ -454,7 +450,6 @@ and only displays it; the MVP fits no formula. The main questions:
   each CPU-vs-CPU match whose *N* is known:
   - winner, loser, and their pre-match ratings
   - the gap `winnerPre − loserPre`, *N*, and the tournament level
-  - whether *N* came from one entered side or two
 
   Show a scatter of *N* against the gap, and summaries: the min, max and mode
   of *N*, and *N* for upsets vs. favourites. Also show *N* for each exact gap
@@ -510,30 +505,33 @@ and only displays it; the MVP fits no formula. The main questions:
 
 ```
 src/
-  firebase/        app init, Firestore w/ persistent cache, auth
-  db/              typed repository per collection (converters, CRUD, live queries)
-  data/            duelists.ts roster
-  types/           domain types
-  features/
-    duelists/      stats.ts, hooks, components
-    tournaments/
-    ratings/
-    research/
-  pages/
-  components/      shared UI (tables, delta badge, empty state)
-  utils/
-firestore.rules
-firestore.indexes.json
-firebase.json      emulator config
+  types.ts          domain types
+  data/duelists.ts  the roster
+  domain/           pure logic + Vitest tests: bracket, tournamentRatings,
+                    timeline, stats, research, draft (form ↔ docs), backup
+  firebase.ts       app init, Firestore with persistent cache, auth, emulators
+  db/repository.ts  the only Firestore module: converters, live queries, writes
+  app/              context (data + auth), local drafts, hooks
+  components/       shared UI (rating mark, delta, picker, charts, layout)
+  pages/            one file per route
+tests/rules/        security-rules tests (Firestore emulator)
+firestore.rules, firestore.indexes.json, firebase.json
 ```
 
 - The repository layer is the only place that imports `firebase/firestore`.
   It converts Firestore docs into domain types (Timestamp → Date).
 - Data loading: the collections are small (hundreds to low thousands of docs),
   so the MVP subscribes to each collection once with `onSnapshot`, keeps it in
-  a React context, and derives everything client-side. This keeps the stats
-  logic pure and testable. Revisit if the collections grow large.
-- A central `useAuth()` hook exposes `{ user, isAdmin }`.
+  a React context, and derives everything client-side through
+  `buildModel()`. This keeps the stats logic pure and testable. Revisit if the
+  collections grow large.
+- Writes don't wait for the server. Offline, a Firestore commit only resolves
+  once it syncs, but the local cache and every listener already have the
+  write. Failures surface as an error banner; the header shows
+  "Syncing…" while writes are pending.
+- `useApp()` exposes the model plus `{ user, isAdmin }`.
+- The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
+  they can run beside other projects' emulators.
 
 ## 10. UX
 
@@ -585,7 +583,7 @@ Scripts: `dev`, `build`, `typecheck`, `lint`, `test`, `emulators`.
 ## 12. README must cover
 
 What the app is and why it exists, the tech stack, Firebase setup (creating a
-project, env vars, setting the owner UID in rules and `VITE_ADMIN_UID`, deploying rules), running
+project, env vars, creating the owner's `admins/{uid}` doc, deploying rules), running
 locally with the emulator, the data model, and this statement, verbatim:
 
 > The application records observed in-game ratings.

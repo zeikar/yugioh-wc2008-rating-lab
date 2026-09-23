@@ -1,0 +1,7 @@
+# Postinstall scripts are not needed: @firebase/util only writes autoinit
+# defaults (we pass config explicitly), protobufjs runs a version check, and
+# re2 is an optional native speedup for firebase-tools.
+allowBuilds:
+  '@firebase/util': false
+  protobufjs: false
+  re2: false

@@ -1,0 +1,38 @@
+{
+  "name": "yugioh-wcs2008-rating-lab",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-wcs2008 --import .emulator-data --export-on-exit",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-wcs2008 \"vitest run --config vitest.rules.config.ts\"",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "firebase": "^12.19.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.4.0",
+    "recharts": "^3.10.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "firebase-tools": "^15.30.2",
+    "oxlint": "^1.81.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  }
+}
