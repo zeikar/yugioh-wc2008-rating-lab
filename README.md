@@ -72,7 +72,7 @@ they can run beside other projects' emulators.
   builds with `BASE_PATH=/yugioh-wc2008-rating-lab/` and deploys to Pages. The
   build also copies `index.html` to `404.html`, so deep links work without SPA
   rewrites.
-- **Data:** Firebase project `yugioh-wcs2008-rating-lab`. Its public web config
+- **Data:** Firebase project `yugioh-wc2008-rating-lab`. Its public web config
   is in [.env.production](.env.production); Firestore security rules are what
   protect the data.
 - **Security rules** are deployed from a machine signed in to the Firebase CLI:

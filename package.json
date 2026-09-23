@@ -12,7 +12,7 @@
     "test": "vitest run",
     "test:rules": "firebase emulators:exec --config firebase.test.json --only firestore --project demo-wc2008 \"vitest run --config vitest.rules.config.ts\"",
     "preview": "vite preview",
-    "deploy:rules": "firebase deploy --only firestore --project yugioh-wcs2008-rating-lab"
+    "deploy:rules": "firebase deploy --only firestore --project yugioh-wc2008-rating-lab"
   },
   "dependencies": {
     "firebase": "^12.19.0",
