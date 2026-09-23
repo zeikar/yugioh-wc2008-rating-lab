@@ -11,7 +11,8 @@
     "lint": "oxlint",
     "test": "vitest run",
     "test:rules": "firebase emulators:exec --config firebase.test.json --only firestore --project demo-wcs2008 \"vitest run --config vitest.rules.config.ts\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:rules": "firebase deploy --only firestore --project yugioh-wcs2008-rating-lab"
   },
   "dependencies": {
     "firebase": "^12.19.0",
@@ -34,5 +35,9 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.1"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12"
   }
 }

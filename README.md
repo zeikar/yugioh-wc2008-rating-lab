@@ -61,18 +61,30 @@ Then in the app:
 The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
 they can run beside other projects' emulators.
 
-## Deploy to a real Firebase project
+## Deployment
 
-1. Create a Firebase project. Enable **Firestore** and **Authentication →
-   Google**.
-2. Add a web app. Put its config in `.env` (`VITE_FIREBASE_*`) and remove
-   `VITE_USE_EMULATORS`.
-3. Deploy the rules: `pnpm exec firebase deploy --only firestore:rules --project <id>`.
-4. Sign in once in the app. Then, in the Firestore console, create a document
-   `admins/<your uid>`; the uid is shown on the Data page. Any field works, for
-   example `grantedAt`.
-5. Build and host: `pnpm build`, then `pnpm exec firebase deploy --only hosting --project <id>`.
-   Any static host works too.
+- **Web app:** GitHub Pages at https://zeikar.dev/yugioh-wcs2008-rating-lab/.
+  [.github/workflows/ci.yml](.github/workflows/ci.yml) runs typecheck, lint,
+  unit tests and rules tests on every pull request and push. On `main` it
+  builds with `BASE_PATH=/yugioh-wcs2008-rating-lab/` and deploys to Pages. The
+  build also copies `index.html` to `404.html`, so deep links work without SPA
+  rewrites.
+- **Data:** Firebase project `yugioh-wcs2008-rating-lab`. Its public web config
+  is in [.env.production](.env.production); Firestore security rules are what
+  protect the data.
+- **Security rules** are deployed from a machine signed in to the Firebase CLI:
+  `pnpm deploy:rules`. Run it after changing `firestore.rules`.
+- **One-time setup (done):**
+  - Firestore created.
+  - Web app registered.
+  - Rules deployed.
+  - Pages source set to GitHub Actions.
+- **One-time setup (in the Firebase console):**
+  - Authentication → Get started → Sign-in method → **Google** → Enable.
+  - Authentication → Settings → Authorized domains → add **zeikar.dev**.
+- **Becoming the owner:** sign in once on the site, then create the Firestore
+  document `admins/<your uid>`. The uid is shown on the Data page. Then run
+  **Sync roster** on the Data page.
 
 ## Scripts
 
@@ -83,6 +95,7 @@ they can run beside other projects' emulators.
 | `pnpm test` | Unit tests for the rating, bracket, stats, research and backup logic |
 | `pnpm test:rules` | Security-rules tests (starts its own Firestore emulator on port 8185, so it can run while `pnpm emulators` is up) |
 | `pnpm typecheck` / `pnpm lint` / `pnpm build` | Type check, oxlint, production build |
+| `pnpm deploy:rules` | Deploy `firestore.rules` and indexes to the Firebase project |
 
 ## Data model
 
