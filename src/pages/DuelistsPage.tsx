@@ -7,12 +7,17 @@ import { PageTitle } from '../components/Layout'
 import { Avatar } from '../components/Portrait'
 import { Rating, Tag } from '../components/Rating'
 import { DECK_STYLES, DECKS } from '../data/decks'
+import { ROSTER } from '../data/duelists'
 import type { DuelistRow } from '../domain/stats'
 
 type Value = string | number | null
 
+/** Position in the game's own CPU list, as Roster setup numbers it. */
+const LIST_NO = new Map(ROSTER.map((d, i) => [d.id, i + 1]))
+
 /** Sortable columns: what each sorts by, and the direction a first click uses. */
 const COLUMNS = {
+  no: { label: '#', value: (r: DuelistRow): Value => LIST_NO.get(r.duelist.id) ?? null, firstDir: 1, num: true },
   name: { label: 'Duelist', value: (r: DuelistRow): Value => r.duelist.name, firstDir: 1, num: false },
   level: { label: 'LV', value: (r: DuelistRow): Value => r.duelist.tournamentLevel, firstDir: 1, num: false },
   initial: { label: 'Initial', value: (r: DuelistRow): Value => r.duelist.initialRating, firstDir: -1, num: true },
@@ -107,11 +112,13 @@ export function DuelistsPage() {
           <table className="table">
             <thead>
               <tr>
+                {/* Hidden on phones, like Initial below, to keep Current on screen. */}
+                <SortHeader column="no" sort={sort} onSort={sortBy} className="hidden sm:table-cell" />
                 <th className="num">Rank</th>
                 <SortHeader column="name" sort={sort} onSort={sortBy} />
                 <th className="hidden md:table-cell">Style</th>
                 {(Object.keys(COLUMNS) as ColumnKey[])
-                  .filter((k) => k !== 'name')
+                  .filter((k) => k !== 'no' && k !== 'name')
                   .map((k) => (
                     // Phones drop Initial so Current stays on screen; Δ initial carries the comparison.
                     <SortHeader key={k} column={k} sort={sort} onSort={sortBy} className={k === 'initial' ? 'hidden sm:table-cell' : ''} />
@@ -121,6 +128,7 @@ export function DuelistsPage() {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.duelist.id} className={r.duelist.unlocked ? '' : 'text-ink-3'}>
+                  <td className="num hidden text-ink-3 sm:table-cell">{LIST_NO.get(r.duelist.id) ?? '—'}</td>
                   <td className="num text-ink-3">{rankById.get(r.duelist.id) ?? '—'}</td>
                   <td>
                     <span className="flex items-center gap-2">

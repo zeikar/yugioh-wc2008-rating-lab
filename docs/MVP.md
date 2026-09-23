@@ -324,10 +324,11 @@ prominent **"+ New tournament"** button, which is the main input flow.
 - An empty state for each item when there isn't enough data.
 
 ### 6.2 Duelists (leaderboard)
-- Columns: rank, name, deck style, tournament level, initial, current, Δ
-  from initial, peak, lowest, finals, titles, unlocked.
-- Sort by current rating, gain, loss, name, tournament level, finals or
-  titles. Filter by tournament level or unlocked, plus a name/alias search.
+- Columns: in-game list number, rank, name, deck style, tournament level,
+  initial, current, Δ from initial, peak, lowest, finals, titles, unlocked.
+- Sort by in-game list order, current rating, gain, loss, name, tournament
+  level, finals or titles. Filter by tournament level or unlocked, plus a
+  name/alias search.
 - Locked duelists are visibly muted. A current rating that may be out of date
   gets a "stale" tag. There are no other provenance labels (§4).
 - Each row shows a round crop of the duelist's in-game portrait and its deck
