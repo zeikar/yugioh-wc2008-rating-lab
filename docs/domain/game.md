@@ -39,6 +39,8 @@ Source keys are listed in §8.
   [confirmed: G1, R1, 5CH]
 - **Per round:** probably a single duel rather than best-of-3 [unclear, leaning
   single duel].
+- **LP:** every duel starts at full LP; nothing carries over between rounds
+  [owner, 2026-09-23].
 - **CPU-vs-CPU bracket duels:** these are simulated and can be watched at
   Normal or Fast speed. [confirmed: R1, G1]
 - **Opponents:** drawn at random, and the player cannot choose them
@@ -228,6 +230,7 @@ The Korean release's labels are not researched yet.
 - Ratings are readable in-game during a tournament.
 - CPU duels cannot be skipped.
 - Higher levels mix in lower-level duelists.
+- LP does not carry over between rounds; every duel starts fresh.
 
 **Still open:**
 
@@ -244,7 +247,7 @@ The Korean release's labels are not researched yet.
 4. **Entrants:** are the 7 CPUs always distinct? How are they drawn: which
    lower levels mix in, and how often? Are only unlocked duelists eligible?
    Can DL duelists appear?
-5. **Format:** one duel per round or best-of-3? Does LP carry over?
+5. **Format:** one duel per round or best-of-3?
 6. **Labels:** what are the in-game names for levels, rounds and rating in the
    version you play (JP, EN or KR)?
 7. **Initial values:** Heraklinos (1800?) and all anime characters at 1250?
