@@ -15,16 +15,19 @@ Background on the game and the full CPU roster with sources:
 
 ## What it does
 
-- **Tournament form:** record one whole tournament while it happens: the 8
-  seats (you plus 7 CPUs) with entry ratings, then each duel's winner and new
-  ratings. For a CPU duel, type one side's new rating and the other side is
-  filled in (CPU duels are zero-sum). Semifinal and final pairings fill in from
-  the winners. Enter moves to the next field, and 1 or 2 picks a winner.
+- **Tournament form:** record one whole tournament while it happens.
+  - Seat the 8 entrants (you plus 7 CPUs); each CPU's rating going in comes
+    from its history.
+  - After each CPU duel, type either side's new rating: the other side and
+    the winner follow (CPU duels are zero-sum). For your own duels, press 1 or
+    2 to pick the winner.
+  - Semifinal and final pairings fill in from the winners, and Enter moves to
+    the next field.
 - **Duelists:** a leaderboard with current rating, change from the initial
   rating, peak, low, recorded W–L, finals and titles, and a page per duelist
   with its rating history chart.
 - **Research:** points moved against the rating gap for every CPU duel,
-  entry ratings that changed outside recorded duels, which levels mix in
+  tournaments to save again after a correction, which levels mix in
   lower-level duelists, initial rating against current, upsets and rivalries.
 - **Backups:** export everything as JSON; import replaces all data after the
   file is checked.
@@ -126,10 +129,12 @@ What an observation means depends on its links:
   side's new rating is typed, the other is filled in from the rule and saved
   with `source: 'derived'`. Re-saving a tournament recomputes its derived
   values, so fixing a typo flows through later rounds.
-- **Pre-match ratings come only from the same tournament.** That is the entry
-  rating, then the result of the CPU's previous CPU duel. A rating goes
-  **stale** when the CPU plays a recorded CPU duel whose result rating is
-  unknown; the UI marks it.
+- **A CPU's rating going into a tournament comes from its history:** its
+  last recorded rating, or its initial rating if it has never played. It is
+  stored with the tournament when saved. If that history is corrected later,
+  the tournament asks to be saved again.
+- **A rating goes stale** when the CPU plays a recorded CPU duel whose result
+  rating is unknown; the UI marks it.
 - The **initial rating** comes from the roster and is only a baseline. It is
   excluded from peak and low. Whether a rating was typed or filled in is kept
   in the data (`source`), but the UI shows both the same way.

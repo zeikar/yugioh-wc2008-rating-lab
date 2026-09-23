@@ -1,4 +1,4 @@
-import { PLAYER_ID, type Dataset, type Match, type RatingObservation, type Tournament, type TournamentLevel } from '../types'
+import { PLAYER_ID, ROUNDS, type Dataset, type Match, type RatingObservation, type Tournament, type TournamentLevel } from '../types'
 import {
   SEATS,
   allSlots,
@@ -7,11 +7,12 @@ import {
   entryObservationId,
   isCpu,
   matchDocId,
+  matchLabel,
   postObservationId,
   slotKey,
   type Pairing,
 } from './bracket'
-import { analyzeTournament, type TournamentRatings } from './tournamentRatings'
+import { analyzeTournament, ratingEnteringRound, type TournamentRatings } from './tournamentRatings'
 
 export interface MatchDraft {
   winnerId: string | null
@@ -31,8 +32,6 @@ export interface TournamentDraft {
   title: string
   notes: string
   entrants: (string | null)[]
-  /** Typed entry rating per CPU id. */
-  entryRatings: Record<string, string>
   /** Keyed by slotKey(round, slot). */
   results: Record<string, MatchDraft>
   /**
@@ -68,12 +67,11 @@ export function newDraft(id: string, number: number, tournamentLevel: Tournament
     title: '',
     notes: '',
     entrants: Array<string | null>(SEATS).fill(null),
-    entryRatings: {},
     results: {},
   }
 }
 
-/** Rebuilds the form state from a saved tournament. Derived ratings are left out: they get recomputed. */
+/** Rebuilds the form state from a saved tournament. */
 export function draftFromSaved(t: Tournament, matches: Match[], observations: RatingObservation[]): TournamentDraft {
   const draft = newDraft(t.id, t.number, t.tournamentLevel, t.playedAt)
   draft.title = t.title ?? ''
@@ -88,14 +86,12 @@ export function draftFromSaved(t: Tournament, matches: Match[], observations: Ra
     }
   }
   const slotOf = new Map(matches.map((m) => [m.id, slotKey(m.round, m.slot)]))
+  // Only typed post-match ratings come back into the form; entry ratings and
+  // zero-sum fills are recomputed.
   for (const o of observations) {
-    if (o.tournamentId !== t.id || o.source !== 'entered') continue
-    if (!o.matchId) {
-      draft.entryRatings[o.duelistId] = String(o.rating)
-    } else {
-      const key = slotOf.get(o.matchId)
-      if (key) draft.results[key].post[o.duelistId] = String(o.rating)
-    }
+    if (o.tournamentId !== t.id || o.source !== 'entered' || !o.matchId) continue
+    const key = slotOf.get(o.matchId)
+    if (key) draft.results[key].post[o.duelistId] = String(o.rating)
   }
   return draft
 }
@@ -109,59 +105,88 @@ export function parseRating(text: string | undefined): number | null | 'invalid'
 
 export interface DraftEvaluation {
   pairings: Pairing[]
-  /** Matches that can be saved: both players known and a winner picked. */
+  /** Matches that can be saved: both players known and a winner decided. */
   matches: Match[]
   ratings: TournamentRatings
-  entryRatings: Map<string, number>
+  /** Each CPU entrant's rating going into the tournament, as supplied by the caller. */
+  entryRatings: ReadonlyMap<string, number>
   enteredPost: Map<string, Map<string, number>>
+  /** Per slotKey: the winner the typed ratings imply (who gained points), or null. */
+  inferredWinner: Map<string, string | null>
   errors: string[]
 }
 
-export function evaluateDraft(draft: TournamentDraft, createdAt: Date = new Date(0)): DraftEvaluation {
+/**
+ * Works out the whole bracket from the form (MVP §6.5), round by round:
+ * each round's pairings come from the previous winners, and a CPU duel's
+ * winner comes from the typed ratings (the side that gained points), falling
+ * back to a manual pick when no rating says. Pre-match ratings chain from
+ * `entryRatings`, each CPU's rating going into the tournament.
+ */
+export function evaluateDraft(draft: TournamentDraft, entryRatings: ReadonlyMap<string, number>, createdAt: Date = new Date(0)): DraftEvaluation {
   const errors = entrantErrors(draft.entrants)
   // A live tournament always has you in it; backfilled ones may leave seats unknown.
   if (draft.entrants.every((e) => e !== null) && !draft.entrants.includes(PLAYER_ID)) errors.push('one seat must be "You"')
   const playedAt = new Date(draft.playedAt)
   if (Number.isNaN(playedAt.getTime())) errors.push('date/time is invalid')
 
-  const winners = new Map(Object.entries(draft.results).map(([k, r]) => [k, r.winnerId]))
-  const pairings = derivePairings(draft.entrants, winners)
-
-  const entryRatings = new Map<string, number>()
-  for (const id of draft.entrants.filter(isCpu)) {
-    const v = parseRating(draft.entryRatings[id])
-    if (v === 'invalid') errors.push(`entry rating for ${id} is not a whole number`)
-    else if (v !== null) entryRatings.set(id, v)
-  }
-
+  const winners = new Map<string, string | null>()
+  const inferredWinner = new Map<string, string | null>()
   const matches: Match[] = []
   const enteredPost = new Map<string, Map<string, number>>()
-  for (const p of pairings) {
-    if (p.playerAId === null || p.playerBId === null || p.winnerId === null) continue
-    const r = draft.results[slotKey(p.round, p.slot)] ?? emptyMatchDraft()
-    const lp = r.remainingLp.trim()
-    if (lp !== '' && !/^\d{1,5}$/.test(lp)) errors.push(`${slotKey(p.round, p.slot)}: LP is not a whole number`)
-    const id = matchDocId(draft.id, p.round, p.slot)
-    matches.push({
-      id,
-      tournamentId: draft.id,
-      round: p.round,
-      slot: p.slot,
-      playerAId: p.playerAId,
-      playerBId: p.playerBId,
-      winnerId: p.winnerId,
-      remainingLp: lp !== '' && /^\d{1,5}$/.test(lp) ? Number(lp) : undefined,
-      notes: r.notes.trim() || undefined,
-      createdAt,
-    })
-    if (isCpu(p.playerAId) && isCpu(p.playerBId)) {
-      const posts = new Map<string, number>()
-      for (const cpu of [p.playerAId, p.playerBId]) {
-        const v = parseRating(r.post[cpu])
-        if (v === 'invalid') errors.push(`${slotKey(p.round, p.slot)}: rating for ${cpu} is not a whole number`)
-        else if (v !== null) posts.set(cpu, v)
+  for (const round of ROUNDS) {
+    // Ratings after the earlier rounds, which this round's pre-match ratings chain from.
+    const before = analyzeTournament(matches, entryRatings, enteredPost)
+    for (const p of derivePairings(draft.entrants, winners).filter((x) => x.round === round)) {
+      const key = slotKey(p.round, p.slot)
+      const label = matchLabel(p.round, p.slot)
+      const a = p.playerAId
+      const b = p.playerBId
+      if (a === null || b === null) continue
+      const r = draft.results[key] ?? emptyMatchDraft()
+      const id = matchDocId(draft.id, p.round, p.slot)
+      const manual = r.winnerId === a || r.winnerId === b ? r.winnerId : null
+      let winner = manual
+      if (isCpu(a) && isCpu(b)) {
+        const posts = new Map<string, number>()
+        for (const cpu of [a, b]) {
+          const v = parseRating(r.post[cpu])
+          if (v === 'invalid') errors.push(`${label}: the rating for ${cpu} is not a whole number`)
+          else if (v !== null) posts.set(cpu, v)
+        }
+        if (posts.size > 0) enteredPost.set(id, posts)
+        // Whoever gained points won (zero-sum); a side that lost points means the other won.
+        let byRating: string | null = null
+        for (const [cpu, other] of [
+          [a, b],
+          [b, a],
+        ] as const) {
+          const post = posts.get(cpu)
+          const pre = ratingEnteringRound(before, entryRatings, cpu, round)
+          if (post === undefined || pre === null || post === pre) continue
+          const w = post > pre ? cpu : other
+          if (byRating !== null && byRating !== w) errors.push(`${label}: the two new ratings disagree on who won`)
+          byRating ??= w
+        }
+        inferredWinner.set(key, byRating)
+        winner = byRating ?? manual
       }
-      if (posts.size > 0) enteredPost.set(id, posts)
+      winners.set(key, winner)
+      if (winner === null) continue
+      const lp = r.remainingLp.trim()
+      if (lp !== '' && !/^\d{1,5}$/.test(lp)) errors.push(`${label}: LP is not a whole number`)
+      matches.push({
+        id,
+        tournamentId: draft.id,
+        round: p.round,
+        slot: p.slot,
+        playerAId: a,
+        playerBId: b,
+        winnerId: winner,
+        remainingLp: lp !== '' && /^\d{1,5}$/.test(lp) ? Number(lp) : undefined,
+        notes: r.notes.trim() || undefined,
+        createdAt,
+      })
     }
   }
   const ratings = analyzeTournament(matches, entryRatings, enteredPost)
@@ -169,7 +194,7 @@ export function evaluateDraft(draft: TournamentDraft, createdAt: Date = new Date
   for (const d of ratings.derived) {
     if (d.rating < 0 || d.rating > MAX_RATING) errors.push(`${d.matchId.slice(draft.id.length + 1)}: the filled-in rating for ${d.duelistId} would be ${d.rating}; check the ratings for a typo`)
   }
-  return { pairings, matches, entryRatings, enteredPost, errors, ratings }
+  return { pairings: derivePairings(draft.entrants, winners), matches, entryRatings, enteredPost, inferredWinner, errors, ratings }
 }
 
 export const MAX_RATING = 99999
@@ -190,11 +215,11 @@ export interface SavePayload {
 
 /**
  * Everything one "Save tournament" writes (MVP §6.5): deterministic IDs so a
- * re-save overwrites, derived partner ratings recomputed, `createdAt` kept for
- * docs that already exist, and deletes for docs the draft no longer has.
+ * re-save overwrites, entry and zero-sum ratings recomputed, `createdAt` kept
+ * for docs that already exist, and deletes for docs the draft no longer has.
  */
-export function buildSavePayload(draft: TournamentDraft, existing: ExistingTournamentDocs, now: Date): SavePayload {
-  const evaluation = evaluateDraft(draft)
+export function buildSavePayload(draft: TournamentDraft, entryRatings: ReadonlyMap<string, number>, existing: ExistingTournamentDocs, now: Date): SavePayload {
+  const evaluation = evaluateDraft(draft, entryRatings)
   if (evaluation.errors.length > 0) throw new Error(evaluation.errors.join('; '))
   const playedAt = new Date(draft.playedAt)
   const createdAtOf = new Map<string, Date>([
@@ -218,7 +243,12 @@ export function buildSavePayload(draft: TournamentDraft, existing: ExistingTourn
   const observations: RatingObservation[] = []
   const obs = (id: string, duelistId: string, rating: number, source: RatingObservation['source'], matchId?: string) =>
     observations.push({ id, duelistId, rating, observedAt: playedAt, tournamentId: draft.id, matchId, source, createdAt: keep(id) })
-  for (const [duelistId, rating] of evaluation.entryRatings) obs(entryObservationId(draft.id, duelistId), duelistId, rating, 'entered')
+  // The rating each CPU came in with, carried from its history: stored so the
+  // tournament's numbers stay self-contained if that history changes later.
+  for (const id of draft.entrants.filter(isCpu)) {
+    const rating = entryRatings.get(id)
+    if (rating !== undefined) obs(entryObservationId(draft.id, id), id, rating, 'derived')
+  }
   for (const [matchId, posts] of evaluation.enteredPost)
     for (const [duelistId, rating] of posts) obs(postObservationId(matchId, duelistId), duelistId, rating, 'entered', matchId)
   for (const d of evaluation.ratings.derived) obs(postObservationId(d.matchId, d.duelistId), d.duelistId, d.rating, 'derived', d.matchId)
@@ -236,6 +266,11 @@ export function buildSavePayload(draft: TournamentDraft, existing: ExistingTourn
 
 /** Every recordable (round, slot) in play order, for iterating the form. */
 export const BRACKET_SLOTS = allSlots()
+
+/** The entry ratings stored with a saved tournament, by CPU id. */
+export function entryRatingsOf(tournamentId: string, observations: RatingObservation[]): Map<string, number> {
+  return new Map(observations.filter((o) => o.tournamentId === tournamentId && !o.matchId).map((o) => [o.duelistId, o.rating]))
+}
 
 /** What deleting a tournament removes (MVP §4): its matches and every observation linked to it. */
 export function tournamentCascade(tournamentId: string, data: Pick<Dataset, 'matches' | 'observations'>): { matchIds: string[]; observationIds: string[] } {

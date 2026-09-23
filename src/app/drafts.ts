@@ -9,7 +9,10 @@ const PREFIX = 'wcs2008:draft:'
 export function loadDraft(id: string): TournamentDraft | null {
   try {
     const raw = localStorage.getItem(PREFIX + id)
-    return raw ? (JSON.parse(raw) as TournamentDraft) : null
+    if (!raw) return null
+    // Drafts from before entry ratings were carried automatically had typed ones; they no longer apply.
+    const { entryRatings: _legacy, ...draft } = JSON.parse(raw) as TournamentDraft & { entryRatings?: unknown }
+    return draft
   } catch {
     return null
   }

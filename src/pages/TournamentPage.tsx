@@ -8,12 +8,22 @@ import { DuelistLink } from '../components/DuelistLink'
 import { DuelistPicker } from '../components/DuelistPicker'
 import { Empty } from '../components/Empty'
 import { PageTitle } from '../components/Layout'
-import { Rating, Tag } from '../components/Rating'
+import { Rating } from '../components/Rating'
 import { deleteTournament, saveTournament } from '../db/repository'
-import { BRACKET_SLOTS, buildSavePayload, draftFingerprint, draftFromSaved, emptyMatchDraft, evaluateDraft, type DraftEvaluation, type TournamentDraft } from '../domain/draft'
+import {
+  BRACKET_SLOTS,
+  buildSavePayload,
+  draftFingerprint,
+  draftFromSaved,
+  emptyMatchDraft,
+  entryRatingsOf,
+  evaluateDraft,
+  type DraftEvaluation,
+  type TournamentDraft,
+} from '../domain/draft'
 import { MATCHES_PER_ROUND, ROUND_LABEL, isCpu, matchLabel, slotKey, type Pairing } from '../domain/bracket'
 import { displayName } from '../domain/stats'
-import { buildTimeline, ratingBefore } from '../domain/timeline'
+import { buildTimeline, ratingAtStart } from '../domain/timeline'
 import { ratingEnteringRound } from '../domain/tournamentRatings'
 import { PLAYER_ID, ROUNDS, type Duelist, type Round, type Tournament, type TournamentLevel } from '../types'
 
@@ -48,7 +58,7 @@ function useSavedDocs(id: string, saved: Tournament | undefined) {
 function TournamentView({ tournament }: { tournament: Tournament }) {
   const docs = useSavedDocs(tournament.id, tournament)
   const draft = useMemo(() => draftFromSaved(tournament, docs.matches, docs.observations), [tournament, docs])
-  const ev = useMemo(() => evaluateDraft(draft), [draft])
+  const ev = useMemo(() => evaluateDraft(draft, entryRatingsOf(tournament.id, docs.observations)), [draft, tournament.id, docs])
   return (
     <>
       <PageTitle>
@@ -91,11 +101,11 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   const savedVersion = fromSaved ? draftFingerprint(fromSaved) : null
   const conflict = edits !== null && savedVersion !== null && savedVersion !== (edits.baseVersion ?? null) && savedVersion !== draftFingerprint(edits)
 
-  const ev = useMemo(() => (draft ? evaluateDraft(draft) : null), [draft])
-  // Hints depend only on where this tournament sits on the timeline, not on what's typed into it.
+  // Each CPU's rating going in comes from its history, which depends only on
+  // where this tournament sits on the timeline, not on what's typed into it.
   const draftPlayedAt = draft?.playedAt
   const draftNumber = draft?.number
-  const hintIndex = useMemo(() => {
+  const historyIndex = useMemo(() => {
     if (draftPlayedAt === undefined || draftNumber === undefined) return null
     const playedAt = new Date(draftPlayedAt)
     const stub: Tournament = {
@@ -112,8 +122,28 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
       observations: model.data.observations.filter((o) => o.tournamentId !== id),
     })
   }, [model.data, id, draftPlayedAt, draftNumber, saved])
+  const entrantsKey = draft?.entrants.join('|') ?? ''
+  const entryRatings = useMemo(() => {
+    const ratings = new Map<string, number>()
+    if (!historyIndex) return ratings
+    for (const cpu of entrantsKey.split('|').filter(isCpu)) {
+      const duelist = model.duelistById.get(cpu)
+      const r = duelist ? ratingAtStart(historyIndex, duelist, id) : null
+      if (r !== null) ratings.set(cpu, r)
+    }
+    return ratings
+  }, [historyIndex, entrantsKey, model.duelistById, id])
+  const ev = useMemo(() => (draft ? evaluateDraft(draft, entryRatings) : null), [draft, entryRatings])
 
-  if (!draft || !ev || !hintIndex) {
+  // A saved tournament whose history changed after it was saved (a reading or
+  // an earlier tournament was corrected): saving again brings it up to date.
+  const stale = useMemo(() => {
+    if (!saved) return []
+    const stored = entryRatingsOf(id, docs.observations)
+    return [...entryRatings].filter(([cpu, r]) => stored.get(cpu) !== r).map(([cpu, r]) => ({ cpu, was: stored.get(cpu) ?? null, now: r }))
+  }, [saved, id, docs, entryRatings])
+
+  if (!draft || !ev || !historyIndex) {
     return (
       <Empty>
         This tournament doesn't exist or was discarded. <Link to="/tournaments" className="text-accent underline">Back to tournaments</Link>
@@ -135,7 +165,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   const save = () => {
     let payload
     try {
-      payload = buildSavePayload(draft, docs, new Date())
+      payload = buildSavePayload(draft, entryRatings, docs, new Date())
     } catch (e) {
       setMessage((e as Error).message)
       return
@@ -193,7 +223,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
                 {saved ? 'Discard changes' : 'Discard tournament'}
               </button>
             )}
-            <button className="btn btn-primary" disabled={!dirty || conflict || ev.errors.length > 0} onClick={save}>
+            <button className="btn btn-primary" disabled={(!dirty && stale.length === 0) || conflict || ev.errors.length > 0} onClick={save}>
               Save tournament
             </button>
           </div>
@@ -231,6 +261,13 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
         </label>
       </div>
 
+      {stale.length > 0 && !dirty && (
+        <div role="status" className="mb-4 rounded-md border border-[#f0d9a8] bg-warn-soft px-3 py-2 text-sm text-warn">
+          Ratings going into this tournament changed after it was saved:{' '}
+          {stale.map((s) => `${displayName(model, s.cpu)} ${s.was ?? '—'} → ${s.now}`).join(', ')}. Save again to update this tournament.
+        </div>
+      )}
+
       {conflict && (
         <div role="alert" className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-[#f0d9a8] bg-warn-soft px-3 py-2 text-sm text-warn">
           This tournament was changed in another tab or on another device after you started editing here. Saving now would overwrite that.
@@ -254,12 +291,12 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
         </div>
       )}
 
-      <p className="mb-3 text-sm text-ink-2">
-        Seat the 8 entrants in bracket order with their ratings, then record each duel as it happens. Enter moves to the next field; press 1 or 2 on a
-        match to pick its winner. For a CPU duel, type one side's new rating and the other is filled in.
+      <p className="mb-3 max-w-prose text-sm text-ink-2">
+        Seat the 8 entrants in bracket order; each CPU's rating going in comes from its history. After a CPU duel, type either side's new rating: the other
+        side and the winner follow from it. For your own duels, press 1 or 2 (or click) to pick the winner. Enter moves to the next field.
       </p>
 
-      <Bracket draft={draft} ev={ev} editable update={update} hint={(d) => ratingBefore(hintIndex, d, id)?.observation.rating ?? null} />
+      <Bracket draft={draft} ev={ev} editable update={update} />
       <Transfers ev={ev} />
 
       {saved && (
@@ -309,7 +346,6 @@ interface BracketProps {
   ev: DraftEvaluation
   editable: boolean
   update?: (fn: (d: TournamentDraft) => void) => void
-  hint?: (duelistId: string) => number | null
 }
 
 function Bracket(props: BracketProps) {
@@ -329,7 +365,7 @@ function Bracket(props: BracketProps) {
   )
 }
 
-function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketProps & { round: Round; slot: number }) {
+function MatchCard({ draft, ev, editable, update, round, slot }: BracketProps & { round: Round; slot: number }) {
   const { model } = useApp()
   const key = slotKey(round, slot)
   const pairing = ev.pairings.find((p) => p.round === round && p.slot === slot)!
@@ -340,6 +376,10 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
   const players = [pairing.playerAId, pairing.playerBId]
   const cpuMatch = isCpu(players[0]) && isCpu(players[1])
   const ready = players[0] !== null && players[1] !== null
+  // A CPU duel's winner follows from the typed ratings; a manual pick is only for your duels,
+  // or a CPU duel whose ratings going in are unknown.
+  const decidedByRatings = ev.inferredWinner.get(key) != null
+  const needsManualPick = ready && (!cpuMatch || players.every((p) => p !== null && ratingEnteringRound(ev.ratings, ev.entryRatings, p, round) === null))
   const setResult = (fn: (r: TournamentDraft['results'][string]) => void) =>
     update?.((d) => {
       const r = d.results[key] ?? emptyMatchDraft()
@@ -349,7 +389,7 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
   const pickWinner = (i: 0 | 1) => {
     const p = players[i]
     // Synchronous so an Enter right after the key press finds the rating inputs this reveals.
-    if (editable && ready && p) flushSync(() => setResult((r) => void (r.winnerId = r.winnerId === p ? null : p)))
+    if (editable && ready && p && !decidedByRatings) flushSync(() => setResult((r) => void (r.winnerId = r.winnerId === p ? null : p)))
   }
 
   return (
@@ -361,9 +401,9 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
       </div>
       <div
         role="group"
-        aria-label={`${matchLabel(round, slot)}: press 1 or 2 to pick the winner`}
-        tabIndex={editable && ready ? 0 : -1}
-        data-nav={editable && ready ? nav : undefined}
+        aria-label={needsManualPick ? `${matchLabel(round, slot)}: press 1 or 2 to pick the winner` : matchLabel(round, slot)}
+        tabIndex={editable && needsManualPick ? 0 : -1}
+        data-nav={editable && needsManualPick ? nav : undefined}
         onKeyDown={(e) => {
           // Only when the group itself has focus: the rating inputs inside it take digits too.
           if (e.target !== e.currentTarget) return
@@ -384,8 +424,8 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
             ev={ev}
             editable={editable}
             update={update}
-            hint={hint}
             duelists={model.data.duelists}
+            decidedByRatings={decidedByRatings}
             onWinner={() => pickWinner(i as 0 | 1)}
             setPost={(id, v) => setResult((r) => void (r.post[id] = v))}
             postValue={players[i] ? (result.post[players[i]!] ?? '') : ''}
@@ -405,7 +445,7 @@ function MatchCard({ draft, ev, editable, update, hint, round, slot }: BracketPr
               <input
                 aria-label="Winner's remaining LP"
                 className="field w-20"
-                placeholder="LP"
+                placeholder="Winner's LP"
                 inputMode="numeric"
                 data-nav={nav + 3}
                 value={result.remainingLp}
@@ -436,15 +476,15 @@ interface SideRowProps {
   ev: DraftEvaluation
   editable: boolean
   update?: BracketProps['update']
-  hint?: BracketProps['hint']
   duelists: Duelist[]
+  decidedByRatings: boolean
   onWinner: () => void
   setPost: (duelistId: string, value: string) => void
   postValue: string
   navBase: number
 }
 
-function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, update, hint, duelists, onWinner, setPost, postValue, navBase }: SideRowProps) {
+function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, update, duelists, decidedByRatings, onWinner, setPost, postValue, navBase }: SideRowProps) {
   const { model } = useApp()
   const id = side === 0 ? pairing.playerAId : pairing.playerBId
   const other = side === 0 ? pairing.playerBId : pairing.playerAId
@@ -466,7 +506,7 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
         duelists={duelists}
         tournamentLevel={draft.tournamentLevel}
         taken={taken}
-        navIndex={10 + seat * 2}
+        navIndex={10 + seat}
       />
     )
   } else if (id === null) {
@@ -479,43 +519,11 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
     )
   }
 
-  let before: ReactNode = null
-  if (isCpu(id)) {
-    if (round === 'quarterfinal' && editable) {
-      const h = hint?.(id) ?? null
-      const typed = draft.entryRatings[id] ?? ''
-      const changed = h !== null && typed !== '' && Number(typed) !== h
-      before = (
-        <span className="flex items-center gap-1">
-          <span aria-hidden className="text-xs text-gold">
-            ▲
-          </span>
-          <input
-            aria-label={`Entry rating of ${displayName(model, id)}`}
-            className="field w-16 text-right"
-            inputMode="numeric"
-            placeholder={h?.toString() ?? ''}
-            data-nav={10 + seat * 2 + 1}
-            value={typed}
-            onChange={(e) => update?.((d) => void (d.entryRatings[id] = e.target.value))}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && typed === '' && h !== null) update?.((d) => void (d.entryRatings[id] = String(h)))
-            }}
-          />
-          {changed && (
-            <span title={`Last known rating was ${h}. It changed outside the recorded duels.`}>
-              <Tag tone="warn">changed</Tag>
-            </span>
-          )}
-        </span>
-      )
-    } else {
-      before = <Rating value={pre} />
-    }
-  }
+  const before: ReactNode = isCpu(id) ? <Rating value={pre} /> : null
 
   let after: ReactNode = null
-  if (cpuMatch && pairing.winnerId !== null && id) {
+  // The new-rating input is there as soon as both CPUs are known: typing it decides the winner.
+  if (cpuMatch && id) {
     // The zero-sum fill for an empty side shows as the input's placeholder.
     const derived = post?.source === 'derived' ? post.rating : null
     const delta = post && pre !== null ? post.rating - pre : null
@@ -553,10 +561,10 @@ function SideRow({ side, round, slot, pairing, ratings, draft, ev, editable, upd
           aria-pressed={isWinner}
           aria-label={`${id ? displayName(model, id) : 'This side'} won`}
           tabIndex={-1}
-          disabled={!editable || pairing.playerAId === null || pairing.playerBId === null}
+          disabled={!editable || pairing.playerAId === null || pairing.playerBId === null || decidedByRatings}
           onClick={onWinner}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${isWinner ? 'border-accent bg-accent text-white' : 'border-rule text-ink-3'} ${editable ? 'hover:border-accent' : ''}`}
-          title={editable ? `Winner (key ${side + 1})` : undefined}
+          title={editable ? (decidedByRatings ? 'Decided by the ratings' : `Winner (key ${side + 1})`) : undefined}
         >
           {isWinner ? 'W' : side + 1}
         </button>

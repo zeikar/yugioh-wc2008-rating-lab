@@ -41,7 +41,8 @@ export function DuelistPage() {
     )
   }
   const { duelist, rating, record } = row
-  const history = rating.history
+  // A tournament's carried entry rating repeats the point before it; showing it would only add duplicates.
+  const history = rating.history.filter((p) => !(p.kind === 'entry' && p.observation.source === 'derived'))
 
   const points: ChartPoint[] = []
   if (duelist.initialRating !== null) points.push({ x: 0, rating: duelist.initialRating, details: ['Initial rating on a fresh save'] })

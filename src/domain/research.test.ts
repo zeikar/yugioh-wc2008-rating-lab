@@ -24,14 +24,27 @@ describe('transferRows', () => {
 })
 
 describe('continuity', () => {
-  it('compares entry ratings with the last fresh rating before the tournament', () => {
+  it('compares stored entry ratings with what the history now says', () => {
     const d = ownerTournament()
     const later = new Date(T0.getTime() + 86400_000)
-    const t2 = tournament('t2', ['lady-heat', 'shien', 'reaper', 'x', null, null, null, null], later, 2)
-    const obs = [...d.observations, entry(t2, 'lady-heat', 1370), entry(t2, 'shien', 1200), entry(t2, 'reaper', 769), entry(t2, 'x', 1000)]
-    const rows = continuity(buildModel({ ...d, duelists: [...d.duelists, duelist('x')], tournaments: [d.t, t2], observations: obs }))
+    const t2 = tournament('t2', ['lady-heat', 'shien', 'reaper', 'x', 'blowback-dragon', null, null, null], later, 2)
+    const obs = [
+      ...d.observations,
+      entry(t2, 'lady-heat', 1370),
+      entry(t2, 'shien', 1200),
+      entry(t2, 'reaper', 769),
+      entry(t2, 'x', 1000),
+      entry(t2, 'blowback-dragon', 1526),
+    ]
+    const rows = continuity(buildModel({ ...d, duelists: [...d.duelists, duelist('x', 1000)], tournaments: [d.t, t2], observations: obs }))
     const status = Object.fromEntries(rows.filter((r) => r.tournament.id === 't2').map((r) => [r.duelistId, r.status]))
-    expect(status).toEqual({ 'lady-heat': 'same', shien: 'changed', reaper: 'same', x: 'unknown' })
+    expect(status).toEqual({
+      'lady-heat': 'same',
+      shien: 'changed', // history says 1216
+      reaper: 'same',
+      x: 'same', // never played: its initial rating
+      'blowback-dragon': 'unknown', // its SF1 result isn't stored in this fixture, so its rating went stale
+    })
   })
 })
 

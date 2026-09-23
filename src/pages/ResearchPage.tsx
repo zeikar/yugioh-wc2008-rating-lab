@@ -19,7 +19,6 @@ export function ResearchPage() {
   const issues = integrityIssues(model)
   const cont = continuity(model)
   const contChanged = cont.filter((c) => c.status === 'changed')
-  const contUnknown = cont.filter((c) => c.status === 'unknown').length
   const mix = entrantMix(model.data.tournaments, model.duelistById)
   const h2h = headToHead(model)
   const topUpsets = upsets(model.analyses, model.data.tournaments).slice(0, 10)
@@ -133,31 +132,27 @@ export function ResearchPage() {
         </Section>
 
         <Section
-          title="Changes outside recorded duels"
-          note="Entry ratings that differ from the CPU's last known rating: an unrecorded tournament, View CPU Duel, or a typo."
+          title="Tournaments to save again"
+          note="A tournament stores each CPU's rating going in when it's saved. If a reading or an earlier tournament is corrected afterwards, the two no longer match; open the tournament and save it again."
         >
-          {cont.length > 0 && contUnknown > 0 && (
-            <p className="mb-2 text-sm text-ink-3">
-              {contUnknown} of {cont.length} entry ratings had nothing fresh to compare with (a CPU's first recorded tournament, or a gap in the record).
-            </p>
-          )}
           {contChanged.length === 0 ? (
-            <Empty>{cont.length === 0 ? 'No entry ratings yet.' : 'No changes found.'}</Empty>
+            <Empty>{cont.length === 0 ? 'No tournaments yet.' : 'All tournaments are up to date.'}</Empty>
           ) : (
             <div className="panel max-h-80 overflow-auto">
               <table className="table">
                 <tbody>
                   {contChanged.map((c) => (
                     <tr key={`${c.tournament.id}-${c.duelistId}`}>
-                      <td>#{c.tournament.number}</td>
+                      <td>
+                        <Link className="text-accent hover:underline" to={`/tournaments/${c.tournament.id}`}>
+                          #{c.tournament.number}
+                        </Link>
+                      </td>
                       <td>
                         <DuelistLink id={c.duelistId} />
                       </td>
                       <td className="num">
-                        {c.before?.observation.rating} → {c.entry}
-                      </td>
-                      <td className="num">
-                        <Delta value={c.before ? c.entry - c.before.observation.rating : null} />
+                        {c.entry} → {c.now}
                       </td>
                     </tr>
                   ))}

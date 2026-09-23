@@ -1,7 +1,7 @@
 import type { Duelist, Tournament, TournamentLevel } from '../types'
 import { isCpu } from './bracket'
 import type { Model } from './stats'
-import { ratingBefore, type HistoryPoint } from './timeline'
+import { ratingAtStart } from './timeline'
 import type { MatchRatings } from './tournamentRatings'
 
 export interface TransferRow {
@@ -88,25 +88,27 @@ export type ContinuityStatus = 'same' | 'changed' | 'unknown'
 export interface ContinuityRow {
   tournament: Tournament
   duelistId: string
+  /** The entry rating stored when the tournament was saved. */
   entry: number
-  before: HistoryPoint | null
+  /** What the history now says the CPU came in with. */
+  now: number | null
   status: ContinuityStatus
 }
 
-/** Entry ratings compared with the last fresh rating before the tournament (MVP §7.3). */
+/**
+ * Stored entry ratings compared with what the history now says (MVP §7.3).
+ * A tournament carries each CPU's rating in when it's saved; if an earlier
+ * reading or tournament is corrected afterwards, the two differ and the
+ * tournament needs saving again.
+ */
 export function continuity(model: Model): ContinuityRow[] {
   const rows: ContinuityRow[] = []
   for (const t of model.index.tournaments) {
     for (const o of model.data.observations) {
-      if (o.tournamentId !== t.id || o.matchId || o.source !== 'entered') continue
-      const before = ratingBefore(model.index, o.duelistId, t.id)
-      rows.push({
-        tournament: t,
-        duelistId: o.duelistId,
-        entry: o.rating,
-        before,
-        status: before === null ? 'unknown' : before.observation.rating === o.rating ? 'same' : 'changed',
-      })
+      if (o.tournamentId !== t.id || o.matchId) continue
+      const duelist = model.duelistById.get(o.duelistId)
+      const now = duelist ? ratingAtStart(model.index, duelist, t.id) : null
+      rows.push({ tournament: t, duelistId: o.duelistId, entry: o.rating, now, status: now === null ? 'unknown' : now === o.rating ? 'same' : 'changed' })
     }
   }
   return rows

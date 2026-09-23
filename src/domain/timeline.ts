@@ -148,3 +148,19 @@ export function ratingBefore(index: TimelineIndex, duelistId: string, tournament
   if (!last) return null
   return isFresh(index, duelistId, last.key, start) ? last : null
 }
+
+/**
+ * A CPU's rating going into a tournament (MVP §4): its last fresh rating
+ * before it, or, for a CPU with no history and no recorded CPU duel before
+ * it, its initial rating (it has never moved). Otherwise unknown.
+ */
+export function ratingAtStart(index: TimelineIndex, duelist: Duelist, tournamentId: string): number | null {
+  const before = ratingBefore(index, duelist.id, tournamentId)
+  if (before) return before.observation.rating
+  const start = index.tournamentStart.get(tournamentId)
+  if (!start) return null
+  const earlier = (keys: readonly TimelineKey[]) => keys.some((k) => compareKeys(k, start) < 0)
+  const history = (index.history.get(duelist.id) ?? []).map((p) => p.key)
+  if (earlier(history) || earlier(index.cpuMatchKeys.get(duelist.id) ?? [])) return null
+  return duelist.initialRating
+}

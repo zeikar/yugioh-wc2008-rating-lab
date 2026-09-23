@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PLAYER_ID } from '../types'
 import { duelist, entry, match, ownerTournament, post, standalone, T0, tournament } from './fixtures.test-util'
-import { buildTimeline, currentRating, ratingBefore } from './timeline'
+import { buildTimeline, currentRating, ratingAtStart, ratingBefore } from './timeline'
 
 const later = (h: number) => new Date(T0.getTime() + h * 3600_000)
 
@@ -65,5 +65,17 @@ describe('ratingBefore', () => {
     expect(ratingBefore(idx, 'a', 't2')).toBeNull()
     const withPost = buildTimeline({ tournaments: [t1, t2], matches: [qf], observations: [entry(t1, 'a', 1000), post(t1, qf, 'a', 1040)] })
     expect(ratingBefore(withPost, 'a', 't2')?.observation.rating).toBe(1040)
+  })
+})
+
+describe('ratingAtStart', () => {
+  it('uses the last fresh rating, else the initial rating for a CPU that never moved', () => {
+    const d = ownerTournament()
+    const t2 = tournament('t2', [], later(24), 2)
+    const idx = buildTimeline({ ...d, tournaments: [d.t, t2] })
+    expect(ratingAtStart(idx, duelist('lady-heat', 750), 't2')).toBe(1370)
+    expect(ratingAtStart(idx, duelist('never-played', 1650), 't2')).toBe(1650)
+    // Blowback played a CPU match whose result isn't stored here: unknown, not its initial rating.
+    expect(ratingAtStart(idx, duelist('blowback-dragon', 1350), 't2')).toBeNull()
   })
 })

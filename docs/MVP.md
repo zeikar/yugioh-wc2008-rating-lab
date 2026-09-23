@@ -168,7 +168,7 @@ needed:
 
 | tournamentId | matchId | Meaning | Written by |
 |---|---|---|---|
-| set | — | **Entry rating**: the CPU's rating at the start of that tournament. The duelist must be one of the tournament's entrants. | tournament form, one per CPU entrant |
+| set | — | **Entry rating**: the CPU's rating going into that tournament, carried from its history (`ratingAtStart`, below) when the tournament is saved, with `source: 'derived'`. It isn't typed. It is stored so a tournament's numbers stay self-contained if that history is corrected later. The duelist must be one of the tournament's entrants. | tournament form, one per CPU entrant with a known rating |
 | set | set | **Post-match rating**: the CPU's rating right after that CPU-vs-CPU match. `tournamentId` must equal the match's. | tournament form: always both CPUs when derivable (one entered, the other entered or derived) |
 | — | — | **Standalone reading** taken outside any tournament | duelist detail page |
 
@@ -223,14 +223,25 @@ Consequences:
 - **Freshness.** A rating stays a CPU's current rating until that CPU plays
   its next CPU-vs-CPU match. Its matches against the player don't make it
   stale.
-- **Pre-match rating** of a CPU comes only from the same tournament:
-  - for its first CPU-vs-CPU match there, that tournament's entry rating;
+- **Pre-match rating** of a CPU inside a tournament:
+  - for its first CPU-vs-CPU match there, the tournament's entry rating;
   - after that, its post-match rating (entered or derived) from its previous
     CPU-vs-CPU match there.
+- **Rating going in** `ratingAtStart(duelist, tournament)`:
+  - normally the last fresh point of the effective history before the
+    tournament: a roster-setup or duelist-page reading, or the previous
+    tournament's result;
+  - for a CPU with no history and no recorded CPU duel before the tournament,
+    its `initialRating`, since it has never moved;
+  - otherwise unknown.
 
-  Earlier tournaments and standalone readings never stand in, because ratings
-  can drift between tournaments. If there is no such source, the pre-match
-  rating is unknown.
+  Corrections to a rating go in at the source (Roster setup or the duelist
+  page), not in the tournament form.
+- **Winner inference.** In a CPU-vs-CPU duel, the side whose typed rating
+  went up won, and a side whose typed rating went down lost (zero-sum). A
+  manual pick is needed only for duels against the player, or when no typed
+  side has a known pre-match rating. Two typed ratings that point at
+  different winners block the save.
 - **Transfer.** A match's transfer *N* = an entered CPU's post-match rating
   − its pre-match rating, with the sign flipped when that CPU is the
   loser.
@@ -258,9 +269,8 @@ Consequences:
   silently picking one.
 - **Prior rating** `ratingBefore(duelist, tournament)`: the last point of the
   effective history strictly before the tournament, and only if it is still
-  fresh at the tournament's start. Otherwise it is none; a baseline never
-  counts. One function serves the form hint, the ⚠ warning and the continuity
-  check (§7.3).
+  fresh at the tournament's start; a baseline never counts. `ratingAtStart`
+  builds on it, and it serves the continuity check (§7.3).
 
 ## 5. Seed roster
 
@@ -358,11 +368,10 @@ drag-and-drop bracket editor.
 
 ```
 Tournament #13 · Level [2] · 2026-09-23 21:40
-Entrants (seats in bracket order)   entry rating
- QF1  [Blowback Dragon    ] [1526]   last: 1526
-      [You                ]
- QF2  [Manju              ] [1491]   last: 1480 ⚠ changed
-      [Cloudian           ] [1309]
+ QF1  (W) [Blowback Dragon    ] ▲1350 → ▲[1433]  +83
+      (2) [Cloudian           ] ▲1500 → ▲ 1417   −83   (filled in)
+ QF4  (1) [You                ]                        press 1/2
+      (2) [Petit Dragon       ] ▲1650
  …
 Quarterfinals
  QF1  Blowback Dragon  vs  You          winner (•)( )        LP [    ]
@@ -380,32 +389,29 @@ Semifinals / Final   (pairings fill in from the winners)
      classified at or below the tournament's level are listed first, and any
      duelist can be picked.
    - "You" must be used exactly once, and the 7 CPUs must be distinct.
-   - Each CPU seat has an **entry rating** input. When `ratingBefore` (§4)
-     exists, it is shown as a hint, and pressing Enter on an empty field
-     accepts it. Nothing is stored unless it was typed or accepted.
-   - If the entered value differs from `ratingBefore`, the seat shows
-     "⚠ changed outside recorded duels". With no `ratingBefore`, there is no
-     hint and no warning.
+   - Each CPU shows its **rating going in** as read-only text
+     (`ratingAtStart`, §4). There is nothing to type there.
 3. **Matches:** each round lists its pairings. An SF or F pairing appears once
    both of its feeding matches have a winner.
-   - Pick the winner with a click or the 1/2 keys. LP and notes are optional.
-   - A **CPU-vs-CPU** match also shows two *after* rating inputs, and **one
-     is enough**. Typing either one fills the other in as a greyed derived
-     value (§4). On save, **both are stored**: the typed one as `entered`,
-     the filled-in one as `derived`.
+   - A **CPU-vs-CPU** match shows a **new rating** input next to each CPU as
+     soon as both are known, and **one is enough**. Typing either side:
+     - fills the other side in as a greyed value (§4);
+     - picks the winner, since whoever gained points won.
+
+     On save, **both are stored**: the typed one as `entered`, the filled-in
+     one as `derived`.
    - Typing both is allowed. Both are then stored as `entered`, the integrity
      check runs, and a mismatch is shown inline.
-   - If the chosen winner's Δ comes out ≤ 0, a warning is shown, since it
-     usually means a typo or the wrong winner.
-   - Matches involving "You" have no rating inputs.
+   - For "You" matches, which have no rating inputs, pick the winner with a
+     click or the 1/2 keys. Winner's LP and notes are optional.
 4. **Partial tournaments are fine.** An unknown or skipped duel is simply
    not recorded, and the later matches that depend on it can't be recorded
    either (§4).
 
 Input speed:
-- **Enter follows the order things happen in the game**: all entrants and
-  their ratings, then QF1… through F. Tab follows the page layout, card by
-  card.
+- **Enter follows the order things happen in the game**: all 8 seats, then
+  each match's new ratings (or its 1/2 winner key for your duels), QF1…
+  through F. Tab follows the page layout, card by card.
 - There are no modals.
 - A form error that would make the server reject the save blocks Save and is
   shown inline, e.g. a typo that pushes a zero-sum fill below 0.
@@ -481,13 +487,11 @@ and only displays it; the MVP fits no formula. The main questions:
   deterministic formula.
 - **Integrity list.** Matches whose two entered post-match ratings don't
   cancel out (§4).
-- **Continuity check.** For each entry rating, compare it with
-  `ratingBefore` (§4).
-  - A mismatch is listed as "changed outside recorded duels". That happens
-    with a tournament that wasn't recorded, with View CPU Duel
-    (domain/game.md §6), or with a wrong derived value upstream.
-  - When `ratingBefore` is none, the entry is listed as "unknown", not as
-    changed.
+- **Tournaments to save again.** Compare each stored entry rating with what
+  `ratingAtStart` (§4) says now. A mismatch means a reading or an earlier
+  tournament was corrected after this tournament was saved. The tournament
+  page shows the same notice, and saving it again refreshes its entry and
+  zero-sum ratings.
 - **Entrant mix.** For each tournament level, the distribution of its
   entrants' `tournamentLevel`. This answers whether and how often higher
   levels mix in lower-level duelists.

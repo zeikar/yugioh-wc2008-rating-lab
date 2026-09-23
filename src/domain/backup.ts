@@ -163,14 +163,14 @@ export function referenceErrors(data: Dataset): string[] {
       if (!t.entrants.includes(o.duelistId) || !isCpu(o.duelistId)) errors.push(`${where}: entry rating for a CPU that isn't an entrant`)
       if (o.id !== entryObservationId(o.tournamentId, o.duelistId)) errors.push(`${where}: id doesn't follow {tournamentId}_entry_{duelistId}`)
     }
-    if (o.source === 'derived' && !o.matchId) errors.push(`${where}: only post-match ratings can be derived`)
+    if (o.source === 'derived' && !o.tournamentId) errors.push(`${where}: a standalone reading can't be derived`)
   }
   if (errors.length > 0) return errors
 
   // Stored derived ratings must be exactly what the zero-sum rule gives from the entered ones.
   const expected = new Map<string, number>()
   for (const analysis of analyzeAll(data).values()) for (const d of analysis.derived) expected.set(postObservationId(d.matchId, d.duelistId), d.rating)
-  const stored = data.observations.filter((o) => o.source === 'derived')
+  const stored = data.observations.filter((o) => o.source === 'derived' && o.matchId)
   for (const o of stored) {
     const want = expected.get(o.id)
     if (want === undefined) errors.push(`observation ${o.id}: marked derived, but the entered ratings don't derive it`)

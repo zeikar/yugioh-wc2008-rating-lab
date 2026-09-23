@@ -155,11 +155,14 @@ export function championOf(matches: Match[], tournamentId: string): string | nul
   return matches.find((m) => m.tournamentId === tournamentId && m.round === 'final')?.winnerId ?? null
 }
 
-/** Groups by tournament for analyzeTournament, using entered values only. */
+/**
+ * Groups by tournament for analyzeTournament: the stored entry ratings, and
+ * post-match ratings only as typed (zero-sum fills are recomputed).
+ */
 export function analyzeAll(data: Pick<Dataset, 'tournaments' | 'matches' | 'observations'>): Map<string, TournamentRatings> {
   const matchesBy = groupBy(data.matches, (m) => m.tournamentId)
   const obsBy = groupBy(
-    data.observations.filter((o) => o.tournamentId && o.source === 'entered'),
+    data.observations.filter((o) => o.tournamentId && (!o.matchId || o.source === 'entered')),
     (o) => o.tournamentId!,
   )
   const result = new Map<string, TournamentRatings>()
