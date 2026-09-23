@@ -324,14 +324,20 @@ prominent **"+ New tournament"** button, which is the main input flow.
 - An empty state for each item when there isn't enough data.
 
 ### 6.2 Duelists (leaderboard)
-- Columns: rank, name, tournament level, initial, current, Δ from initial,
-  peak, lowest, finals, titles, unlocked.
+- Columns: rank, name, deck style, tournament level, initial, current, Δ
+  from initial, peak, lowest, finals, titles, unlocked.
 - Sort by current rating, gain, loss, name, tournament level, finals or
   titles. Filter by tournament level or unlocked, plus a name/alias search.
 - Locked duelists are visibly muted. A current rating that may be out of date
   gets a "stale" tag. There are no other provenance labels (§4).
+- Each row shows a round crop of the duelist's in-game portrait and its deck
+  style tags.
 
 ### 6.3 Duelist detail
+- Header: the in-game opponent card, then the WC-mode deck's name, style
+  tags, a one-line summary and the full list (collapsed). These are static
+  game data (`src/data/decks.ts`, `src/assets/portraits/`), not Firestore;
+  sources and caveats are in domain/roster.md §6.
 - Stats: name, tournament level, initial, current, Δ, peak, lowest, largest
   single increase and decrease, recorded matches, wins, losses, win rate,
   longest win streak (recorded CPU-vs-CPU and player matches in timeline
@@ -535,12 +541,15 @@ and only displays it; the MVP fits no formula. The main questions:
 src/
   types.ts          domain types
   data/duelists.ts  the roster
+  data/decks.ts     each CPU's WC-mode deck: list, styles, summary
+  assets/portraits/ in-game opponent cards, one per duelist id
   domain/           pure logic + Vitest tests: bracket, tournamentRatings,
                     timeline, stats, research, draft (form ↔ docs), backup
   firebase.ts       app init, Firestore with persistent cache, auth, emulators
   db/repository.ts  the only Firestore module: converters, live queries, writes
   app/              context (data + auth), local drafts, hooks
-  components/       shared UI (rating mark, delta, picker, charts, layout)
+  components/       shared UI (rating mark, delta, picker, charts, portraits,
+                    layout)
   pages/            one file per route
 tests/rules/        security-rules tests (Firestore emulator)
 firestore.rules, firestore.indexes.json, firebase.json

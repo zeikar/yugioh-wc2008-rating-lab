@@ -11,7 +11,7 @@ Confidence labels:
 - **[unclear]**: sources conflict, or the point is an inference.
 - **unknown**: nothing found.
 
-Source keys (full URLs in §6):
+Source keys (full URLs in §7):
 
 | Key | Source |
 |---|---|
@@ -298,7 +298,55 @@ YP-D gives a fixed rating for each world [single]. These are story-mode opponent
 ---
 
 
-## 6. Sources
+## 6. Portraits and WC-mode decklists (used by the app)
+
+The duelist pages show each CPU's in-game opponent card and the list of its
+WC-mode deck (§1). Both come from each CPU's YP-C page, fetched on
+2026-09-23. In the code they live in `src/assets/portraits/` and
+`src/data/decks.ts`.
+
+- **Portraits:** the 256×192 WC2008 opponent card, as the DS shows it, for
+  all 78 CPUs.
+  - Bastion Misawa's singles card isn't published. His page shows only the
+    downloadable ghost's card (deck "WeakDrain", with its own rating and
+    stats), so the app uses that one and says so under it. The art is the
+    same.
+  - Tyranno Hassleberry's image is a larger photo of the screen, scaled down
+    to 256×192.
+  - The rating printed on a card is whatever that save showed when the
+    screenshot was taken, so it is not data. Kozaky's card says 1200, for
+    example, while its initial rating is 1350, confirmed in-game.
+- **Decklists:** the app shows YP-C's list for the WC-mode deck, for all 78.
+  - GF-M agrees card for card on 71 of them [confirmed]. Some cards go by a
+    different English name there, e.g. Hand Destruction for Hand Collapse,
+    Vampire's Curse for Curse of Vampire, Zoma the Spirit for Skull Zoma.
+  - The other 7 differ [unclear]; an in-game check would settle them:
+
+    | Duelist | YP-C (shown in the app) | GF-M |
+    |---|---|---|
+    | Winged Kuriboh | Elemental Hero Neos Alius ×1 | ×2 |
+    | Reaper on the Nightmare | Dark Paladin ×3 in the Extra Deck | Flame Swordsman ×3 instead, plus 1 Beastking of the Swamps |
+    | Jaden Yuki | Dimension Fusion ×1 | none, leaving 39 main-deck cards |
+    | Chazz Princeton | Raigeki ×1 (41 cards) | none (40) |
+    | Bastion Misawa | Spiritual Wind Art - Miyabi ×3 | ×2, plus Mystical Space Typhoon ×1 |
+    | Yami Yugi | Giant Soldier of Stone ×3, Magician's Circle ×1 | ×2 and ×2 |
+    | Seto Kaiba | Polymerization ×2, The Light - Hex-Sealed Fusion ×2 (42 cards) | The Dark - Hex-Sealed Fusion ×2, no Polymerization (40) |
+
+  - Deck names follow YP-C's spelling ("One-step Wind", "Freedom For All"),
+    which matches the opponent cards. GF-M uses the same names, except
+    "Gravekeeper Deck".
+  - Main decks run from 40 to 44 cards as YP-C lists them.
+  - Kozaky's list has no Kozaky card, only Kozaky's Self-Destruct Button,
+    in both YP-C and GF-M. That contradicts JAWP's claim (§1) that every
+    monster duelist runs its namesake.
+- **Styles and summaries are the app's own reading of each list**, not a
+  source's [unclear]. There are twelve styles: Beatdown, Burn, Control,
+  Stall, Ritual, Fusion, Swarm, Graveyard, Banish, Lifegain, Gamble and Alt
+  win. Each deck gets one to three of them, main style first.
+
+---
+
+## 7. Sources
 
 - YP-D: https://yugipedia.com/wiki/Duelists_(WC08-VG)
 - YP-C: Yugipedia per-character pages, e.g. https://yugipedia.com/wiki/Spirit_of_the_Pharaoh_(character)

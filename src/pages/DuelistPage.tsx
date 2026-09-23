@@ -5,8 +5,10 @@ import { plural } from '../components/format'
 import { Delta } from '../components/Delta'
 import { DuelistLink } from '../components/DuelistLink'
 import { Empty } from '../components/Empty'
+import { PortraitCard } from '../components/Portrait'
 import { Rating, Tag } from '../components/Rating'
 import { RatingChart, type ChartPoint } from '../components/RatingChart'
+import { DECK_STYLES, DECKS, EXTRA_DECK, deckSize, type Deck } from '../data/decks'
 import { deleteReading, saveReading, updateDuelist } from '../db/repository'
 import { matchLabel } from '../domain/bracket'
 import { displayName, type Model } from '../domain/stats'
@@ -60,22 +62,28 @@ export function DuelistPage() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{duelist.name}</h1>
-          <p className="mt-1 text-sm text-ink-2">
-            Tournament level {duelist.tournamentLevel}, {duelist.category === 'monster' ? 'monster' : 'anime character'}
-            {duelist.aliases?.length ? `, also “${duelist.aliases.join('”, “')}”` : ''}
-            {!duelist.unlocked && ', locked'}
-          </p>
-        </div>
-        <div className="text-right">
-          <Rating value={rating.current.value} stale={rating.current.stale} size="lg" />
-          <p className="text-sm">
-            <Delta value={rating.deltaFromInitial} /> <span className="text-ink-3">from initial {duelist.initialRating ?? '—'}</span>
-          </p>
+      <div className="mb-6 flex flex-wrap gap-x-6 gap-y-4">
+        <PortraitCard duelist={duelist} />
+        <div className="min-w-0 flex-1 basis-80">
+          {/* Floated so the meta line sits right under the name and only wraps below the rating when it runs long. */}
+          <div className="flow-root">
+            <div className="float-right ml-4 text-right">
+              <Rating value={rating.current.value} stale={rating.current.stale} size="lg" />
+              <p className="text-sm">
+                <Delta value={rating.deltaFromInitial} /> <span className="text-ink-3">from initial {duelist.initialRating ?? '—'}</span>
+              </p>
+            </div>
+            <h1 className="text-3xl font-bold">{duelist.name}</h1>
+            <p className="mt-1 text-sm text-ink-2">
+              Tournament level {duelist.tournamentLevel}, {duelist.category === 'monster' ? 'monster' : 'anime character'}
+              {duelist.aliases?.length ? `, also “${duelist.aliases.join('”, “')}”` : ''}
+              {!duelist.unlocked && ', locked'}
+            </p>
+          </div>
+          {DECKS[id] && <DeckInfo deck={DECKS[id]} />}
         </div>
       </div>
+      {DECKS[id] && <Decklist deck={DECKS[id]} />}
 
       <dl className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4 lg:grid-cols-8">
         <Stat label="Peak">{rating.peak ?? '—'}</Stat>
@@ -187,6 +195,64 @@ export function DuelistPage() {
         </section>
       </div>
     </>
+  )
+}
+
+function DeckInfo({ deck }: { deck: Deck }) {
+  return (
+    <div className="mt-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-3">Deck</h2>
+      <p className="font-display text-xl font-semibold">
+        {deck.name}{' '}
+        <span lang="ja" className="font-sans text-sm font-normal text-ink-3">
+          {deck.jaName}
+        </span>
+      </p>
+      <div className="mt-1 flex flex-wrap gap-1">
+        {deck.styles.map((s) => (
+          <Tag key={s}>{DECK_STYLES[s]}</Tag>
+        ))}
+      </div>
+      <p className="mt-2 max-w-prose text-sm text-ink-2">{deck.summary}</p>
+    </div>
+  )
+}
+
+function Decklist({ deck }: { deck: Deck }) {
+  const extra = deckSize(deck, true)
+  return (
+    <details className="mb-6">
+      <summary className="w-fit cursor-pointer py-1.5 text-sm font-medium text-accent">
+        Decklist: {deckSize(deck, false)} cards{extra > 0 && `, ${extra} in the Extra Deck`}
+      </summary>
+      <div className="panel mt-2 p-4">
+        <div className="gap-6 sm:columns-2 lg:columns-3">
+          {deck.sections.map((s) => (
+            <section key={s.title} className="mb-4 break-inside-avoid">
+              <h3 className="mb-1 text-sm font-semibold text-ink-2">
+                {s.title}
+                {s.title === EXTRA_DECK && <span className="font-normal text-ink-3"> (Extra Deck)</span>}
+              </h3>
+              <ul className="text-sm">
+                {s.cards.map(([name, copies]) => (
+                  <li key={name} className="flex">
+                    <span className="w-6 shrink-0 text-ink-3">{copies}×</span>
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-ink-3">
+          List and portrait from{' '}
+          <a href={`https://yugipedia.com/wiki/${encodeURIComponent(deck.wiki.replaceAll(' ', '_'))}`} target="_blank" rel="noreferrer" className="underline hover:text-accent">
+            Yugipedia
+          </a>
+          . Style and summary are this app's reading of the list.
+        </p>
+      </div>
+    </details>
   )
 }
 

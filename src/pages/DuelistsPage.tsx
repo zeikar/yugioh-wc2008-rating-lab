@@ -4,7 +4,9 @@ import { useApp } from '../app/context'
 import { Delta } from '../components/Delta'
 import { Empty } from '../components/Empty'
 import { PageTitle } from '../components/Layout'
-import { Rating } from '../components/Rating'
+import { Avatar } from '../components/Portrait'
+import { Rating, Tag } from '../components/Rating'
+import { DECK_STYLES, DECKS } from '../data/decks'
 import type { DuelistRow } from '../domain/stats'
 
 type Value = string | number | null
@@ -32,11 +34,11 @@ function compare(a: Value, b: Value, dir: number): number {
   return (typeof a === 'string' ? a.localeCompare(b as string) : a - (b as number)) * dir
 }
 
-function SortHeader({ column, sort, onSort }: { column: ColumnKey; sort: { key: ColumnKey; dir: number }; onSort: (k: ColumnKey) => void }) {
+function SortHeader({ column, sort, onSort, className = '' }: { column: ColumnKey; sort: { key: ColumnKey; dir: number }; onSort: (k: ColumnKey) => void; className?: string }) {
   const c = COLUMNS[column]
   const active = sort.key === column
   return (
-    <th className={c.num ? 'num' : ''} aria-sort={active ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none'}>
+    <th className={`${c.num ? 'num' : ''} ${className}`} aria-sort={active ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none'}>
       <button className={`inline-flex items-center gap-1 hover:text-ink ${active ? 'text-ink' : ''}`} onClick={() => onSort(column)}>
         {c.label}
         <span aria-hidden className={`text-[0.65rem] ${active ? 'text-accent' : 'invisible'}`}>
@@ -106,9 +108,14 @@ export function DuelistsPage() {
             <thead>
               <tr>
                 <th className="num">Rank</th>
-                {(Object.keys(COLUMNS) as ColumnKey[]).map((k) => (
-                  <SortHeader key={k} column={k} sort={sort} onSort={sortBy} />
-                ))}
+                <SortHeader column="name" sort={sort} onSort={sortBy} />
+                <th className="hidden md:table-cell">Style</th>
+                {(Object.keys(COLUMNS) as ColumnKey[])
+                  .filter((k) => k !== 'name')
+                  .map((k) => (
+                    // Phones drop Initial so Current stays on screen; Δ initial carries the comparison.
+                    <SortHeader key={k} column={k} sort={sort} onSort={sortBy} className={k === 'initial' ? 'hidden sm:table-cell' : ''} />
+                  ))}
               </tr>
             </thead>
             <tbody>
@@ -116,13 +123,25 @@ export function DuelistsPage() {
                 <tr key={r.duelist.id} className={r.duelist.unlocked ? '' : 'text-ink-3'}>
                   <td className="num text-ink-3">{rankById.get(r.duelist.id) ?? '—'}</td>
                   <td>
-                    <Link to={`/duelists/${r.duelist.id}`} className="font-medium hover:text-accent hover:underline">
-                      {r.duelist.name}
-                    </Link>
-                    {!r.duelist.unlocked && <span className="ml-2 text-xs">locked</span>}
+                    <span className="flex items-center gap-2">
+                      <Avatar duelist={r.duelist} className={`size-7 ${r.duelist.unlocked ? '' : 'opacity-50 grayscale'}`} />
+                      <span>
+                        <Link to={`/duelists/${r.duelist.id}`} className="font-medium hover:text-accent hover:underline">
+                          {r.duelist.name}
+                        </Link>
+                        {!r.duelist.unlocked && <span className="ml-2 text-xs">locked</span>}
+                      </span>
+                    </span>
+                  </td>
+                  <td title={DECKS[r.duelist.id]?.summary} className={`hidden md:table-cell ${r.duelist.unlocked ? '' : 'opacity-60'}`}>
+                    <span className="flex flex-wrap gap-1">
+                      {DECKS[r.duelist.id]?.styles.map((s) => (
+                        <Tag key={s}>{DECK_STYLES[s]}</Tag>
+                      ))}
+                    </span>
                   </td>
                   <td>{r.duelist.tournamentLevel}</td>
-                  <td className="num">{r.duelist.initialRating ?? '—'}</td>
+                  <td className="num hidden sm:table-cell">{r.duelist.initialRating ?? '—'}</td>
                   <td className="num">
                     <Rating value={r.rating.current.value} stale={r.rating.current.stale} />
                   </td>

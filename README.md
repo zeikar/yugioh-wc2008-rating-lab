@@ -25,7 +25,9 @@ Background on the game and the full CPU roster with sources:
     the next field.
 - **Duelists:** a leaderboard with current rating, change from the initial
   rating, peak, low, recorded W–L, finals and titles, and a page per duelist
-  with its rating history chart.
+  with its rating history chart. Each duelist shows its in-game portrait
+  and the deck it plays: name, style (beatdown, burn…), a one-line summary
+  and the full list.
 - **Research:** points moved against the rating gap for every CPU duel,
   tournaments to save again after a correction, which levels mix in
   lower-level duelists, initial rating against current, upsets and rivalries.
