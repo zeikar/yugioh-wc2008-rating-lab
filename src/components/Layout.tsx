@@ -1,7 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { useApp } from '../app/context'
-import { RESEARCH, RESEARCH_NAME, saveRef, switchPath } from '../app/datasets'
+import { RESEARCH, saveRef, switchPath } from '../app/datasets'
 import { useStartTournament } from '../app/useStartTournament'
 import { USE_EMULATORS } from '../firebase'
 import { Empty } from './Empty'
@@ -20,8 +20,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const { model, user, authReady, dataset, base, profile, canEdit, signIn, signOut, pendingWrites, synced, error, dismissError, loading, loadFailed } = useApp()
   const { pathname, key: locationKey } = useLocation()
   const start = useStartTournament()
-  // A save shows its own name, never the account's (MVP §3); none until it has loaded.
-  const name = dataset?.kind === 'research' ? RESEARCH_NAME : dataset && !loading && !loadFailed ? (profile?.name ?? 'Unnamed save') : null
+  // Someone else's save isn't one of the switch's places, so it shows there by its own name,
+  // never the account's (MVP §3); not until it has loaded.
+  const otherSave = dataset?.kind === 'save' && dataset.uid !== user?.uid && !loading && !loadFailed ? (profile?.name ?? 'Unnamed save') : null
   // Signed out there is no save of yours to offer: just the way to the research dataset, unless you're on it.
   const switches = user
     ? [{ label: 'Emulator', to: RESEARCH }, { label: 'My save', to: saveRef(user.uid) }]
@@ -32,11 +33,11 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <header className="border-b border-rule bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5">
-          <NavLink to="/" className="flex items-center gap-2 font-display text-lg font-bold">
+          {/* Stays in the dataset on view; only a visit to `/` picks one (MVP §3). */}
+          <Link to={dataset ? base : '/'} className="flex items-center gap-2 font-display text-lg font-bold">
             <RatingMark className="size-5.5" />
             WC2008 Rating Lab
-          </NavLink>
-          {name && <span className="text-sm font-medium text-ink-2">{name}</span>}
+          </Link>
           <nav className="flex flex-wrap gap-1">
             {NAV.map((n) => (
               <NavLink
@@ -49,6 +50,13 @@ export function Layout({ children }: { children: ReactNode }) {
               </NavLink>
             ))}
           </nav>
+          {/* Numbered from the loaded tournaments, so not before they are there. Left of the
+              right-aligned group, so showing it doesn't move the dataset switch. */}
+          {canEdit && !loading && !loadFailed && (
+            <button className="btn btn-primary px-2.5 py-1 text-sm" onClick={start}>
+              + New tournament
+            </button>
+          )}
           <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             {USE_EMULATORS && <span className="rounded bg-warn-soft px-1.5 py-0.5 text-xs font-medium text-warn">emulator</span>}
             {/* Only your own writes sync. After a failed load the error banner says what to do; a sync state would mislead. */}
@@ -58,7 +66,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </span>
             )}
             {/* Moves between datasets and keeps the page (MVP §3). */}
-            {switches.length > 0 && (
+            {(switches.length > 0 || otherSave) && (
               <span role="group" aria-label="Dataset" className="flex overflow-hidden rounded-md border border-rule">
                 {switches.map((s) => {
                   const active = dataset?.base === s.to.base
@@ -73,13 +81,12 @@ export function Layout({ children }: { children: ReactNode }) {
                     </Link>
                   )
                 })}
+                {otherSave && (
+                  <span aria-current className="max-w-48 truncate bg-accent-soft px-2.5 py-1 font-medium text-accent" title={otherSave}>
+                    {otherSave}
+                  </span>
+                )}
               </span>
-            )}
-            {/* Numbered from the loaded tournaments, so not before they are there. */}
-            {canEdit && !loading && !loadFailed && (
-              <button className="btn btn-primary" onClick={start}>
-                + New tournament
-              </button>
             )}
             {user ? (
               <button className="text-ink-2 hover:text-ink" onClick={signOut}>

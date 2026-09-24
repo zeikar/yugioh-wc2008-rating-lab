@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PLAYER_ID } from '../types'
 import { duelist, match, ownerTournament, standalone, T0, tournament } from './fixtures.test-util'
-import { analyzeAll, buildModel, matchStats, playerStats, ratingStats, upsets } from './stats'
+import { analyzeAll, buildModel, matchStats, ratingStats, upsets } from './stats'
 import { buildTimeline } from './timeline'
 
 describe('ratingStats', () => {
@@ -35,12 +35,6 @@ describe('matchStats', () => {
       vsCpu: { wins: 2, losses: 0 }, vsPlayer: { wins: 1, losses: 0 }, tournamentsEntered: 1, levelsAppeared: [2],
     })
     expect(matchStats(idx, matches, d.tournaments, 'lady-heat')).toMatchObject({ wins: 1, losses: 1, longestWinStreak: 1 })
-  })
-
-  it('tracks the player separately', () => {
-    const d = ownerTournament()
-    const f = match('t1', 'final', 0, 'blowback-dragon', PLAYER_ID, PLAYER_ID)
-    expect(playerStats([...d.matches, f], d.tournaments)).toMatchObject({ wins: 2, losses: 0, titlesByLevel: { 1: 0, 2: 1, 3: 0 } })
   })
 })
 

@@ -128,29 +128,6 @@ export function upsets(analyses: Map<string, TournamentRatings>, tournaments: To
   return found.sort((a, b) => b.magnitude - a.magnitude)
 }
 
-export interface PlayerStats {
-  wins: number
-  losses: number
-  titlesByLevel: { [level in TournamentLevel]: number }
-  tournaments: number
-}
-
-export function playerStats(matches: Match[], tournaments: Tournament[]): PlayerStats {
-  const levelOf = new Map(tournaments.map((t) => [t.id, t.tournamentLevel]))
-  const s: PlayerStats = { wins: 0, losses: 0, titlesByLevel: { 1: 0, 2: 0, 3: 0 }, tournaments: tournaments.filter((t) => t.entrants.includes(PLAYER_ID)).length }
-  for (const m of matches) {
-    if (m.playerAId !== PLAYER_ID && m.playerBId !== PLAYER_ID) continue
-    if (m.winnerId === PLAYER_ID) {
-      s.wins++
-      const level = levelOf.get(m.tournamentId)
-      if (m.round === 'final' && level) s.titlesByLevel[level]++
-    } else {
-      s.losses++
-    }
-  }
-  return s
-}
-
 export function championOf(matches: Match[], tournamentId: string): string | null {
   return matches.find((m) => m.tournamentId === tournamentId && m.round === 'final')?.winnerId ?? null
 }

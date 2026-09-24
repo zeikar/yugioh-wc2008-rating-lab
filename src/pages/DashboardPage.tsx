@@ -6,7 +6,7 @@ import { Delta } from '../components/Delta'
 import { DuelistLink } from '../components/DuelistLink'
 import { Empty } from '../components/Empty'
 import { Rating } from '../components/Rating'
-import { championOf, playerStats, upsets, type DuelistRow } from '../domain/stats'
+import { championOf, upsets, type DuelistRow } from '../domain/stats'
 import { PLAYER_ID } from '../types'
 
 function best<T>(items: T[], score: (x: T) => number | null, dir: 1 | -1 = 1): T | null {
@@ -36,7 +36,6 @@ export function DashboardPage() {
   const loss = best(rows, (r) => r.rating.deltaFromInitial, -1)
   const peak = best(rows, (r) => r.rating.peak)
   const upset = upsets(model.analyses, data.tournaments)[0]
-  const me = playerStats(data.matches, data.tournaments)
   const recent = [...model.index.tournaments].reverse().slice(0, 5)
 
   return (
@@ -113,24 +112,6 @@ export function DashboardPage() {
                 ) : null}
               </Highlight>
             </dl>
-          </div>
-
-          <div>
-            <h2 className="mb-2 text-xl font-semibold">Your record</h2>
-            <div className="panel p-4 text-sm">
-              <p>
-                Recorded duels: {me.wins}–{me.losses} across {plural(me.tournaments, 'tournament')}.
-              </p>
-              <p className="mt-2 text-ink-2">Titles per level (the game gives a pack after 5):</p>
-              <ul className="mt-1 flex gap-4">
-                {([1, 2, 3] as const).map((l) => (
-                  <li key={l}>
-                    Level {l}: <span className="font-semibold">{me.titlesByLevel[l]}</span>
-                    <span className="text-ink-3"> / 5</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
 
           <div>

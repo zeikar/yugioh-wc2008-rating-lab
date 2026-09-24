@@ -52,15 +52,15 @@ says which:
   site (§8). Nobody writes it through the app. Its Research page (§7.3) is
   at `/research/research`.
 - `/` opens your own save when you're signed in, and the research dataset
-  otherwise.
+  otherwise. The header's logo opens the dashboard of the dataset on view.
 
-The header names the dataset on view: "Research: emulator" for the research
-dataset, or the save's name. Its switch reads **Emulator | My save** when
-you're signed in. Signed out there is no save of yours to switch to: the
-research dataset shows no switch, and someone else's save shows a single
-**Emulator** link. Switching keeps the current page, except that a
-tournament's page opens the other dataset's tournament list, since tournament
-ids belong to one dataset.
+The header's switch reads **Emulator | My save** when you're signed in and
+marks the dataset on view. Someone else's save isn't one of its places, so it
+shows at the switch's end by the save's name, marked as on view. Signed out
+there is no save of yours to switch to: the research dataset shows no switch,
+and someone else's save shows **Emulator** and its name. Switching keeps the
+current page, except that a tournament's page opens the other dataset's
+tournament list, since tournament ids belong to one dataset.
 
 Who may do what:
 - **Open sign-up.** Sign-in uses Firebase Auth's Google provider only. Any
@@ -374,15 +374,13 @@ Consequences:
 
 Navigation: **Dashboard · Duelists · Tournaments · Research · Data**, plus a
 prominent **"+ New tournament"** button, which is the main input flow and
-shows only on your own save. The header names the dataset on view and holds
-the switch between datasets (§3). Every page works the same on any dataset.
+shows only on your own save. The header holds the switch between datasets
+(§3). Every page works the same on any dataset.
 
 ### 6.1 Dashboard
 - Counts: duelists, unlocked duelists, tournaments, matches, observations.
 - Highlights: current highest rating, biggest gain from initial, biggest loss
   from initial, highest rating ever recorded, biggest upset.
-- The player's record: tournaments won per level (the game's pack rewards
-  need 5 wins per level) and overall match W/L.
 - All W/L figures are labeled **recorded**. The game's own per-CPU records
   also count matches the app never saw, so the numbers can differ.
 - An empty state for each item when there isn't enough data.

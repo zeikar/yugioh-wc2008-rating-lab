@@ -8,7 +8,6 @@ export type SaveRef = { kind: 'save'; uid: string; base: string }
 export type DatasetRef = ResearchRef | SaveRef
 
 export const RESEARCH: ResearchRef = { kind: 'research', base: '/research' }
-export const RESEARCH_NAME = 'Research: emulator'
 
 export function saveRef(uid: string): SaveRef {
   return { kind: 'save', uid, base: `/u/${uid}` }
