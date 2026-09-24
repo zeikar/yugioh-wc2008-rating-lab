@@ -31,8 +31,37 @@ platform, pick the matching core build from the same release.
 
 | Script | What it does |
 |---|---|
-| `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/shots/` |
+| `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
+| `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
 | `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP) |
 
-The scripts only read `game/`. Everything the emulator writes goes to `run/`,
-which each run recreates.
+## Routes
+
+Input sequences for `step.py`, found on the owner's save. They assume that
+save's menus (the World Championship menu opens on Free Duel).
+
+1. **Boot to the mode menu** ("DUEL WORLD" / "WORLD CHAMPIONSHIP"):
+
+   ```sh
+   uv run step.py --to run/states/menu.state wait:600
+   ```
+
+2. **Enter a Level 1 singles tournament, up to the bracket.** This pays the
+   300 DP fee and makes the game save, both only in the emulator's copy:
+
+   ```sh
+   uv run step.py --from run/states/menu.state --to run/states/bracket.state \
+     down wait:30 a wait:240 right wait:30 a wait:150 a wait:180 a wait:120 a wait:900 down wait:20 a wait:420
+   ```
+
+   In order: WORLD CHAMPIONSHIP, Tournament, Single Tournament, Level 1, YES
+   to the fee, then Fast for the CPU duel speed.
+3. **The first duel** starts by itself after about 10 s (`wait:600`) with
+   rock-paper-scissors. Touch works too: `touch:X,Y` taps the bottom screen.
+
+For simulation runs, also turn on the runner icon at the top left of the
+bracket screen, which speeds up CPU-vs-CPU duels. No route presses it yet.
+
+The scripts only read `game/`. Everything the emulator writes goes to `run/`.
+`step.py`'s states hold the save memory too, so they are for exploring only:
+never resume recorded play from one.

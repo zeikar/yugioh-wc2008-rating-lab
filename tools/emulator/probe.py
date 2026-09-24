@@ -2,7 +2,7 @@
 
 Presses A every 2 s after the title screen appears, so the game loads the save,
 then checks that the rating table in RAM matches the save file's. Writes a
-screenshot every few seconds to run/shots/. The save file is only read.
+screenshot every few seconds to run/probe/shots/. The save file is only read.
 
     uv run probe.py [--frames 1500] [--shot-every 300]
 """
@@ -34,20 +34,20 @@ def find_core() -> Path:
 
 
 def write_png(shot, path: Path) -> None:
-    """Writes an XRGB8888 frame as a PNG, with the standard library only."""
+    """Writes a frame as a PNG, with the standard library only.
+
+    libretro.py's screenshots are already RGBA bytes, whatever the core's
+    pixel format, so each row goes in as is.
+    """
     raw = bytes(shot.data)
-    rows = bytearray()
-    for y in range(shot.height):
-        rows.append(0)  # no filter
-        for x in range(shot.width):
-            b, g, r = raw[(y * shot.width + x) * 4 : (y * shot.width + x) * 4 + 3]
-            rows += bytes((r, g, b))
+    stride = shot.width * 4
+    rows = b"".join(b"\x00" + raw[y * stride : (y + 1) * stride] for y in range(shot.height))  # filter 0: none
 
     def chunk(kind: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
 
-    header = struct.pack(">IIBBBBB", shot.width, shot.height, 8, 2, 0, 0, 0)
-    path.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(bytes(rows))) + chunk(b"IEND", b""))
+    header = struct.pack(">IIBBBBB", shot.width, shot.height, 8, 6, 0, 0, 0)  # 8-bit RGBA
+    path.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
 
 
 def presses():
@@ -67,13 +67,14 @@ def main() -> None:
     save = SAVE.read_bytes()
     expected = wcsave.ratings(wcsave.game_data(save))
 
-    # A fresh run directory each time; the core writes firmware settings there.
-    shutil.rmtree(RUN, ignore_errors=True)
+    # A fresh directory each time; the core writes firmware settings there.
+    out = RUN / "probe"
+    shutil.rmtree(out, ignore_errors=True)
     for sub in ("system", "save", "shots"):
-        (RUN / sub).mkdir(parents=True)
+        (out / sub).mkdir(parents=True)
 
     core = str(find_core())
-    path_driver = ExplicitPathDriver(core, system=str(RUN / "system"), save=str(RUN / "save"))
+    path_driver = ExplicitPathDriver(core, system=str(out / "system"), save=str(out / "save"))
     with Session(core, ROM, path=path_driver, options=OPTIONS, input=presses) as emu:
         # The core leaves loading the save to the frontend (internals.md §4).
         emu.core.get_memory(RETRO_MEMORY_SAVE_RAM)[:] = save
@@ -85,10 +86,10 @@ def main() -> None:
                 loaded_at = frame
                 print(f"frame {frame}: save loaded; RAM ratings match the save (78/78), DP {wcsave.dp(ram, wcsave.ram_offset(wcsave.DP))}")
             if frame % args.shot_every == 0:
-                write_png(emu.video.screenshot(), RUN / f"shots/f{frame:05d}.png")
+                write_png(emu.video.screenshot(), out / f"shots/f{frame:05d}.png")
         if loaded_at is None:
             raise SystemExit(f"The RAM ratings never matched the save within {args.frames} frames.")
-    print(f"Screenshots in {(RUN / 'shots').relative_to(HERE)}/")
+    print(f"Screenshots in {(out / 'shots').relative_to(HERE)}/")
 
 
 if __name__ == "__main__":

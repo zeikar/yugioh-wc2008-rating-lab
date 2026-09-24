@@ -76,6 +76,19 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
   with NEW GAME. For the same reason, the frontend has to write that memory
   back to a file itself to keep what the game saves.
 - Main RAM is `RETRO_MEMORY_SYSTEM_RAM`, where offset 0 is 0x02000000.
+- libretro.py's screenshots are RGBA bytes, whatever the core's pixel format.
+  Reading them as BGR swaps red and blue, which turns the yellow rating
+  triangle cyan.
+
+### Seen while driving it
+
+- **Paying a tournament's entry fee saves the game** at once, with the fee
+  already taken.
+- **The entrant draw didn't depend on input timing.** From the same emulator
+  state, a Level 1 tournament drew the same 8 entrants even with 37 or 77
+  extra frames before the inputs. What seeds the draw is unknown. Runs forked
+  from one save may play the same tournaments, so check they diverge before
+  treating them as independent data.
 
 ## 5. Sources
 

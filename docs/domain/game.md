@@ -43,12 +43,20 @@ Source keys are listed in §8.
 - **LP:** every duel starts at full LP; nothing carries over between rounds
   [owner, 2026-09-23].
 - **CPU-vs-CPU bracket duels:** these are simulated and can be watched at
-  Normal or Fast speed. [confirmed: R1, G1]
+  Normal or Fast speed. [confirmed: R1, G1] The runner icon at the top left
+  of the bracket screen runs them faster still [owner, 2026-09-24].
 - **After the player is knocked out,** the tournament still plays through to
   a CPU champion [owner, 2026-09-23]. Losing the first duel therefore gives 6
   CPU-vs-CPU duels, against 4 when the player wins the tournament.
 - **Surrender** is available only from turn 10 of a duel. The quick way to
   lose is to pass every turn [owner, 2026-09-23].
+- **Entering** [owner's save in melonDS DS, 2026-09-24]:
+  - The entry fee is 300 DP for Level 1 and 750 DP for Level 2. It is taken
+    when you confirm, and the game saves right away ("Saving Data...").
+  - The 8 entrants then appear, and the game asks for the CPU duel speed
+    ("Normal" / "Fast") before it shows the bracket.
+  - The player's duels start with rock-paper-scissors; a tie repeats it, and
+    the winner picks who goes first.
 - **Opponents:** drawn at random, and the player cannot choose them
   [single: R1]. Whether only *unlocked* duelists are eligible is unclear. It
   is implied by the unlock requirement.
@@ -184,8 +192,9 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 - The player has a rating too, shown with the same yellow triangle. [confirmed:
   B2]
 - It is documented as rising only through Nintendo Wi-Fi **ranked** duels
-  [single: B2]. One blogger shows it at 0 [single: S1]. Nintendo WFC has shut
-  down, so offline play most likely never changes it.
+  [single: B2]. One blogger shows it at 0 [single: S1], and so does the
+  owner's pre-duel card [owner's save in melonDS DS, 2026-09-24]. Nintendo WFC
+  has shut down, so offline play most likely never changes it.
 - **Consequence for the app:** the player is a tournament entrant with no
   tracked rating. Rating statistics cover CPUs only.
 
@@ -227,7 +236,17 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 | Downloadable opponent | Ghost / duelist image | デュエリストイメージ |
 | Spectating | View CPU Duel | 観戦 |
 
-The Korean release's labels are not researched yet.
+The Korean release shows its menus and messages in English; only the card
+images are in Korean [owner, 2026-09-24]. Its labels, as seen on the owner's
+save in melonDS DS (2026-09-24):
+- **Mode menu:** "DUEL WORLD" / "WORLD CHAMPIONSHIP".
+- **World Championship menu:** Free Duel, Tournament, Communications Menu,
+  Friend Menu, Duelist Menu, Shop, Tutorial, Options.
+- **Tournament:** "Single Tournament" / "Tag Tournament", then "Tournament
+  Mode", "Select the level": "Level 1" / "Level 2".
+- **CPU duel speed:** "Select CPU duel speed": "Normal" / "Fast".
+- **Turn order:** "FIRST TO GO" / "SECOND TO GO".
+- **Rating:** the number next to the triangle, with no word label.
 
 ## 6. Open questions to answer in-game
 
@@ -241,7 +260,8 @@ The Korean release's labels are not researched yet.
 - Higher levels mix in lower-level duelists.
 - LP does not carry over between rounds; every duel starts fresh.
 - The tournament continues to a CPU champion after the player is knocked out.
-- The owner plays the Korean release (`YG8K`).
+- The owner plays the Korean release (`YG8K`). Its UI text is English; only
+  the card images are Korean. Its labels are in §5.
 - Heraklinos starts at 1800 and every anime character at 1250 (save file,
   [internals.md](internals.md)).
 
@@ -260,9 +280,10 @@ The Korean release's labels are not researched yet.
    lower levels mix in, and how often? Are only unlocked duelists eligible?
    Can DL duelists appear?
 5. **Format:** one duel per round or best-of-3?
-6. **Labels:** what are the in-game names for levels, rounds and rating in the
-   Korean release?
-7. **Your own rating:** is it 0, and does it ever change offline?
+6. **Labels:** what do the Korean release's English menus call the rounds?
+   The other labels are in §5.
+7. **Your own rating:** it shows 0 in the owner's save. Does it ever change
+   offline?
 
 ## 7. What this means for the app
 
