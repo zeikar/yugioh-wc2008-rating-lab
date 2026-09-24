@@ -44,6 +44,10 @@ against the owner's ROM and save. Source keys are listed in §5.
   - The total is 94800, the documented initial sum (game.md §3.1).
 - **DP:** the u32 LE at offset 0x24 [SE; confirmed in-game by the owner,
   2026-09-24]. The owner's save holds 35116 there, the DP the game shows.
+- **Duelist unlock flags:** 16 bytes at offset 0x198C, one bit per CPU in the
+  same list order, LSB first within each byte. [owner's files, 2026-09-24]
+  - Checked against the app's `unlocked` flags for all 78 CPUs on 2026-09-24:
+    every flag matches, 52 unlocked.
 
 ## 4. RAM
 
@@ -54,8 +58,9 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
   exactly, and it is the only match in the 4 MiB of main RAM.
 - **DP:** 0x021146B0, the address the Action Replay code uses [AR]. It held
   35116, the owner's DP.
-- **Duelist unlock bitfield:** 0x02116018–0x02116027 [single: AR, not
-  checked].
+- **Duelist unlock flags:** 0x02116018–0x02116027, the §3 offset mapped
+  onto RAM (0x0211468C + 0x198C = 0x02116018). It matches the Action Replay
+  code's address [AR], and §3's check confirms it.
 - **Duel state** [emulator, 2026-09-24]:
   - **LP:** int16, the left duelist's at 0x022CA200 (mirrored at 0x022CE2D0;
     the Action Replay LP code writes both) and the right duelist's at

@@ -35,7 +35,7 @@ platform, pick the matching core build from the same release.
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
 | `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below) |
 | `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
-| `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP) |
+| `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 
 ## Forked runs
 

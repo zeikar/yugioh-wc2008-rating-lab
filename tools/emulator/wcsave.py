@@ -7,6 +7,7 @@ BLOCK_OFFSETS = (0x28000, 0x2AB00, 0x2D600, 0x30100)
 GAME_DATA_SIZE = 0x26F0
 RATING_TABLE = 0x396  # 78 u16 LE, in-game list order (src/data/duelists.ts)
 DP = 0x24
+UNLOCKED = 0x198C  # 16 bytes, one bit per CPU, LSB-first, same list order
 CPU_COUNT = 78
 
 # Where the game keeps the decompressed game data once the save is loaded.
@@ -64,6 +65,15 @@ def ratings(data: bytes, offset: int = RATING_TABLE) -> list[int]:
 
 def dp(data: bytes, offset: int = DP) -> int:
     return struct.unpack_from("<I", data, offset)[0]
+
+
+def unlocked(data: bytes, offset: int = UNLOCKED) -> list[bool]:
+    """The 78 CPU unlock flags from game data, or from RAM with the matching offset.
+
+    Bit i = CPU i in list order, LSB-first within each byte.
+    """
+    bits = struct.unpack_from("<16B", data, offset)
+    return [bool(bits[i // 8] & (1 << (i % 8))) for i in range(CPU_COUNT)]
 
 
 def ram_offset(game_data_offset: int) -> int:
