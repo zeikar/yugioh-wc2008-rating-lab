@@ -6,22 +6,25 @@ only ever in the player's own duel), then watches the six CPU-vs-CPU duels in
 RAM. Every time the game saves, the save memory is written back to the fork,
 so the next tournament carries on from it.
 
-    uv run tournament.py [--fork run/fork] [--level 1] [--count 1]
+    uv run tournament.py [--fork run/fork] [--level 1] [--count 1] [--export PATH]
 
 The fork starts as a copy of game/wc2008.sav; game/ is only read. Each duel
-goes to FORK/duels.jsonl.
+goes to FORK/duels.jsonl. After playing, the whole log is written out as the
+research dataset (research.py): the site's public/research/emulator.json for
+the default fork run/fork, FORK/emulator.json for any other, unless --export
+says otherwise. --count 0 only rewrites that file.
 """
 
 import argparse
 import json
 import os
-import re
 import shutil
 from datetime import datetime
 from pathlib import Path
 
 import wcsave
 from emulator import HERE, RUN, SAVE, frames_for, running
+from research import roster, write_export
 
 # Duel state in RAM, Korean release (docs/domain/internals.md §4).
 LEFT_LP = 0x022CA200  # int16; the player's LP in the player's duels, a CPU's otherwise
@@ -34,6 +37,8 @@ PRESS_EVERY = 60
 SAVE_SETTLE = 120  # frames the save memory must stay unchanged before it's written out
 FRAME_LIMIT = 120_000  # about 33 minutes of game time per tournament
 ENTRY_FEE = {1: 300, 2: 750}
+DEFAULT_FORK = RUN / "fork"
+SITE_DATASET = HERE / "../../public/research/emulator.json"  # only the default fork writes here
 
 # From the mode menu, as the README's route: World Championship, Tournament,
 # Single Tournament, the level, YES to the fee, then Fast for CPU duels.
@@ -41,15 +46,6 @@ MENU_WAIT = ["wait:600"]
 TO_LEVELS = "down wait:30 a wait:240 right wait:30 a wait:150 a wait:180".split()
 PICK_LEVEL = {1: [], 2: ["down", "wait:20"]}
 PAY_AND_FAST = "a wait:120 a wait:900 down wait:20 a wait:420".split()
-
-
-def roster_ids() -> list[str]:
-    """Duelist ids in the in-game list order, the order of the rating table."""
-    source = (HERE / "../../src/data/duelists.ts").read_text()
-    ids = re.findall(r'\{ id: "([^"]+)"', source)
-    if len(ids) != wcsave.CPU_COUNT:
-        raise SystemExit(f"Expected {wcsave.CPU_COUNT} duelists in src/data/duelists.ts, found {len(ids)}")
-    return ids
 
 
 def int16(value: int) -> int:
@@ -164,13 +160,17 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--fork", type=Path, default=RUN / "fork", help="folder with the fork's wc2008.sav, origin.sav and duels.jsonl")
+    parser.add_argument("--fork", type=Path, default=DEFAULT_FORK, help="folder with the fork's wc2008.sav, origin.sav and duels.jsonl")
     parser.add_argument("--level", type=int, choices=sorted(ENTRY_FEE), default=1)
-    parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each")
+    parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each; 0 only rewrites the export")
+    parser.add_argument("--export", type=Path, help="where to write the research dataset (default: public/research/emulator.json for run/fork, FORK/emulator.json for any other fork)")
     args = parser.parse_args()
+    export = args.export or (SITE_DATASET if args.fork.resolve() == DEFAULT_FORK.resolve() else args.fork / "emulator.json")
 
-    args.fork.mkdir(parents=True, exist_ok=True)
     if not (args.fork / "wc2008.sav").exists():
+        if args.count == 0:
+            raise SystemExit(f"No fork at {args.fork}: --count 0 only rewrites an existing fork's export, and starting a fork needs a run that plays.")
+        args.fork.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(SAVE, args.fork / "wc2008.sav")
         shutil.copyfile(SAVE, args.fork / "origin.sav")
         print(f"Started the fork {args.fork} from {SAVE.relative_to(HERE)}")
@@ -181,13 +181,14 @@ def main() -> None:
             "game/wc2008.sav only if this fork was made from it and game/ hasn't changed since; "
             "for a fork copied from another fork, that fork's origin.sav."
         )
-    ids = roster_ids()
+    ids = [d["id"] for d in roster()]
     for _ in range(args.count):
         label = datetime.now().strftime("%Y%m%d-%H%M%S")
         events = play_tournament(args.fork, args.level, ids, label)
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:
                 log.write(json.dumps(event) + "\n")
+    write_export(args.fork, export)
 
 
 if __name__ == "__main__":

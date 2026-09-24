@@ -33,9 +33,11 @@ platform, pick the matching core build from the same release.
 |---|---|
 | `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
-| `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below) |
+| `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below), then writes the research dataset |
+| `uv run tournament.py --count 0 [--export PATH]` | Plays nothing; only rewrites an existing fork's research dataset from its log (below) |
 | `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
 | `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
+| `research.py` | Builds the research dataset from a fork (below) |
 
 ## Forked runs
 
@@ -61,9 +63,43 @@ Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
 `src/data/duelists.ts`), both ratings before and after, the transfer, whether
 it was zero-sum, and `player_frame`, the frame the player's own duel started
 at (the same value on all six duels of a tournament), which tells which
-quarterfinal slot the player had. A fork is its own rating ecosystem: keep its
-data out of the app's main dataset. `--fork DIR` starts or continues another
-one.
+quarterfinal slot the player had. A fork is its own rating ecosystem, so its
+data reaches the app only as the research dataset (below). `--fork DIR` starts
+or continues another one.
+
+## Research dataset
+
+After every run that finishes, `tournament.py` writes the fork's whole log
+out with `research.py`, as an export in the app's backup format
+(`src/domain/backup.ts`). The site's file, `public/research/emulator.json`,
+comes from the default fork `run/fork`. Any other fork writes
+`FORK/emulator.json` instead, so it never overwrites the site's file, unless
+`--export PATH` says otherwise. A run that stops early writes no export. The
+file holds:
+
+- the roster, with the unlocked flags of `origin.sav`;
+- a "Fork point" reading of every CPU's rating from `origin.sav`, a minute
+  before the first tournament;
+- every logged tournament, with its 8 seats and all 7 matches;
+- each tournament's entry ratings and both CPUs' post-match ratings of every
+  CPU duel. These are read from RAM, so they count as entered.
+
+The seats come from the order the game plays the duels in: the quarterfinals
+in bracket order, then SF 0, SF 1 and the final. The player's opponent is the
+semifinalist who won no CPU quarterfinal; call its semifinal *k*. The
+player's quarterfinal slot is the number of CPU quarterfinals that ended
+before `player_frame`. Tournaments logged before `player_frame` existed give
+the player slot 2*k*, the first of the two quarterfinals that feed semifinal
+*k*. If the player really had 2*k*+1, only those two quarterfinals trade
+places, and both still feed the same semifinal. The log doesn't say who sat
+on which side of a duel, so the winner (and the player) take the first seat
+of each pair. Before writing, the script checks that every rating going into
+a duel is what `origin.sav` or that CPU's previous duel left.
+
+Tournament times come from the labels, read in this machine's time zone, and
+`exportedAt` is the last tournament's time, so an unchanged log always gives
+the same file. The file holds no ROM or save bytes. It is committed, and the
+app shows it read-only at `/research`.
 
 ## Routes
 
