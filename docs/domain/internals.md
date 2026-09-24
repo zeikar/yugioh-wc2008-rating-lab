@@ -67,6 +67,23 @@ against the owner's ROM and save. Source keys are listed in §5.
   same list order, LSB first within each byte. [owner's files, 2026-09-24]
   - Checked against the app's `unlocked` flags for all 78 CPUs on 2026-09-24:
     every flag matches, 52 unlocked.
+- **Cards** [emulator, 2026-09-25]. A card's index is
+  `card_intid.bin[id − 3900]` (§1, "Card ids"), from 1 to 2033. Indices 1–25
+  are tokens.
+  - Owned copies: one nibble per card index at offset 0x65A, low nibble
+    first.
+  - Obtained flags: one byte per card index at 0xA5A + index; bit 0 means
+    obtained. They match "owns a copy" for 2031 of the 2033 cards.
+  - The collection percentage counts the bit-0 flags of indices 26–2033. The
+    owner's save has 1379 of 2008 (68.7%).
+- **Mode unlock flags:** a u16 at offset 0x189C. Bit 0 is View Mode, bit 1
+  Recipe Duel, bit 5 Tag View Mode; each was confirmed by setting it alone.
+  The owner's save holds 0x001C.
+  - The game checks the collection each time you enter the World
+    Championship menu. It sets the bits then and shows a notice for each,
+    and they reach the save at its next save.
+  - Setting bit 0 alone, with `wcsave.with_game_data`, is enough to open
+    View Mode.
 
 ## 4. RAM
 
@@ -164,6 +181,24 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
     the same every time, graveyards included.
   - Entering changes only DP and a checksum in the game data. The entrants
     aren't saved.
+- **Frame counter:** a u32 at 0x02113298, +1 per frame, outside game data.
+  [emulator, 2026-09-25]
+- **View Mode** [emulator, 2026-09-25]:
+  - The two picks are at 0x021140CC (first, the left side) and 0x021140D0,
+    each `0x80000000 |` an internal id. Writing them changes only the
+    portrait, not the CPU.
+  - At the confirming touch the game reseeds `rand()` from the frame
+    counter. It uses `rand()` only twice after that, most likely for
+    rock-paper-scissors.
+  - The duel has its own generator, `x = x × 0x343FD + 0x269EC3`, at
+    0x022D1250 (code at 0x021E6348). About 505 frames after the pick the
+    game seeds it from the frame counter, then steps it 80 times, most
+    likely for the two 40-card shuffles.
+  - So the frame counter at the pick fixes the whole duel: the same value
+    gave the same duel, graveyards included. Writing a random value there
+    before each pick varies the duel. Writing `rand()`'s state does not.
+  - On Fast, a duel takes about 3300 frames from pick to menu, about 5 s
+    of emulator time.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.

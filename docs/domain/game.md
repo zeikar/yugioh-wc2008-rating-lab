@@ -28,7 +28,10 @@ Source keys are listed in §8.
   - CPU Duel (singles).
   - CPU Tag Duel, from the World of Darkness onward.
   - View CPU Duel and View CPU Tag Duel, CPU-vs-CPU spectating, unlocked at 80%
-    card collection.
+    card collection. The Korean release's English menus call them **View
+    Mode** ("Watch another duelist's Auto Duel.") and **Tag View Mode**. The
+    80% counts obtained cards: 1607 of the 2008 non-token cards unlock it,
+    1606 don't [emulator, 2026-09-25; internals.md §3].
   - Recipe Duel, unlocked at 90%.
 
 ## 2. Tournament mode
@@ -249,8 +252,13 @@ Sources: A1, G2, G3, B1. atwiki's wording:
   [confirmed: Y1, A2]
 - **Free Duel pack unlocks** depend on how many duelists you have beaten 5
   times. Tournament duels probably count toward this. [unclear: G1 wording]
-- **View CPU Duel:** CPU-vs-CPU outside tournaments. Whether these duels
-  also move ratings is still open (§6 Q2).
+- **View Mode (View CPU Duel):** CPU-vs-CPU outside tournaments. It doesn't
+  move ratings or keep per-CPU records [emulator, 2026-09-25; §6 Q2].
+  - You pick any two unlocked CPUs, of any level, even the same one twice.
+    The first pick takes the left side.
+  - The CPUs play the same decks as in `src/data/decks.ts`.
+  - The game saves after each duel, then returns to the menu with no results
+    screen.
 
 ## 5. Terminology
 
@@ -307,6 +315,9 @@ save in melonDS DS (2026-09-24):
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.
+   - View Mode: no. In about 50 emulator duels the rating table never moved,
+     and the save after each duel changed nothing but a counter
+     [emulator, 2026-09-25].
 3. **Bracket:** does the game play the quarterfinals in bracket order, with
    QF winners 1–2 and 3–4 meeting in the semifinals? Every emulator run so
    far is consistent with this: the semifinals paired the quarterfinal
