@@ -174,9 +174,12 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
   already taken.
 - **The entrant draw didn't depend on input timing.** From the same emulator
   state, a Level 1 tournament drew the same 8 entrants even with 37 or 77
-  extra frames before the inputs. What seeds the draw is unknown. Runs forked
-  from one save may play the same tournaments, so check they diverge before
-  treating them as independent data.
+  extra frames before the inputs. What seeds the draw is unknown.
+- **The same save and inputs play the same tournament.** 45 tournaments
+  replayed from the same fork point gave all 270 CPU duels again, to the
+  frame, and `replay.py` plays a tournament again from its starting save. So
+  forks from one save, driven the same way, play the same tournaments: they
+  are not independent data.
 - **Pressing A during CPU duels changed nothing** in the one replay tried.
   The same bracket played with and without it gave the same first two
   duels, to the rating.

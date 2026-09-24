@@ -39,6 +39,7 @@ platform, pick the matching core build from the same release.
 | `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
 | `wcsave.py` | Save-file reader and writer the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 | `research.py` | Builds the research dataset from a fork (below) |
+| `uv run replay.py LABEL` | Plays a logged tournament again from its starting save and draws each CPU duel turn by turn (below) |
 | `board.py` | Reads both sides' duel board from RAM, and card names from the ROM. `uv run python board.py DUMP` prints a main-RAM dump's board |
 
 ## Forked runs
@@ -52,6 +53,8 @@ platform, pick the matching core build from the same release.
    export (fork-point ratings and unlock flags). If the fork's
    `wc2008.sav` is missing but its `origin.sav` or `duels.jsonl` is still
    there, it stops instead of starting over them.
+   - Before each tournament, the fork's save is kept as
+     `run/fork/replays/LABEL.sav` (256 KiB), for `replay.py`.
    - With `--fresh`, both copies get a fresh ecosystem instead of your
      save's: every CPU unlocked at its initial rating (from
      `src/data/duelists.ts`), and 9,999,999 DP, so the entry fees never run
@@ -140,6 +143,17 @@ Tournament times come from the labels, read in this machine's time zone, and
 the same file. The file holds no ROM or save bytes, only card names read
 from the ROM. It is committed, and the app shows it read-only at
 `/research`.
+
+## Replays
+
+The same save and inputs play the same tournament (internals.md §4). So
+`uv run replay.py LABEL` plays a logged tournament again from
+`run/fork/replays/LABEL.sav`, with `tournament.py`'s own loop, and checks
+that its CPU duels come out as logged. It writes one sheet per CPU duel to
+`run/replay/LABEL/duel-N.png`: the screen early in each turn, then as the
+duel is decided. Only tournaments played since the starting saves were kept
+can be replayed. Don't run it while `tournament.py` runs: both use
+`run/tournament/` for the core's files.
 
 ## Routes
 

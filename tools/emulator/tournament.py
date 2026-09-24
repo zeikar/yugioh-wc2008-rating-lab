@@ -23,6 +23,8 @@ that check).
 import argparse
 import json
 import os
+import shutil
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -69,7 +71,8 @@ def write_atomically(path: Path, data: bytes) -> None:
     os.replace(tmp, path)
 
 
-def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[dict]:
+def play_tournament(fork: Path, level: int, ids: list[str], label: str, watch: Callable | None = None) -> list[dict]:
+    """Plays one tournament from FORK/wc2008.sav and returns its CPU duels; WATCH(game, events) sees every poll."""
     save_path = fork / "wc2008.sav"
     save = save_path.read_bytes()
     events: list[dict] = []
@@ -123,6 +126,8 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
                 game.play([0] * POLL)
             if len(events) == CPU_DUELS and game.frame % 300 < POLL:
                 game.screenshot(shots / f"after-final-{game.frame:06d}.png")
+            if watch:
+                watch(game, events)
 
             now = game.ratings()
             changed = [i for i in range(wcsave.CPU_COUNT) if now[i] != last[i]]
@@ -257,6 +262,9 @@ def main() -> None:
         check_extends_site(fork_export(args.fork), before_play=True)
     for _ in range(args.count):
         label = datetime.now().strftime("%Y%m%d-%H%M%S")
+        # The save it starts from, for replay.py: the same save and inputs play the same duels.
+        (args.fork / "replays").mkdir(exist_ok=True)
+        shutil.copyfile(args.fork / "wc2008.sav", args.fork / "replays" / f"{label}.sav")
         events = play_tournament(args.fork, args.level, ids, label)
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:
