@@ -322,8 +322,9 @@ save in melonDS DS (2026-09-24):
      Commander was the owner's only locked LV1 duelist. It sat out all 5
      Level 1 tournaments on the owner's save, then played in both of the
      first 2 on a fork with every CPU unlocked.
-   - Draws also repeat a lot. Those 2 tournaments shared 6 of 7 CPUs, and 3
-     CPUs played in all 5 on the owner's save.
+   - Draws also repeated a lot: those 2 tournaments shared 6 of 7 CPUs, and
+     3 CPUs played in all 5 on the owner's save. That was the emulator
+     artifact below. The code confirms the pool is the unlocked CPUs.
    - **How the game draws them** [ROM code and emulator, 2026-09-25]. The
      code is in overlay 19 (internals.md §4). For a singles tournament of
      level L:

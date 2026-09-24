@@ -60,8 +60,10 @@ platform, pick the matching core build from the same release.
      `src/data/duelists.ts`), and 9,999,999 DP, so the entry fees never run
      out. The rest of the save stays yours. `--fresh` only starts a fork,
      never changes one.
-2. Follows the route below into a tournament and checks that the fee was
-   paid.
+2. Writes a random seed into the game's `rand()` and waits a random 0–599
+   frames at the menu. Otherwise every fresh boot would draw the same
+   entrants and play the same first duel (internals.md §4). Then it follows
+   the route below into a tournament and checks that the fee was paid.
 3. Loses the player's duel at once by setting the player's LP to 0. It does
    that only while the is-CPU flags say the player's duel is on, and on the
    side they give the player (internals.md §4), since in CPU duels the same
@@ -76,7 +78,8 @@ platform, pick the matching core build from the same release.
 
 Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
 `src/data/duelists.ts`), both ratings before and after, the transfer, whether
-it was zero-sum, `end` and `player_frame`.
+it was zero-sum, the tournament's `seed` and `delay` (step 2), `end` and
+`player_frame`.
 - `end` is the turn the duel ended on (counting from 1) and both sides'
   board, left then right: LP, the win flag, the zones, hand, graveyard and
   banished cards as card ids, and the deck count.
@@ -149,7 +152,8 @@ from the ROM. It is committed, and the app shows it read-only at
 
 The same save and inputs play the same tournament (internals.md §4). So
 `uv run replay.py LABEL` plays a logged tournament again from
-`run/fork/replays/LABEL.sav`, with `tournament.py`'s own loop, and checks
+`run/fork/replays/LABEL.sav`, with `tournament.py`'s own loop and the
+logged `seed` and `delay`, and checks
 that its CPU duels come out as logged. It writes one sheet per CPU duel to
 `run/replay/LABEL/duel-N.png`: the screen early in each turn, then as the
 duel is decided. Only tournaments played since the starting saves were kept

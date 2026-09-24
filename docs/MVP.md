@@ -611,7 +611,8 @@ parsing and validation as an import, then shows it read-only. What it holds:
 - the roster, with the fork's unlocked flags;
 - a standalone reading for every CPU at the fork point, where its history
   starts. The site's fork starts fresh (`tournament.py --fresh`): every CPU
-  unlocked, at its initial rating;
+  unlocked, at its initial rating. Each tournament's draw and duels are
+  seeded at random, as in normal play;
 - every tournament, with its entrants in seat order and all 7 matches. The
   seats come from the order the duels were played in (quarterfinals in
   bracket order, then the semifinals, then the final; §4);

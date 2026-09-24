@@ -118,6 +118,9 @@ class Emulator:
     def poke16(self, address: int, value: int) -> None:
         struct.pack_into("<H", self.ram(), address - wcsave.RAM_BASE, value)
 
+    def poke32(self, address: int, value: int) -> None:
+        struct.pack_into("<I", self.ram(), address - wcsave.RAM_BASE, value)
+
     def screenshot(self, path: Path) -> None:
         write_png(self.emu.video.screenshot(), path)
 
