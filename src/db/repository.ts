@@ -188,8 +188,10 @@ export function deleteTournament(uid: string, tournamentId: string, data: Datase
  * Writes a roster setup (MVP §5) in one batch: creates missing duelists,
  * refreshes changed ones (never `notes`), and saves typed current ratings as
  * standalone readings. Well under the 500-op limit: 78 duelists + 78 readings.
+ * `profileName`, given only on a save's first setup (MVP §5), also creates
+ * its profile (`users/{uid}`, MVP §4) in the same batch.
  */
-export function saveRosterSetup(uid: string, p: RosterSetupPayload, now: Date, onError: (e: Error) => void): Promise<void> {
+export function saveRosterSetup(uid: string, p: RosterSetupPayload, now: Date, onError: (e: Error) => void, profileName?: string): Promise<void> {
   const batch = writeBatch(db)
   for (const d of p.create) batch.set(saveDoc(uid, 'duelists', d.id), toDoc('duelists', d))
   for (const u of p.update) batch.update(saveDoc(uid, 'duelists', u.id), u.fields)
@@ -198,6 +200,7 @@ export function saveRosterSetup(uid: string, p: RosterSetupPayload, now: Date, o
     const reading: RatingObservation = { id: ref.id, duelistId: r.duelistId, rating: r.rating, observedAt: now, source: 'entered', note: 'Roster setup', createdAt: now }
     batch.set(ref, toDoc('ratingObservations', reading))
   }
+  if (profileName !== undefined) batch.set(profileDoc(uid), { name: profileName, createdAt: Timestamp.fromDate(now) })
   return commitInBackground(batch, onError)
 }
 

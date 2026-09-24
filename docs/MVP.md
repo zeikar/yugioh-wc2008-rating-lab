@@ -343,7 +343,7 @@ Consequences:
   - Use a save exported after the last recorded tournament. The readings are
     timestamped when saved, like typed ones.
   - On a save's first setup (it has no profile yet, §4), the page also
-    asks for the save's name: 1–40 characters, "My save" by default,
+    asks for the save's name: 1–40 characters, "WC2008 save" by default,
     required to save.
 - One **Save roster** batch does five things:
   - creates duelists missing from the database, with every field;

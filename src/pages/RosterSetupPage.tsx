@@ -9,6 +9,7 @@ import { Rating, RatingMark } from '../components/Rating'
 import { ROSTER } from '../data/duelists'
 import { saveRosterSetup } from '../db/repository'
 import { parseRating } from '../domain/draft'
+import { parseSaveName } from '../domain/profile'
 import { ratingsToFill, rosterSetupPayload, withSaveFill, type RosterRowEdit } from '../domain/roster'
 import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
 
@@ -18,10 +19,11 @@ import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
  * (MVP §5). Rows are in the game's own list order.
  */
 export function RosterSetupPage() {
-  const { model, base, dataset, canEdit, user, synced, reportError } = useApp()
+  const { model, base, dataset, canEdit, user, profile, synced, reportError } = useApp()
   const [edits, setEdits] = useState<Record<string, RosterRowEdit>>({})
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveName, setSaveName] = useState('WC2008 save')
   const saveFileInput = useRef<HTMLInputElement>(null)
 
   const stored = model.duelistById
@@ -31,7 +33,11 @@ export function RosterSetupPage() {
   const unlockedOf = (id: string) => edits[id]?.unlocked ?? baseUnlocked(id)
   const unlockedCount = ROSTER.filter((d) => unlockedOf(d.id)).length
   const firstSetup = model.data.duelists.length === 0
-  const saveDisabled = saving || !synced || pending === 0 || payload.errors.length > 0
+  // Only a profile-less save (MVP §5) asks for a name here; naming an already-named save is on the Data page.
+  // `undefined` (not applicable) is kept apart from `null` (parsed and invalid), since a valid name may be any string.
+  const parsedName = profile === null ? parseSaveName(saveName) : undefined
+  const nameInvalid = parsedName === null
+  const saveDisabled = saving || !synced || pending === 0 || payload.errors.length > 0 || nameInvalid
 
   // Typed ratings live only in this page; don't lose them to a stray reload.
   // A row cleared back to how it was, by hand or by a save-file fill, doesn't count.
@@ -66,10 +72,11 @@ export function RosterSetupPage() {
 
   const save = () => {
     const counts = `${payload.create.length} added, ${payload.update.length} updated, ${plural(payload.readings.length, 'rating')} recorded`
+    const profileName = profile === null && !nameInvalid ? saveName.trim() : undefined
     setSaving(true)
     setMessage({ text: 'Saving… (waiting for the server)' })
     // Edits stay until the server accepts the save, so a rejection loses nothing.
-    saveRosterSetup(dataset.uid, payload, new Date(), reportError).then(
+    saveRosterSetup(dataset.uid, payload, new Date(), reportError, profileName).then(
       () => {
         setEdits({})
         setSaving(false)
@@ -123,6 +130,17 @@ export function RosterSetupPage() {
       <PageTitle
         aside={
           <div className="flex flex-wrap items-center gap-3 text-sm">
+            {profile === null && (
+              <label className="flex items-center gap-1.5 text-ink-2">
+                Save name
+                <input
+                  className={`field w-40 py-0.5 ${nameInvalid ? 'border-down' : ''}`}
+                  aria-invalid={nameInvalid || undefined}
+                  value={saveName}
+                  onChange={(e) => setSaveName(e.target.value)}
+                />
+              </label>
+            )}
             <span className="text-ink-2">
               {unlockedCount} of {ROSTER.length} unlocked, {plural(payload.readings.length, 'rating')} to record
             </span>
@@ -155,6 +173,7 @@ export function RosterSetupPage() {
         {/* Always mounted: screen readers skip a live region that appears together with its text. */}
         <div role="status">{message && <p className={`mb-2 font-medium ${message.error ? 'text-down' : 'text-ink'}`}>{message.text}</p>}</div>
         {!synced && <p className="mb-2 font-medium text-warn">Waiting for a connection to the server. Saving works only on fully loaded data.</p>}
+        {profile === null && nameInvalid && <p className="mb-2 font-medium text-down">Save name must be 1–40 characters.</p>}
         {payload.errors.map((e) => (
           <p key={e} className="mb-2 font-medium text-down">
             {e}.
@@ -174,7 +193,10 @@ export function RosterSetupPage() {
           <strong>Fill from save file</strong> reads the ratings from your save file (such as the <code>.dsv</code> Delta exports) and fills in the ones the
           app doesn't know yet, replacing any ratings already typed. Use a save from after your last recorded tournament.
         </p>
-        {firstSetup && <p className="font-medium text-ink">The roster isn't in the database yet. Saving adds all {ROSTER.length} duelists.</p>}
+        {firstSetup && <p className="font-medium text-ink">This save's roster isn't in the database yet. Saving adds all {ROSTER.length} duelists.</p>}
+        {profile === null && (
+          <p className="font-medium text-ink">This save has no name yet. Give it one above (1–40 characters); it's shown wherever this save is opened.</p>
+        )}
       </div>
 
       <div className="panel overflow-x-auto">
