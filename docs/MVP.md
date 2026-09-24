@@ -664,7 +664,7 @@ domain/roster.md §3), DP tracking (the win bonus may equal rating ÷ 5, see
 domain/game.md §3.3), materialized summaries if reads get heavy, and fitting
 candidate rating formulas against the collected data (the long-term research
 goal). The first candidate is the logistic curve in domain/game.md §3.1,
-`N = K / (1 + 10^(gap / S))` with K ≈ 160 and S ≈ 1000. A Research view could
+`N = floor(160 / (1 + 10^(gap / 1000)))`, which fits all 7 pairs seen so far. A Research view could
 show each match's residual against it, clearly labeled as a hypothesis and
 never used as rating data.
 

@@ -59,8 +59,22 @@ save's menus (the World Championship menu opens on Free Duel).
 3. **The first duel** starts by itself after about 10 s (`wait:600`) with
    rock-paper-scissors. Touch works too: `touch:X,Y` taps the bottom screen.
 
-For simulation runs, also turn on the runner icon at the top left of the
-bracket screen, which speeds up CPU-vs-CPU duels. No route presses it yet.
+4. **Lose the player's duel by passing every turn.** On each of your turns:
+   - `a`, `a`: from the Draw Phase through Standby into Main Phase 1.
+   - `b` opens "Select phase to enter". Move `right` to EP and press `a`.
+     How many presses that takes varies, and Battle Phase or Main 2 may have
+     to be entered first, so check the cursor on a screenshot.
+   - At the End Phase, "Will you check the Field?" wants `b` (NO). With more
+     than 6 cards in hand, the discard prompt takes `a` for the highlighted
+     card.
+   - Tapping the DP–EP phase column does nothing.
+   - The player's LP is the u16 at `--peek 0x022CA200`. At 0 comes "YOU
+     LOSE", then a small DP bonus screen.
+5. **CPU-vs-CPU duels play by themselves:** just `wait:`. Both new ratings
+   reach RAM 1–8 s after the result shows (the "ratings changed" line).
+
+The runner icon at the top left of the bracket screen is the CPU duel speed:
+choosing Fast turns it on (a running figure), and `x` toggles it off and on.
 
 The scripts only read `game/`. Everything the emulator writes goes to `run/`.
 `step.py`'s states hold the save memory too, so they are for exploring only:

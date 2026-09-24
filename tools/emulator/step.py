@@ -15,11 +15,15 @@ Inputs, played in order:
     touch:X,Y           tap the touch screen at pixel X,Y (0-255, 0-191)
     shot:NAME           write run/shots/NAME.png now
 
+--peek ADDRESS (repeatable) also prints the u16 and u32 at that RAM address,
+e.g. --peek 0x022CA200, so a script can follow a value without screenshots.
+
 States are for exploring only: they hold the save memory too, so never resume
 recorded play from one (docs/domain/internals.md).
 """
 
 import argparse
+import struct
 from collections import deque
 from pathlib import Path
 
@@ -62,6 +66,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--from", dest="source", type=Path, help="state to start from; boots and loads the save when omitted")
     parser.add_argument("--to", type=Path, required=True, help="where to write the state after the inputs")
+    parser.add_argument("--peek", action="append", default=[], type=lambda v: int(v, 0), help="RAM address whose u16 and u32 to print")
     parser.add_argument("inputs", nargs="*")
     args = parser.parse_args()
     plan = [(token, None if token.startswith("shot:") else frames_for(token)) for token in args.inputs]
@@ -119,6 +124,9 @@ def main() -> None:
         changed = [f"#{i + 1} {was}->{is_}" for i, (was, is_) in enumerate(zip(expected, now)) if was != is_]
         print(f"State: {args.to}  Screenshot: {shot}")
         print(f"DP {wcsave.dp(ram(), wcsave.ram_offset(wcsave.DP))}; ratings changed from the save: {', '.join(changed) or 'none'}")
+        for address in args.peek:
+            u32 = struct.unpack_from("<I", ram(), address - wcsave.RAM_BASE)[0]
+            print(f"0x{address:08X}: u16 {u32 & 0xFFFF}, u32 {u32}")
 
 
 if __name__ == "__main__":

@@ -44,7 +44,9 @@ Source keys are listed in §8.
   [owner, 2026-09-23].
 - **CPU-vs-CPU bracket duels:** these are simulated and can be watched at
   Normal or Fast speed. [confirmed: R1, G1] The runner icon at the top left
-  of the bracket screen runs them faster still [owner, 2026-09-24].
+  of the bracket screen is that speed switch [owner, 2026-09-24]: after
+  choosing Fast it shows a running figure, and X switches it to a walking one
+  and back [emulator, 2026-09-24].
 - **After the player is knocked out,** the tournament still plays through to
   a CPU champion [owner, 2026-09-23]. Losing the first duel therefore gives 6
   CPU-vs-CPU duels, against 4 when the player wins the tournament.
@@ -163,14 +165,28 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 - **N depends on the pre-match ratings.** Beating a much weaker CPU moves few
   points; an upset moves many. The formula is unknown, and it should not be
   called Elo until the data shows it.
-- **Candidate hypothesis, fitted to only these 4 pairs:** a logistic curve,
-  `N = K / (1 + 10^(gap / S))`, reproduces all four exactly.
-  - It fits with K ≈ 158–160 and S ≈ 1000, using integer rounding (round,
-    floor or ceil, each for a slightly different K and S).
+- **Three more pairs from the emulator** (played from the owner's save in
+  melonDS DS, 2026-09-24; see internals.md). They happened only in the
+  emulator's copy, so they are not in the app. The last two are two runs of
+  the same duel that ended the other way:
+
+  | Winner (pre → post) | Loser (pre → post) | N | gap (winner − loser pre) |
+  |---|---|---|---|
+  | Watapon 1506 → 1523 | Dark Magician Girl 600 → 583 | 17 | +906 |
+  | Kaiser Sea Horse 965 → 1090 | Gravekeeper's Chief 1522 → 1397 | 125 | −557 |
+  | Gravekeeper's Chief 1522 → 1556 | Kaiser Sea Horse 965 → 931 | 34 | +557 |
+
+- **Candidate hypothesis:** a logistic curve rounded down,
+  `N = floor(160 / (1 + 10^(gap / 1000)))`, reproduces all 7 pairs exactly.
+  - It is the only fit among integer K from 150 to 170 and S from 900 to 1100
+    in steps of 10, for `floor(K / (1 + 10^(gap / S)))`. Rounding to nearest
+    misses 5 of the 7.
   - The standard Elo scale S = 400 does **not** fit: it predicts about 2
     instead of 23 for the +769 gap.
-  - With 2 free parameters, 4 points are suggestive, not proof. More pairs,
-    especially large negative gaps (big upsets), will confirm or break it.
+  - The same duel won either way (gap −557 and +557) matches on both sides of
+    the curve.
+  - Still a hypothesis until more pairs agree, especially big upsets (large
+    negative gaps), and until any cap or minimum shows up.
 - **Snapshots are valid data on their own.** A reading like "Spirit of the
   Pharaoh is 1141 now" is worth recording even if the matches that led there
   are unknown. For example, the owner saw Spirit of the Pharaoh (initial 1050)
@@ -201,6 +217,8 @@ Sources: A1, G2, G3, B1. atwiki's wording:
 ### 3.3 Duel Points (DP)
 - **What DP is:** the in-game currency. You start with 1500 DP, a booster pack
   costs 150 DP, and a structure deck costs 2000 DP. [confirmed]
+- **A loss pays a little too:** a "Turn Bonus" of 6–7 DP after losing a
+  tournament duel [emulator, 2026-09-24].
 - **Win bonus.** Each win pays a "デュエリスト" bonus of **opponent rating ÷
   5** [single: A6]. The page warns that its table is partly carried over from
   WC2007.
@@ -267,10 +285,10 @@ save in melonDS DS (2026-09-24):
 
 **Still open:**
 
-1. **What is the exact formula for N?** Does the logistic candidate
-   (K ≈ 160, S ≈ 1000) hold for more pairs, and what are its rounding and any
-   floor or cap? Does anything besides the rating gap matter? The app's
-   transfer table (MVP §7.3) is built to answer this.
+1. **What is the exact formula for N?** Does the candidate
+   `floor(160 / (1 + 10^(gap / 1000)))` (§3.1) hold for more pairs, big upsets
+   included, and is there a cap or minimum? Does anything besides the rating
+   gap matter? The app's transfer table (MVP §7.3) is built to answer this.
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.

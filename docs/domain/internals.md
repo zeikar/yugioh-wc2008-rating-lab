@@ -56,12 +56,19 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
   35116, the owner's DP.
 - **Duelist unlock bitfield:** 0x02116018–0x02116027 [single: AR, not
   checked].
+- **The player's LP during a duel:** u16 at 0x022CA200, mirrored at
+  0x022CE2D0 (the Action Replay LP code writes both). The CPU opponent's LP
+  is elsewhere, not yet found.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.
 
-Not yet checked: whether the table in RAM changes the moment a CPU duel
-ends, or only when the game saves.
+**When ratings change in RAM** (two CPU duels watched, 2026-09-24): the
+table still holds the old ratings when a CPU duel's result shows. Both CPUs'
+new ratings land 1–8 s later, during the transition back to the bracket:
+before the bracket shows them and long before the game saves. Every change
+was exactly zero-sum. The player's own duel never changed its CPU
+opponent's rating.
 
 ### Reading it in an emulator
 
@@ -89,6 +96,9 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
   extra frames before the inputs. What seeds the draw is unknown. Runs forked
   from one save may play the same tournaments, so check they diverge before
   treating them as independent data.
+- **Duel results do vary.** Two replays from the same bracket, with
+  different inputs in the player's duel, gave a different winner in a later
+  CPU duel (game.md §3.1).
 
 ## 5. Sources
 
