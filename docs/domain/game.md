@@ -349,8 +349,10 @@ save in melonDS DS (2026-09-24):
        eligible CPU about 9%.
      - Locking any eligible CPU changes the pool sizes, and with them every
        pick.
-     - A Python rebuild of the draw matched all 41 brackets captured in
-       experiments, and all 398 fork tournaments logged with a starting save.
+     - `tools/emulator/draw.py` rebuilds the draw in Python. It matched all
+       41 brackets captured in experiments and every fork tournament logged
+       with a starting save: 426 drawn from `rand()` state 1, and the seeded
+       ones since. `--odds` gives each CPU's chance to enter from any save.
    - **The emulator's "fixed ranks" were an artifact.** The draw uses the
      game's `rand()`. On `tournament.py`'s route its state stays 1 from
      power-on until the draw, so every freshly booted draw got the same

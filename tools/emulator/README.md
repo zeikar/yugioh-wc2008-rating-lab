@@ -40,6 +40,7 @@ platform, pick the matching core build from the same release.
 | `wcsave.py` | Save-file reader and writer the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 | `research.py` | Builds the research dataset from a fork (below) |
 | `uv run replay.py LABEL` | Plays a logged tournament again from its starting save and draws each CPU duel turn by turn (below) |
+| `uv run draw.py SAVE --level N` | The game's entrant draw rebuilt in Python: the bracket a save draws, each CPU's chance to enter over random seeds (`--odds N`), or a check of every logged tournament against its draw (`--check`) |
 | `board.py` | Reads both sides' duel board from RAM, and card names from the ROM. `uv run python board.py DUMP` prints a main-RAM dump's board |
 
 ## Forked runs
