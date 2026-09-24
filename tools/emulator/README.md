@@ -42,8 +42,10 @@ platform, pick the matching core build from the same release.
 `tournament.py` plays tournaments on a fork of the save, one boot each, about
 35 s per tournament:
 
-1. Boots from `run/fork/wc2008.sav`. The first run copies it from
-   `game/wc2008.sav`, which stays untouched.
+1. Boots from `run/fork/wc2008.sav`. The first run copies `game/wc2008.sav`
+   (which stays untouched) to both `run/fork/wc2008.sav` and
+   `run/fork/origin.sav`, the save the fork started from, kept for the
+   export (fork-point ratings and unlock flags).
 2. Follows the route below into a tournament and checks that the fee was
    paid.
 3. Loses the player's duel at once by setting the player's LP to 0. It does
@@ -56,9 +58,12 @@ platform, pick the matching core build from the same release.
    the fee, and after the results screen.
 
 Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
-`src/data/duelists.ts`), both ratings before and after, the transfer, and
-whether it was zero-sum. A fork is its own rating ecosystem: keep its data out
-of the app's main dataset. `--fork DIR` starts or continues another one.
+`src/data/duelists.ts`), both ratings before and after, the transfer, whether
+it was zero-sum, and `player_frame`, the frame the player's own duel started
+at (the same value on all six duels of a tournament), which tells which
+quarterfinal slot the player had. A fork is its own rating ecosystem: keep its
+data out of the app's main dataset. `--fork DIR` starts or continues another
+one.
 
 ## Routes
 

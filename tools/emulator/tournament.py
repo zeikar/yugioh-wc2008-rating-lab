@@ -83,6 +83,7 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
         saves_after_final = 0
         last = game.ratings()
         zeroed = False
+        player_frame = None
         last_press = 0
         while saves_after_final == 0:
             if game.frame > FRAME_LIMIT:
@@ -96,6 +97,7 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
                 game.poke16(LEFT_LP, 0)
                 game.poke16(LEFT_LP_MIRROR, 0)
                 zeroed = True
+                player_frame = game.frame
                 print(f"[{label}] frame {game.frame}: player's duel started; set the player's LP to 0")
 
             # Press A through the player's duel (rock-paper-scissors, turn order,
@@ -150,12 +152,19 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
             raise SystemExit(f"[{label}] the written save's ratings don't match RAM")
         game.screenshot(shots / "end.png")
         print(f"[{label}] done at frame {game.frame}; the fork's save holds the new ratings")
+
+    if player_frame is None:
+        raise SystemExit(f"[{label}] the player's duel was never zeroed")
+    # The player's duel can fall before, between or after the logged CPU
+    # duels, so player_frame isn't known when each event is appended above.
+    for event in events:
+        event["player_frame"] = player_frame
     return events
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--fork", type=Path, default=RUN / "fork", help="folder with the fork's wc2008.sav and duels.jsonl")
+    parser.add_argument("--fork", type=Path, default=RUN / "fork", help="folder with the fork's wc2008.sav, origin.sav and duels.jsonl")
     parser.add_argument("--level", type=int, choices=sorted(ENTRY_FEE), default=1)
     parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each")
     args = parser.parse_args()
@@ -163,7 +172,15 @@ def main() -> None:
     args.fork.mkdir(parents=True, exist_ok=True)
     if not (args.fork / "wc2008.sav").exists():
         shutil.copyfile(SAVE, args.fork / "wc2008.sav")
+        shutil.copyfile(SAVE, args.fork / "origin.sav")
         print(f"Started the fork {args.fork} from {SAVE.relative_to(HERE)}")
+    elif not (args.fork / "origin.sav").exists():
+        raise SystemExit(
+            f"{args.fork}/wc2008.sav exists but {args.fork}/origin.sav doesn't. "
+            f"Copy the save this fork started from to {args.fork}/origin.sav: "
+            "game/wc2008.sav only if this fork was made from it and game/ hasn't changed since; "
+            "for a fork copied from another fork, that fork's origin.sav."
+        )
     ids = roster_ids()
     for _ in range(args.count):
         label = datetime.now().strftime("%Y%m%d-%H%M%S")
