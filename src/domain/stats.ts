@@ -1,5 +1,5 @@
-import { PLAYER_ID, type Dataset, type Duelist, type Match, type RatingObservation, type Tournament, type TournamentLevel } from '../types'
-import { isCpu } from './bracket'
+import type { Dataset, Duelist, Match, RatingObservation, Tournament, TournamentLevel } from '../types'
+import { isCpu, isCpuMatch } from './bracket'
 import { buildTimeline, compareKeys, currentRating, type CurrentRating, type HistoryPoint, type TimelineIndex } from './timeline'
 import { analyzeTournament, type MatchRatings, type TournamentRatings } from './tournamentRatings'
 
@@ -37,18 +37,12 @@ export function ratingStats(index: TimelineIndex, duelist: Duelist): RatingStats
   }
 }
 
-export interface WinLoss {
-  wins: number
-  losses: number
-}
-
 export interface MatchStats {
+  /** CPU-vs-CPU duels, as are wins, losses, winRate and longestWinStreak. */
   played: number
   wins: number
   losses: number
   winRate: number | null
-  vsCpu: WinLoss
-  vsPlayer: WinLoss
   longestWinStreak: number
   finals: number
   titles: number
@@ -56,18 +50,20 @@ export interface MatchStats {
   levelsAppeared: TournamentLevel[]
 }
 
-/** Recorded matches only; the game's own W/L records can include more. */
+/**
+ * Recorded matches only; the game's own W/L records can include more. W–L
+ * leaves out the player's duels, which move no rating (MVP §7.2), but a final
+ * against the player still counts toward finals and titles.
+ */
 export function matchStats(index: TimelineIndex, matches: Match[], tournaments: Tournament[], duelistId: string): MatchStats {
   const mine = matches
     .filter((m) => m.playerAId === duelistId || m.playerBId === duelistId)
     .sort((a, b) => compareKeys(index.matchKeys.get(a.id) ?? [], index.matchKeys.get(b.id) ?? []))
   const stats: MatchStats = {
-    played: mine.length,
+    played: 0,
     wins: 0,
     losses: 0,
     winRate: null,
-    vsCpu: { wins: 0, losses: 0 },
-    vsPlayer: { wins: 0, losses: 0 },
     longestWinStreak: 0,
     finals: 0,
     titles: 0,
@@ -77,21 +73,19 @@ export function matchStats(index: TimelineIndex, matches: Match[], tournaments: 
   let streak = 0
   for (const m of mine) {
     const won = m.winnerId === duelistId
-    const opponent = m.playerAId === duelistId ? m.playerBId : m.playerAId
-    const bucket = opponent === PLAYER_ID ? stats.vsPlayer : stats.vsCpu
+    if (m.round === 'final') {
+      stats.finals++
+      if (won) stats.titles++
+    }
+    if (!isCpuMatch(m)) continue
+    stats.played++
     if (won) {
       stats.wins++
-      bucket.wins++
       streak++
       stats.longestWinStreak = Math.max(stats.longestWinStreak, streak)
     } else {
       stats.losses++
-      bucket.losses++
       streak = 0
-    }
-    if (m.round === 'final') {
-      stats.finals++
-      if (won) stats.titles++
     }
   }
   stats.winRate = stats.played > 0 ? stats.wins / stats.played : null

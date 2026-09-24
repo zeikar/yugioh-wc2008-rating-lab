@@ -403,16 +403,18 @@ shows only on your own save. The header holds the switch between datasets
   game data (`src/data/decks.ts`, `src/assets/portraits/`), not Firestore;
   sources and caveats are in domain/roster.md §6.
 - Stats: name, tournament level, initial, current, Δ, peak, lowest, largest
-  single increase and decrease, recorded matches, wins, losses, win rate,
-  longest win streak (recorded CPU-vs-CPU and player matches in timeline
-  order), finals reached, tournaments won, and the tournament levels it
-  appeared in.
+  single increase and decrease, recorded CPU duels, wins, losses, win rate,
+  longest win streak (recorded CPU-vs-CPU duels in timeline order, §7.2),
+  finals reached, tournaments won, and the tournament levels it appeared in.
 - **Rating history line chart.** X = position on the timeline, Y = rating.
   It plots the effective history (§4) and starts from `initialRating` when
   that is known. The tooltip shows the rating, date and tournament, and, when
   the point is linked to a match, the opponent, W/L and *N*.
-- A table of the last ~10 observations.
-- Head-to-head record vs. each opponent (cheap to add, useful).
+- A table of the last ~10 observations. An entry rating that repeats the
+  point before it is left out of the table and the chart, since it adds
+  nothing. An entry rating that differs shows the CPU moved between
+  tournaments.
+- Head-to-head record vs. each CPU opponent.
 - On your own save, controls, all inline:
   - toggle `unlocked`;
   - edit `notes`;
@@ -527,8 +529,10 @@ All ordering follows the timeline and freshness rules in §4.
 
 ### 7.2 Match stats
 Wins, losses, win rate, finals appearances, and tournament wins (winner of
-`final`). Matches against the player count toward a CPU's W/L. A per-opponent
-split (vs. CPUs / vs. you) is useful, because the player has no rating.
+`final`). W/L, win rate and win streaks count CPU-vs-CPU duels only: the
+player's duels move no rating, and in the research dataset the player always
+loses. Finals and titles count every recorded tournament, including a final
+against the player.
 
 **Upsets.** A CPU-vs-CPU match is an upset when both pre-match ratings (§4)
 are known and `winnerBefore < loserBefore`. Magnitude = `loserBefore −

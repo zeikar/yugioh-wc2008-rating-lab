@@ -43,10 +43,12 @@ export function DuelistPage() {
     )
   }
   const { duelist, rating, record } = row
-  // A tournament's carried entry rating repeats the point before it; showing it would only add duplicates.
-  // As the first point it has none before it: it carries the initial rating, so it is where the history starts.
+  // An entry rating that repeats the point before it would only add duplicates: a carried one always
+  // does, and a typed one does unless the CPU moved between tournaments. As the first point it has
+  // none before it: a carried one holds the initial rating, so it is where the history starts.
   const carried = (p: HistoryPoint) => p.kind === 'entry' && p.observation.source === 'derived'
-  const history = rating.history.filter((p, i) => i === 0 || !carried(p))
+  const repeats = (p: HistoryPoint, i: number) => i > 0 && p.kind === 'entry' && p.observation.rating === rating.history[i - 1].observation.rating
+  const history = rating.history.filter((p, i) => !repeats(p, i))
 
   const points: ChartPoint[] = []
   if (duelist.initialRating !== null && !(history[0] && carried(history[0]))) points.push({ x: 0, rating: duelist.initialRating, details: ['Initial rating on a fresh save'] })
@@ -56,6 +58,8 @@ export function DuelistPage() {
   for (const m of model.data.matches) {
     if (m.playerAId !== id && m.playerBId !== id) continue
     const opp = m.playerAId === id ? m.playerBId : m.playerAId
+    // The player's duels move no rating (MVP §7.2).
+    if (opp === PLAYER_ID) continue
     const rec = h2h.get(opp) ?? { w: 0, l: 0 }
     if (m.winnerId === id) rec.w++
     else rec.l++
@@ -104,7 +108,7 @@ export function DuelistPage() {
         </Stat>
       </dl>
       <p className="-mt-3 mb-6 text-sm text-ink-3">
-        vs CPUs {record.vsCpu.wins}–{record.vsCpu.losses}, vs you {record.vsPlayer.wins}–{record.vsPlayer.losses}. Entered {plural(record.tournamentsEntered, 'tournament')}{record.levelsAppeared.length > 0 ? ` (levels ${record.levelsAppeared.join(', ')})` : ''}. Counts cover recorded matches only.
+        Entered {plural(record.tournamentsEntered, 'tournament')}{record.levelsAppeared.length > 0 ? ` (levels ${record.levelsAppeared.join(', ')})` : ''}. W–L, win rate and streak count recorded CPU duels only; finals and titles count every recorded tournament.
       </p>
 
       <section className="panel mb-6 p-4">
@@ -175,7 +179,7 @@ export function DuelistPage() {
           <h2 className="mb-2 text-xl font-semibold">Head to head</h2>
           <div className="panel">
             {h2h.size === 0 ? (
-              <Empty>No recorded matches.</Empty>
+              <Empty>No recorded CPU duels.</Empty>
             ) : (
               <table className="table">
                 <tbody>
@@ -183,7 +187,9 @@ export function DuelistPage() {
                     .sort((a, b) => b[1].w + b[1].l - (a[1].w + a[1].l))
                     .map(([opp, rec]) => (
                       <tr key={opp}>
-                        <td>{opp === PLAYER_ID ? <span className="font-semibold text-accent">You</span> : <DuelistLink id={opp} />}</td>
+                        <td>
+                          <DuelistLink id={opp} />
+                        </td>
                         <td className="num whitespace-nowrap">
                           {rec.w}–{rec.l}
                         </td>

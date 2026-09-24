@@ -24,17 +24,17 @@ describe('ratingStats', () => {
 })
 
 describe('matchStats', () => {
-  it('counts recorded wins, losses, streaks, finals and titles, including vs the player', () => {
+  it('counts W–L and streaks from CPU duels only, and finals and titles from every match', () => {
     const d = ownerTournament()
     const f = match('t1', 'final', 0, 'blowback-dragon', PLAYER_ID, 'blowback-dragon')
     const sf1 = match('t1', 'semifinal', 1, 'lady-heat', PLAYER_ID, PLAYER_ID)
     const matches = [...d.matches, sf1, f]
     const idx = buildTimeline({ ...d, matches })
     expect(matchStats(idx, matches, d.tournaments, 'blowback-dragon')).toMatchObject({
-      played: 3, wins: 3, losses: 0, winRate: 1, longestWinStreak: 3, finals: 1, titles: 1,
-      vsCpu: { wins: 2, losses: 0 }, vsPlayer: { wins: 1, losses: 0 }, tournamentsEntered: 1, levelsAppeared: [2],
+      played: 2, wins: 2, losses: 0, winRate: 1, longestWinStreak: 2, finals: 1, titles: 1, tournamentsEntered: 1, levelsAppeared: [2],
     })
-    expect(matchStats(idx, matches, d.tournaments, 'lady-heat')).toMatchObject({ wins: 1, losses: 1, longestWinStreak: 1 })
+    // Its loss to the player isn't in its W–L.
+    expect(matchStats(idx, matches, d.tournaments, 'lady-heat')).toMatchObject({ played: 1, wins: 1, losses: 0, longestWinStreak: 1 })
   })
 })
 
