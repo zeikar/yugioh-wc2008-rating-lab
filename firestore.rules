@@ -72,12 +72,5 @@ service cloud.firestore {
           && request.resource.data.source in ['entered', 'derived'];
       }
     }
-
-    // The pre-migration flat collections: readable, never writable again,
-    // removed once the owner has migrated to users/{uid} (README).
-    match /{legacy}/{id} {
-      allow read: if legacy in ['duelists', 'tournaments', 'matches', 'ratingObservations'];
-      allow write: if false;
-    }
   }
 }

@@ -21,7 +21,6 @@ beforeEach(async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'users/alice'), profile)
     await setDoc(doc(ctx.firestore(), 'users/alice/ratingObservations/existing'), observation)
-    await setDoc(doc(ctx.firestore(), 'ratingObservations/legacy'), observation)
   })
 })
 
@@ -129,11 +128,5 @@ describe('firestore.rules', () => {
     batch.set(doc(db, 'users/carol/ratingObservations/r1'), { ...observation, note: 'Roster setup' })
     batch.set(doc(db, 'users/carol'), { name: 'WC2008 save', createdAt: Timestamp.now() })
     await assertSucceeds(batch.commit())
-  })
-
-  it('lets anyone read the legacy collections but never write them', async () => {
-    await assertSucceeds(getDoc(doc(env.unauthenticatedContext().firestore(), 'ratingObservations/legacy')))
-    await assertFails(setDoc(doc(env.authenticatedContext('alice').firestore(), 'ratingObservations/legacy'), observation))
-    await assertFails(deleteDoc(doc(env.authenticatedContext('alice').firestore(), 'ratingObservations/legacy')))
   })
 })

@@ -28,9 +28,7 @@ This file holds only what those don't.
   with `Authorization: Bearer owner`. This header bypasses the security rules.
 - **Real data:** production Firestore is public-read, so
   `https://firestore.googleapis.com/v1/projects/yugioh-wc2008-rating-lab/databases/(default)/documents/users/<uid>/<collection>?pageSize=1000`
-  works with no auth (`<uid>` is the save's owner). The flat collections with
-  no `users/<uid>` prefix still hold the pre-migration data and stay readable
-  until the owner finishes the migration (see README). Use `curl -g` because
+  works with no auth (`<uid>` is the save's owner). Use `curl -g` because
   of the parentheses. Each document's `fields` can be POSTed to the emulator
   as-is (`{"fields": ...}`), so copy real data there to reproduce a bug. Only
   read production; never write to it. The research dataset
