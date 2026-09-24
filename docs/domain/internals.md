@@ -117,8 +117,9 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
     graveyard count, +0x18 extra deck count, +0x1C banished count, +0x20 set
     once the side drew from an empty deck.
   - +0x2C is the win flag, set on the winner's side: 1 on LP, 2 by deck-out,
-    3 with Exodia. Code 3 was seen once in 270 CPU duels: Marcel Bonaparte
-    held all five pieces in hand. No other value has been seen.
+    3 with Exodia, 4 with Destiny Board. In 2250 CPU duels, code 3 came up
+    once (Marcel Bonaparte, all five pieces in hand) and code 4 twice (Yami
+    Bakura, all four Spirit Messages out). No other value has been seen.
   - Card lists of u32 card words, as many as the count: hand at +0x120, deck
     at +0x3A0 (top card first), extra deck at +0x620, graveyard at +0x710
     (newest last), banished at +0xA80.

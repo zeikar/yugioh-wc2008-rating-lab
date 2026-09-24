@@ -13,7 +13,7 @@ ROM = Path(__file__).parent / "game/wc2008.nds"
 
 # One 0xFAC-byte struct per side, left then right, starting with that side's LP.
 SIDES = (0x022CE2D0, 0x022CF27C)
-WON = 0x2C  # u32: set on the winner's side, 1 = on LP, 2 = by deck-out, 3 = with Exodia
+WON = 0x2C  # u32: set on the winner's side, 1 = on LP, 2 = by deck-out, 3 = with Exodia, 4 = with Destiny Board
 COUNTS = {"hand": 0x0C, "deck": 0x10, "grave": 0x14, "banished": 0x1C}  # u32 each
 LISTS = {"hand": 0x120, "grave": 0x710, "banished": 0xA80}  # u32 card words, as many as the count
 ZONES = 0x30  # 11 zones of 0x14 bytes: 0-4 monsters, 5-9 spells and traps, 10 the field spell
@@ -21,7 +21,7 @@ ZONE_SIZE = 0x14
 # Each side's deck as the duel loaded it: u32 main and extra counts at +0 and +8, then u16 card
 # ids, the main deck's from +0x0C and the extra deck's from +0xCA.
 DECK_LISTS = (0x022CBDA8, 0x022CBEB0)
-WIN_BY = {1: "lp", 2: "deck-out", 3: "exodia"}
+WIN_BY = {1: "lp", 2: "deck-out", 3: "exodia", 4: "destiny-board"}
 
 
 def card_id(word: int) -> int:

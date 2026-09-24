@@ -120,8 +120,9 @@ The file holds:
 - every logged tournament, with its 8 seats and all 7 matches;
 - each tournament's entry ratings and both CPUs' post-match ratings of every
   CPU duel. These are read from RAM, so they count as entered;
-- each CPU duel's match notes, from its `end`: how (on LP, by deck-out or
-  with Exodia) and on which turn it was won, both LP and the winner's field. The card names come from the ROM, so
+- each CPU duel's match notes, from its `end`: how (on LP, by deck-out, with
+  Exodia or with Destiny Board) and on which turn it was won, both LP and the
+  winner's field. The card names come from the ROM, so
   writing the file needs `game/wc2008.nds`.
 
 The seats come from the order the game plays the duels in, taken to be the
