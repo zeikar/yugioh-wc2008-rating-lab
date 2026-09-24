@@ -55,6 +55,8 @@ Source keys are listed in §8.
 - **Entering** [owner's save in melonDS DS, 2026-09-24]:
   - The entry fee is 300 DP for Level 1 and 750 DP for Level 2. It is taken
     when you confirm, and the game saves right away ("Saving Data...").
+    It saves again after the final, once you press OK on the results screen
+    ("First Place" / "Second Place").
   - The 8 entrants then appear, and the game asks for the CPU duel speed
     ("Normal" / "Fast") before it shows the bracket.
   - The player's duels start with rock-paper-scissors; a tie repeats it, and
@@ -185,8 +187,12 @@ Sources: A1, G2, G3, B1. atwiki's wording:
     instead of 23 for the +769 gap.
   - The same duel won either way (gap −557 and +557) matches on both sides of
     the curve.
-  - Still a hypothesis until more pairs agree, especially big upsets (large
-    negative gaps), and until any cap or minimum shows up.
+- **The emulator's forked runs agree** (2026-09-24,
+  `tools/emulator/tournament.py`): 24 CPU duels over 4 Level 1 tournaments,
+  with gaps from −974 to +906 and 6 upsets, all zero-sum and all exactly as
+  the formula predicts. The biggest upset, Dark Magician Girl 583 over
+  Gravekeeper's Chief 1557, moved 144 points. No cap or minimum has shown up
+  yet.
 - **Snapshots are valid data on their own.** A reading like "Spirit of the
   Pharaoh is 1141 now" is worth recording even if the matches that led there
   are unknown. For example, the owner saw Spirit of the Pharaoh (initial 1050)
@@ -264,6 +270,7 @@ save in melonDS DS (2026-09-24):
   Mode", "Select the level": "Level 1" / "Level 2".
 - **CPU duel speed:** "Select CPU duel speed": "Normal" / "Fast".
 - **Turn order:** "FIRST TO GO" / "SECOND TO GO".
+- **Results:** "First Place" / "Second Place".
 - **Rating:** the number next to the triangle, with no word label.
 
 ## 6. Open questions to answer in-game
@@ -285,10 +292,11 @@ save in melonDS DS (2026-09-24):
 
 **Still open:**
 
-1. **What is the exact formula for N?** Does the candidate
-   `floor(160 / (1 + 10^(gap / 1000)))` (§3.1) hold for more pairs, big upsets
-   included, and is there a cap or minimum? Does anything besides the rating
-   gap matter? The app's transfer table (MVP §7.3) is built to answer this.
+1. **What is the exact formula for N?** The candidate
+   `floor(160 / (1 + 10^(gap / 1000)))` (§3.1) has held for every duel so far,
+   gaps −974 to +906. Does it hold beyond that range, and is there a cap or
+   minimum? Does anything besides the rating gap matter? The app's transfer
+   table (MVP §7.3) is built to answer this.
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.

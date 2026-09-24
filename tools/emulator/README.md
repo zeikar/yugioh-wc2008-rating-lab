@@ -33,7 +33,32 @@ platform, pick the matching core build from the same release.
 |---|---|
 | `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
+| `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below) |
+| `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
 | `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP) |
+
+## Forked runs
+
+`tournament.py` plays tournaments on a fork of the save, one boot each, about
+35 s per tournament:
+
+1. Boots from `run/fork/wc2008.sav`. The first run copies it from
+   `game/wc2008.sav`, which stays untouched.
+2. Follows the route below into a tournament and checks that the fee was
+   paid.
+3. Loses the player's duel at once by setting the player's LP to 0. It does
+   that only while the is-CPU flags say the player's duel is on
+   (internals.md §4), since in CPU duels the same address holds a CPU's LP.
+4. Presses A through the player's duel and the closing screens, never during
+   a CPU duel.
+5. Logs each CPU duel when its two ratings change in RAM.
+6. Writes the save memory back to the fork each time the game saves: after
+   the fee, and after the results screen.
+
+Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
+`src/data/duelists.ts`), both ratings before and after, the transfer, and
+whether it was zero-sum. A fork is its own rating ecosystem: keep its data out
+of the app's main dataset. `--fork DIR` starts or continues another one.
 
 ## Routes
 

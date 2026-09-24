@@ -56,9 +56,20 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
   35116, the owner's DP.
 - **Duelist unlock bitfield:** 0x02116018–0x02116027 [single: AR, not
   checked].
-- **The player's LP during a duel:** u16 at 0x022CA200, mirrored at
-  0x022CE2D0 (the Action Replay LP code writes both). The CPU opponent's LP
-  is elsewhere, not yet found.
+- **Duel state** [emulator, 2026-09-24]:
+  - **LP:** int16, the left duelist's at 0x022CA200 (mirrored at 0x022CE2D0;
+    the Action Replay LP code writes both) and the right duelist's at
+    0x022CA204. It can go negative on overkill. In the player's duels the
+    player is on the left; in CPU-vs-CPU duels both sides are CPUs.
+  - **Is-CPU flags:** 0x022CBD94 for the left side and 0x022CBD98 for the
+    right. They read 0/1 in the player's duel and 1/1 in a CPU-vs-CPU duel.
+    Both are 0 before the first duel sets them.
+  - **Phase:** 0x022D126C, 0 = Draw … 5 = End. **Turn:** 0x022D1264, counting
+    from 0.
+  - **Setting the player's LP to 0** loses the duel at the next check (the
+    Standby Phase): "YOU LOSE", then a results screen that waits for OK.
+    `tournament.py` does this, and only when the flags say the player's duel
+    is on, since in a CPU duel the same address is a CPU's LP.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.

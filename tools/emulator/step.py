@@ -23,43 +23,10 @@ recorded play from one (docs/domain/internals.md).
 """
 
 import argparse
-import struct
-from collections import deque
 from pathlib import Path
 
-from libretro import RETRO_MEMORY_SAVE_RAM, RETRO_MEMORY_SYSTEM_RAM, ExplicitPathDriver, JoypadState, Pointer, Session
-
 import wcsave
-from probe import OPTIONS, ROM, RUN, SAVE, TITLE_FRAMES, find_core, write_png
-
-BUTTONS = {"a", "b", "x", "y", "l", "r", "start", "select", "up", "down", "left", "right"}
-TAP = 6
-BOOT_LIMIT = 3000
-SCREEN_W, TOP_H, FRAME_H = 256, 192, 384
-
-
-def touch_point(x: int, y: int, pressed: bool) -> Pointer:
-    """A tap on the bottom screen, in libretro pointer units across the stacked 256x384 frame."""
-    to_unit = lambda v, size: round(v / size * 0xFFFE) - 0x7FFF  # noqa: E731
-    return Pointer(to_unit(x, SCREEN_W), to_unit(TOP_H + y, FRAME_H), pressed)
-
-
-def frames_for(token: str) -> list:
-    """The per-frame input states one token stands for."""
-    kind, _, rest = token.partition(":")
-    if kind in BUTTONS and not rest:
-        return [JoypadState(**{kind: True})] * TAP + [0] * TAP
-    if kind == "hold":
-        button, _, count = rest.partition(":")
-        if button in BUTTONS and count.isdigit():
-            return [JoypadState(**{button: True})] * int(count)
-    if kind == "wait" and rest.isdigit():
-        return [0] * int(rest)
-    if kind == "touch":
-        x, _, y = rest.partition(",")
-        if x.isdigit() and y.isdigit():
-            return [touch_point(int(x), int(y), True)] * TAP + [touch_point(int(x), int(y), False)] * TAP
-    raise SystemExit(f"Unknown input: {token}")
+from emulator import RUN, SAVE, frames_for, running
 
 
 def main() -> None:
@@ -73,44 +40,20 @@ def main() -> None:
 
     save = SAVE.read_bytes()
     expected = wcsave.ratings(wcsave.game_data(save))
-    for sub in ("step/system", "step/save", "shots"):
-        (RUN / sub).mkdir(parents=True, exist_ok=True)
-
-    queue: deque = deque()
-
-    def pad():
-        while True:
-            yield queue.popleft() if queue else 0
-
-    def play(states: list) -> None:
-        queue.extend(states)
-        for _ in states:
-            emu.run()
-
-    core = str(find_core())
-    path_driver = ExplicitPathDriver(core, system=str(RUN / "step/system"), save=str(RUN / "step/save"))
-    with Session(core, ROM, path=path_driver, options=OPTIONS, input=pad) as emu:
-        ram = lambda: emu.core.get_memory(RETRO_MEMORY_SYSTEM_RAM)  # noqa: E731
+    with running("step") as game:
+        emu = game.emu
         if args.source:
             if not emu.core.unserialize(args.source.read_bytes()):
                 raise SystemExit(f"The core refused the state in {args.source}")
         else:
-            emu.core.get_memory(RETRO_MEMORY_SAVE_RAM)[:] = save
-            play([0] * TITLE_FRAMES)
-            booted = TITLE_FRAMES
-            while wcsave.ratings(ram(), wcsave.ram_offset(wcsave.RATING_TABLE)) != expected:
-                if booted > BOOT_LIMIT:
-                    raise SystemExit("The save never loaded.")
-                press = frames_for("a") + [0] * 108  # A every 2 s
-                play(press)
-                booted += len(press)
+            game.boot(save)
             print("Booted and loaded the save.")
 
         for token, states in plan:
             if states is None:
-                write_png(emu.video.screenshot(), RUN / f"shots/{token.partition(':')[2]}.png")
+                game.screenshot(RUN / f"shots/{token.partition(':')[2]}.png")
             else:
-                play(states)
+                game.play(states)
 
         state = bytearray(emu.core.serialize_size())
         if not emu.core.serialize(state):
@@ -118,15 +61,14 @@ def main() -> None:
         args.to.parent.mkdir(parents=True, exist_ok=True)
         args.to.write_bytes(state)
         shot = RUN / f"shots/{args.to.stem}.png"
-        write_png(emu.video.screenshot(), shot)
+        game.screenshot(shot)
 
-        now = wcsave.ratings(ram(), wcsave.ram_offset(wcsave.RATING_TABLE))
+        now = game.ratings()
         changed = [f"#{i + 1} {was}->{is_}" for i, (was, is_) in enumerate(zip(expected, now)) if was != is_]
         print(f"State: {args.to}  Screenshot: {shot}")
-        print(f"DP {wcsave.dp(ram(), wcsave.ram_offset(wcsave.DP))}; ratings changed from the save: {', '.join(changed) or 'none'}")
+        print(f"DP {game.u32(wcsave.RAM_GAME_DATA + wcsave.DP)}; ratings changed from the save: {', '.join(changed) or 'none'}")
         for address in args.peek:
-            u32 = struct.unpack_from("<I", ram(), address - wcsave.RAM_BASE)[0]
-            print(f"0x{address:08X}: u16 {u32 & 0xFFFF}, u32 {u32}")
+            print(f"0x{address:08X}: u16 {game.u16(address)}, u32 {game.u32(address)}")
 
 
 if __name__ == "__main__":
