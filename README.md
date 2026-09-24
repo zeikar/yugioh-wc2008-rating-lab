@@ -45,8 +45,9 @@ tournaments in. Every save is public at its `/u/{uid}` link.
 
 React, TypeScript, Vite, Tailwind CSS, React Router and Recharts. Data lives in
 Firebase Firestore with its offline cache, and sign-in uses Firebase
-Authentication with Google. Tests use Vitest; the security rules are tested
-against the Firestore emulator. There is no custom backend.
+Authentication with Google: each user writes only their own save. Tests use
+Vitest; the security rules are tested against the Firestore emulator. There is
+no custom backend.
 
 ## Run it locally
 
@@ -91,10 +92,27 @@ they can run beside other projects' emulators.
 - **One-time setup (in the Firebase console):**
   - Authentication → Get started → Sign-in method → **Google** → Enable.
   - Authentication → Settings → Authorized domains → add **zeikar.dev**.
-- **Becoming the owner:** sign in once on the site, then create the Firestore
-  document `admins/<your uid>`. The uid is shown on the Data page. Then open
-  **Roster setup** from the Data page, tick the unlocked CPUs, type their
-  current ratings or fill them from the save file, and save.
+- **Migrating the single-owner data:** the site used to have one owner and a
+  single flat dataset; moving that data into a save under `users/{uid}` is a
+  one-time, manual move. First, finish (save) or discard any tournament form
+  still open on the old site — drafts are kept per browser under the old key,
+  and the new site won't list them. Then, in order:
+  1. On the live (old) site, Data → Export JSON, and record nothing on it
+     afterwards (later writes are lost).
+  2. `pnpm deploy:rules` — from here the old site is read-only (the legacy
+     rules block keeps its data readable), and nothing can be written until
+     step 4.
+  3. Push this change to `main` and wait for the Pages deploy to finish
+     (watch the run in the repo's **Actions** tab); a new site under the old
+     rules could read no save, which is why the rules go first.
+  4. Sign in, Data → name the save, Import the file. If the import fails
+     partway, re-importing the same file finishes it; nothing is lost.
+  5. Delete the flat collections and `admins/` in the console, remove the
+     legacy block from `firestore.rules`, run `pnpm deploy:rules` again.
+
+  If the site was pushed before the export, the previous commit run locally
+  with the `.env.production` values (emulators off) still exports the flat
+  data.
 
 ## Scripts
 
@@ -109,22 +127,30 @@ they can run beside other projects' emulators.
 
 ## Data model
 
-Four flat Firestore collections. Facts are stored; every statistic (current
-rating, peak, win rate, rank and so on) is derived when the page loads.
+Each signed-in user has a save at `users/{uid}`: a profile doc (`name`,
+`createdAt`) plus the same four collections, nested under it as
+subcollections. Facts are stored; every statistic (current rating, peak, win
+rate, rank and so on) is derived when the page loads.
 
 | Collection | Document id | Holds |
 |---|---|---|
-| `duelists` | slug, e.g. `blowback-dragon` | name, documented tournament level, initial rating, unlocked, category, aliases, notes |
-| `tournaments` | generated | number, playedAt, level, the 8 entrants in bracket order (`player` is you) |
-| `matches` | `{tournament}_{round}_{slot}` | round (quarterfinal, semifinal, final), slot, both players, winner, optional notes |
-| `ratingObservations` | `{tournament}_entry_{cpu}`, `{match}_{cpu}`, or generated | one rating seen in-game, and whether it was `entered` or `derived` |
+| `users/{uid}/duelists` | slug, e.g. `blowback-dragon` | name, documented tournament level, initial rating, unlocked, category, aliases, notes |
+| `users/{uid}/tournaments` | generated | number, playedAt, level, the 8 entrants in bracket order (`player` is you) |
+| `users/{uid}/matches` | `{tournament}_{round}_{slot}` | round (quarterfinal, semifinal, final), slot, both players, winner, optional notes |
+| `users/{uid}/ratingObservations` | `{tournament}_entry_{cpu}`, `{match}_{cpu}`, or generated | one rating seen in-game, and whether it was `entered` or `derived` |
 
 What an observation means depends on its links:
 - tournament only: the CPU's rating when the tournament started;
 - tournament and match: its rating right after that CPU-vs-CPU duel;
 - neither: a reading taken outside a tournament.
 
-`admins/{uid}` marks the owner; clients can never write it.
+### Datasets
+
+- `/u/{uid}` is a save: one signed-in user's own data, as above.
+- `/research` is `public/research/emulator.json`, written by `uv run
+  tournament.py` (see [tools/emulator/README.md](tools/emulator/README.md))
+  from a forked save. It's committed and deployed with the site, and the app
+  loads it with the same import validation as a backup file.
 
 ## How ratings are handled
 
