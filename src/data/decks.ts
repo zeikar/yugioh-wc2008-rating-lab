@@ -71,7 +71,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     sections: [
       { title: "Normal monsters", cards: [["Alligator's Sword", 2], ["Baby Dragon", 2], ["Jerry Beans Man", 2], ["Mad Lobster", 1], ["Red Archery Girl", 2]] },
       { title: "Effect monsters", cards: [["Banisher of the Light", 1], ["Banisher of the Radiance", 2], ["Gren Maju Da Eiza", 2], ["Magical Merchant", 2], ["Princess of Tsurugi", 2], ["Watapon", 1]] },
-      { title: "Spells", cards: [["Card Destruction", 1], ["Creature Seizure", 2], ["Enchanted Arrow", 2], ["Goblin Thief", 2], ["Hand Collapse", 2], ["Spiritualism", 2], ["Stumbling", 2], ["Twister", 2]] },
+      { title: "Spells", cards: [["Card Destruction", 1], ["Creature Seizure", 2], ["Enchanted Arrow", 2], ["Goblin Thief", 2], ["Hand Destruction", 2], ["Spiritualism", 2], ["Stumbling", 2], ["Twister", 2]] },
       { title: "Traps", cards: [["Big Burn", 1], ["Legacy of Yata-Garasu", 2], ["Macro Cosmos", 2], ["Trap Hole", 1]] },
     ],
   },
@@ -140,7 +140,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
       { title: "Normal monsters", cards: [["Dunames Dark Witch", 1]] },
       { title: "Effect monsters", cards: [["Absorbing Kid from the Sky", 2], ["Gellenduo", 3], ["Guardian Angel Joan", 2], ["King of the Swamp", 2], ["Marie the Fallen One", 1], ["Marshmallon", 1], ["Nimble Momonga", 3], ["Shining Angel", 3], ["The Forgiving Maiden", 2]] },
       { title: "Spells", cards: [["Cestus of Dagla", 2], ["Polymerization", 2], ["Premature Burial", 1], ["Shrink", 2], ["Smashing Ground", 1], ["Spell Absorption", 2], ["Swords of Revealing Light", 1], ["The Sanctuary in the Sky", 1]] },
-      { title: "Traps", cards: [["Draining Shield", 2], ["Enchanted Javelin", 1], ["Gift of the Mystical Elf", 1], ["Mirror Force", 1], ["Solemn Wishes", 2], ["Waboku", 1]] },
+      { title: "Traps", cards: [["Draining Shield", 2], ["Enchanted Javelin", 1], ["Gift of The Mystical Elf", 1], ["Mirror Force", 1], ["Solemn Wishes", 2], ["Waboku", 1]] },
       { title: "Fusion monsters", cards: [["St. Joan", 3]] },
     ],
   },
@@ -152,7 +152,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Spirit of the Pharaoh (character)",
     sections: [
       { title: "Normal monsters", cards: [["Clown Zombie", 3]] },
-      { title: "Effect monsters", cards: [["A Cat of Ill Omen", 2], ["Curse of Vampire", 1], ["Des Lacooda", 2], ["Mask of Darkness", 1], ["Pyramid Turtle", 3], ["Regenerating Mummy", 3], ["Spirit of the Pharaoh", 1], ["Spirit Reaper", 1], ["Vampire Lord", 2]] },
+      { title: "Effect monsters", cards: [["A Cat of Ill Omen", 2], ["Des Lacooda", 2], ["Mask of Darkness", 1], ["Pyramid Turtle", 3], ["Regenerating Mummy", 3], ["Spirit of the Pharaoh", 1], ["Spirit Reaper", 1], ["Vampire Lord", 2], ["Vampire's Curse", 1]] },
       { title: "Spells", cards: [["Book of Life", 3], ["Brain Control", 1], ["Creature Swap", 2], ["Gold Sarcophagus", 1], ["Heavy Storm", 1], ["Mystical Space Typhoon", 1], ["Smashing Ground", 1], ["Swords of Revealing Light", 1], ["The Second Sarcophagus", 1], ["The Third Sarcophagus", 1], ["Thousand Energy", 1]] },
       { title: "Traps", cards: [["Dimensional Prison", 2], ["Mirror Force", 1], ["The First Sarcophagus", 2], ["Tutan Mask", 1], ["Wall of Revealing Light", 1]] },
     ],
@@ -217,7 +217,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     sections: [
       { title: "Normal monsters", cards: [["Master Kyonshee", 2], ["Skull Servant", 3]] },
       { title: "Effect monsters", cards: [["Goblin Zombie", 2], ["King of the Skull Servants", 3], ["Mask of Darkness", 2], ["Pyramid Turtle", 3], ["Regenerating Mummy", 2], ["Sangan", 1], ["Spirit Reaper", 1], ["Vampire Lord", 1], ["Wall of Illusion", 1]] },
-      { title: "Spells", cards: [["Book of Life", 3], ["Burial from a Different Dimension", 1], ["Call of the Mummy", 1], ["Fissure", 1], ["Hand Collapse", 2], ["Mystical Space Typhoon", 1], ["Opti-Camouflage Armor", 1], ["Premature Burial", 1], ["Smashing Ground", 1], ["United We Stand", 1]] },
+      { title: "Spells", cards: [["Book of Life", 3], ["Burial from a Different Dimension", 1], ["Call of the Mummy", 1], ["Fissure", 1], ["Hand Destruction", 2], ["Mystical Space Typhoon", 1], ["Opti-Camouflage Armor", 1], ["Premature Burial", 1], ["Smashing Ground", 1], ["United We Stand", 1]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Crush Card Virus", 1], ["Human-Wave Tactics", 1], ["Raigeki Break", 1], ["The League of Uniform Nomenclature", 2]] },
     ],
   },
@@ -253,7 +253,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Curse of Vampire (character)",
     sections: [
       { title: "Normal monsters", cards: [["Clown Zombie", 1], ["Dragon Zombie", 1], ["The Snake Hair", 1]] },
-      { title: "Effect monsters", cards: [["Curse of Vampire", 1], ["Despair from the Dark", 1], ["Double Coston", 1], ["Goblin Zombie", 2], ["Patrician of Darkness", 1], ["Plague Wolf", 1], ["Pyramid Turtle", 3], ["Regenerating Mummy", 2], ["Spirit Reaper", 1], ["The Dark - Hex-Sealed Fusion", 2], ["Vampire Genesis", 1], ["Vampire Lady", 2], ["Vampire Lord", 1]] },
+      { title: "Effect monsters", cards: [["Despair from the Dark", 1], ["Double Coston", 1], ["Goblin Zombie", 2], ["Patrician of Darkness", 1], ["Plague Wolf", 1], ["Pyramid Turtle", 3], ["Regenerating Mummy", 2], ["Spirit Reaper", 1], ["The Dark - Hex-Sealed Fusion", 2], ["Vampire Genesis", 1], ["Vampire Lady", 2], ["Vampire Lord", 1], ["Vampire's Curse", 1]] },
       { title: "Spells", cards: [["Book of Life", 2], ["Call of the Mummy", 2], ["Giant Trunade", 1], ["Heavy Storm", 1], ["Mystical Space Typhoon", 1], ["Overpowering Eye", 2], ["Premature Burial", 1], ["Shield Crush", 2]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Magic Jammer", 2], ["Raigeki Break", 2], ["Torrential Tribute", 1]] },
       { title: "Fusion monsters", cards: [["Reaper on the Nightmare", 3]] },
@@ -305,7 +305,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Il Blud (character)",
     sections: [
       { title: "Normal monsters", cards: [["Master Kyonshee", 1]] },
-      { title: "Effect monsters", cards: [["Curse of Vampire", 3], ["Goblin Zombie", 2], ["Lich Lord, King of the Underworld", 1], ["Magical Merchant", 1], ["Magician of Faith", 1], ["Pyramid Turtle", 3], ["Spirit Reaper", 1], ["Vampire Lord", 3]] },
+      { title: "Effect monsters", cards: [["Goblin Zombie", 2], ["Lich Lord, King of the Underworld", 1], ["Magical Merchant", 1], ["Magician of Faith", 1], ["Pyramid Turtle", 3], ["Spirit Reaper", 1], ["Vampire Lord", 3], ["Vampire's Curse", 3]] },
       { title: "Gemini monsters", cards: [["Il Blud", 3]] },
       { title: "Spells", cards: [["Banner of Courage", 2], ["Book of Life", 3], ["Brain Control", 1], ["Call of the Mummy", 1], ["Card Destruction", 1], ["Card of Safe Return", 2], ["Foolish Burial", 2], ["Mausoleum of the Emperor", 3], ["Premature Burial", 1], ["Smashing Ground", 1], ["Swords of Revealing Light", 1]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Royal Decree", 2]] },
@@ -347,7 +347,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Marie the Fallen One (character)",
     sections: [
       { title: "Effect monsters", cards: [["Giant Germ", 3], ["Gorz the Emissary of Darkness", 1], ["Marie the Fallen One", 3], ["Nova Summoner", 3], ["Shining Angel", 3], ["Sky Scourge Enrise", 1], ["Sky Scourge Invicil", 1], ["Sky Scourge Norleras", 1], ["The Forgiving Maiden", 3], ["The Light - Hex-Sealed Fusion", 2]] },
-      { title: "Spells", cards: [["Book of Moon", 1], ["Creature Swap", 2], ["Future Fusion", 1], ["Gold Sarcophagus", 1], ["Hammer Shot", 2], ["Hand Collapse", 1], ["Mystical Space Typhoon", 1], ["Pot of Avarice", 1], ["Premature Burial", 1], ["Swords of Revealing Light", 1], ["Twister", 1]] },
+      { title: "Spells", cards: [["Book of Moon", 1], ["Creature Swap", 2], ["Future Fusion", 1], ["Gold Sarcophagus", 1], ["Hammer Shot", 2], ["Hand Destruction", 1], ["Mystical Space Typhoon", 1], ["Pot of Avarice", 1], ["Premature Burial", 1], ["Swords of Revealing Light", 1], ["Twister", 1]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Dark Bribe", 1], ["Dimensional Prison", 2], ["Dust Tornado", 1], ["Mirror Force", 1]] },
       { title: "Fusion monsters", cards: [["St. Joan", 3]] },
     ],
@@ -389,7 +389,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
       { title: "Effect monsters", cards: [["Airknight Parshath", 3], ["Gellenduo", 3], ["Harvest Angel of Wisdom", 2], ["Kaiser Sea Horse", 2], ["Light and Darkness Dragon", 2], ["Magician of Faith", 1], ["Majestic Mech - Ohka", 2], ["Marshmallon", 1], ["Ninja Grandmaster Sasuke", 3]] },
       { title: "Spirit monsters", cards: [["Asura Priest", 1]] },
       { title: "Spells", cards: [["Brain Control", 1], ["Heavy Storm", 1], ["Luminous Spark", 3], ["Mystical Space Typhoon", 1], ["Premature Burial", 1], ["Smashing Ground", 1], ["Soul Exchange", 2]] },
-      { title: "Traps", cards: [["Call of the Haunted", 1], ["Forced Back", 1], ["Magic Drain", 3], ["Metal Reflect Slime", 2], ["Mirror Force", 1], ["Skull Zoma", 2]] },
+      { title: "Traps", cards: [["Call of the Haunted", 1], ["Forced Back", 1], ["Magic Drain", 3], ["Metal Reflect Slime", 2], ["Mirror Force", 1], ["Zoma the Spirit", 2]] },
     ],
   },
   "gear-golem-the-moving-fortress": {
@@ -429,7 +429,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
       { title: "Normal monsters", cards: [["Insect Knight", 3], ["Woodborg Inpachi", 1]] },
       { title: "Effect monsters", cards: [["Brain Crusher", 1], ["Doom Dozer", 3], ["Grasschopper", 3], ["Jirai Gumo", 2], ["Magical Merchant", 3], ["Pinch Hopper", 3], ["Spirit Reaper", 1]] },
       { title: "Spells", cards: [["Brain Control", 1], ["Dimension Fusion", 1], ["Heavy Storm", 1], ["Mystical Space Typhoon", 1], ["Nobleman of Crossout", 1], ["Pot of Avarice", 2], ["Premature Burial", 1], ["Smashing Ground", 1], ["Soul Exchange", 1], ["Swords of Revealing Light", 1]] },
-      { title: "Traps", cards: [["Call of the Haunted", 1], ["Dimensional Prison", 1], ["Dust Tornado", 1], ["Metal Reflect Slime", 1], ["Mirror Force", 1], ["Skull Zoma", 3], ["Torrential Tribute", 1]] },
+      { title: "Traps", cards: [["Call of the Haunted", 1], ["Dimensional Prison", 1], ["Dust Tornado", 1], ["Metal Reflect Slime", 1], ["Mirror Force", 1], ["Torrential Tribute", 1], ["Zoma the Spirit", 3]] },
     ],
   },
   "ojama-yellow": {
@@ -440,7 +440,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Ojama Yellow (World Championship character)",
     sections: [
       { title: "Normal monsters", cards: [["Charcoal Inpachi", 3], ["Ojama Black", 2], ["Ojama Green", 2], ["Ojama Yellow", 2]] },
-      { title: "Spells", cards: [["Dark Factory of Mass Production", 2], ["Enchanting Fitting Room", 1], ["Fissure", 1], ["Level Limit - Area B", 1], ["Lightning Vortex", 1], ["Mystical Space Typhoon", 1], ["Nightmare's Steelcage", 2], ["Ojama Delta Hurricane!!", 2], ["Ojamagic", 1], ["Premature Burial", 1], ["Question", 1], ["Smashing Ground", 1], ["Swords of Revealing Light", 1], ["Tribute to the Doomed", 1], ["Wave-Motion Cannon", 3]] },
+      { title: "Spells", cards: [["Dark Factory of Mass Production", 2], ["Enchanting Fitting Room", 1], ["Fissure", 1], ["Level Limit - Area B", 1], ["Lightning Vortex", 1], ["Mystical Space Typhoon", 1], ["Nightmare's Steelcage", 2], ["Ojama Delta Hurricane!!", 2], ["Ojamagic", 1], ["Premature Burial", 1], ["Question", 1], ["Smashing Ground", 1], ["Swords of Revealing Light", 1], ["Tribute to The Doomed", 1], ["Wave-Motion Cannon", 3]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Dark Bribe", 3], ["Forced Back", 2], ["Gravity Bind", 1], ["Magic Cylinder", 1], ["Mirror Force", 1], ["Over Limit", 1], ["Sakuretsu Armor", 2]] },
     ],
   },
@@ -479,7 +479,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     wiki: "Molten Zombie (character)",
     sections: [
       { title: "Effect monsters", cards: [["Flame Ruler", 1], ["Fox Fire", 1], ["Infernal Flame Emperor", 1], ["Inferno", 2], ["Molten Zombie", 3], ["Raging Flame Sprite", 1], ["Solar Flare Dragon", 3], ["Spirit of Flames", 2], ["The Thing in the Crater", 1], ["Thestalos the Firestorm Monarch", 1], ["Uria, Lord of Searing Flames", 2]] },
-      { title: "Traps", cards: [["Backfire", 3], ["Begone, Knave!", 2], ["Call of the Haunted", 1], ["Embodiment of Apophis", 2], ["Fairy Box", 2], ["Firewall", 2], ["Gravity Bind", 1], ["Needle Wall", 2], ["Nightmare Wheel", 2], ["Skull Zoma", 1], ["Solemn Wishes", 2], ["Ultimate Offering", 1], ["Wall of Revealing Light", 1]] },
+      { title: "Traps", cards: [["Backfire", 3], ["Begone, Knave!", 2], ["Call of the Haunted", 1], ["Embodiment of Apophis", 2], ["Fairy Box", 2], ["Firewall", 2], ["Gravity Bind", 1], ["Needle Wall", 2], ["Nightmare Wheel", 2], ["Solemn Wishes", 2], ["Ultimate Offering", 1], ["Wall of Revealing Light", 1], ["Zoma the Spirit", 1]] },
     ],
   },
   "sand-moth": {
@@ -718,7 +718,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
       { title: "Gemini monsters", cards: [["Chthonian Emperor Dragon", 2]] },
       { title: "Spells", cards: [["Card Destruction", 1], ["Cyberdark Impact!", 2], ["Foolish Burial", 3], ["Future Fusion", 1], ["Giant Trunade", 1], ["Gold Sarcophagus", 1], ["Heavy Storm", 1], ["Limiter Removal", 1], ["Mystical Space Typhoon", 1], ["Nobleman of Crossout", 2], ["Overload Fusion", 1], ["Premature Burial", 1]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Crush Card Virus", 1], ["Fusion Guard", 1], ["Mirror Force", 1], ["Sakuretsu Armor", 2], ["Widespread Ruin", 1]] },
-      { title: "Fusion monsters", cards: [["Cyber End Dragon", 3], ["Cyber Twin Dragon", 3], ["Cyberdark Dragon", 3], ["Five-Headed Dragon", 3]] },
+      { title: "Fusion monsters", cards: [["Cyber End Dragon", 3], ["Cyber Twin Dragon", 3], ["Cyberdark Dragon", 3], ["F.G.D.", 3]] },
     ],
   },
   "demise-king-of-armageddon": {
@@ -912,7 +912,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     sections: [
       { title: "Normal monsters", cards: [["Left Arm of the Forbidden One", 1], ["Left Leg of the Forbidden One", 1], ["Right Arm of the Forbidden One", 1], ["Right Leg of the Forbidden One", 1]] },
       { title: "Effect monsters", cards: [["Exodia the Forbidden One", 1], ["Magical Merchant", 3], ["Nimble Momonga", 3], ["Sangan", 1], ["Thunder Dragon", 3]] },
-      { title: "Spells", cards: [["Dark Factory of Mass Production", 2], ["Foolish Burial", 2], ["Gold Sarcophagus", 1], ["Hand Collapse", 2], ["Lightning Vortex", 2], ["Monster Reincarnation", 2], ["Scapegoat", 1], ["Swords of Revealing Light", 1], ["Toon Table of Contents", 3], ["Upstart Goblin", 3]] },
+      { title: "Spells", cards: [["Dark Factory of Mass Production", 2], ["Foolish Burial", 2], ["Gold Sarcophagus", 1], ["Hand Destruction", 2], ["Lightning Vortex", 2], ["Monster Reincarnation", 2], ["Scapegoat", 1], ["Swords of Revealing Light", 1], ["Toon Table of Contents", 3], ["Upstart Goblin", 3]] },
       { title: "Traps", cards: [["Backup Soldier", 2], ["Dark Bribe", 1], ["Legacy of Yata-Garasu", 1], ["Mirror Force", 1], ["Torrential Tribute", 1]] },
     ],
   },
@@ -1004,7 +1004,7 @@ export const DECKS: Readonly<Record<string, Deck>> = {
     sections: [
       { title: "Normal monsters", cards: [["Gilgarth", 2]] },
       { title: "Effect monsters", cards: [["Byser Shock", 1], ["Dark Jeroid", 2], ["Helpoemer", 2], ["Lava Golem", 3], ["Mystic Tomato", 3], ["Newdoria", 2], ["Sangan", 1], ["Spirit Reaper", 1], ["Viser Des", 2]] },
-      { title: "Spells", cards: [["Book of Moon", 1], ["Brain Control", 1], ["Creature Swap", 1], ["Heavy Storm", 1], ["Magical Mallet", 1], ["Magical Stone Excavation", 1], ["Mystical Space Typhoon", 1], ["Nightmare's Steel Cage", 2], ["Premature Burial", 1], ["Scapegoat", 1], ["Swords of Concealing Light", 2]] },
+      { title: "Spells", cards: [["Book of Moon", 1], ["Brain Control", 1], ["Creature Swap", 1], ["Heavy Storm", 1], ["Magical Mallet", 1], ["Magical Stone Excavation", 1], ["Mystical Space Typhoon", 1], ["Nightmare's Steelcage", 2], ["Premature Burial", 1], ["Scapegoat", 1], ["Swords of Concealing Light", 2]] },
       { title: "Traps", cards: [["Call of the Haunted", 1], ["Crush Card Virus", 1], ["Metal Reflect Slime", 1], ["Mirror Force", 1], ["Nightmare Wheel", 3], ["Torrential Tribute", 1]] },
     ],
   },

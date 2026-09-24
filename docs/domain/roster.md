@@ -320,9 +320,14 @@ WC-mode deck (§1). Both come from each CPU's YP-C page, fetched on
     screenshot was taken, so it is not data. Kozaky's card says 1200, for
     example, while its initial rating is 1350, confirmed in-game.
 - **Decklists:** the app shows YP-C's list for the WC-mode deck, for all 78.
-  - GF-M agrees card for card on 71 of them [confirmed]. Some cards go by a
-    different English name there, e.g. Hand Destruction for Hand Collapse,
-    Vampire's Curse for Curse of Vampire, Zoma the Spirit for Skull Zoma.
+  - GF-M agrees card for card on 71 of them [confirmed].
+  - Card names are the game's own: the English names in the Korean ROM
+    (internals.md §1), checked against the cards CPUs played in emulator
+    duels [emulator, 2026-09-25]. YP-C names 7 of them differently:
+    Hand Collapse (Hand Destruction), Curse of Vampire (Vampire's Curse),
+    Skull Zoma (Zoma the Spirit), Five-Headed Dragon (F.G.D.), Nightmare's
+    Steel Cage (Nightmare's Steelcage), Gift of the Mystical Elf and Tribute
+    to the Doomed (capital "The" in the game).
   - The other 7 differ [unclear]; an in-game check would settle them:
 
     | Duelist | YP-C (shown in the app) | GF-M |
