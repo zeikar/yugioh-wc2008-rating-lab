@@ -1,7 +1,7 @@
 # WC2008 Internals
 
 How *Yu-Gi-Oh! World Championship 2008* stores the data this app tracks: the
-ROM, the save file and, later, RAM. Use it to read ratings from a save or an
+ROM, the save file and RAM. Use it to read ratings from a save or an
 emulator. For the game as seen in play, see [game.md](game.md); the CPU
 roster is in [roster.md](roster.md).
 
@@ -47,13 +47,34 @@ against the owner's ROM and save. Source keys are listed in §5.
 
 ## 4. RAM
 
-Not mapped yet. Action Replay codes for `YG8K` place DP at 0x021146B0 and
-the duelist unlock bitfield at 0x02116018–0x02116027 [single: AR, not
-checked in-game].
+RAM holds the decompressed game data as one block at 0x0211468C, so every
+offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
+2026-09-24]
+- **Rating table:** 0x02114A22. Its 156 bytes match the save's table
+  exactly, and it is the only match in the 4 MiB of main RAM.
+- **DP:** 0x021146B0, the address the Action Replay code uses [AR]. It held
+  35116, the owner's DP.
+- **Duelist unlock bitfield:** 0x02116018–0x02116027 [single: AR, not
+  checked].
+- **When it appears:** at boot the game fills this area with fresh-game
+  defaults (DP 1500, title screen showing NEW GAME). The block appears once
+  the save is loaded, after pressing A on the title screen.
 
-If RAM holds the decompressed save data as one block, DP's two offsets put
-that block at 0x0211468C, so the rating table would be at 0x02114A22
-[unclear: inference]. Search around there first.
+Not yet checked: whether the table in RAM changes the moment a CPU duel
+ends, or only when the game saves.
+
+### Reading it in an emulator
+
+Checked on 2026-09-24 with the melonDS DS libretro core (v1.3.1,
+macOS arm64) driven from Python by libretro.py (0.12.0):
+- The core boots the ROM with its built-in BIOS and firmware. The core
+  options are `melonds_boot_mode: direct`, `melonds_console_mode: ds` and
+  `melonds_sysfile_mode: builtin`.
+- The core leaves the save to the frontend. Copy the save file's bytes into
+  `RETRO_MEMORY_SAVE_RAM` before the first frame; otherwise the game starts
+  with NEW GAME. For the same reason, the frontend has to write that memory
+  back to a file itself to keep what the game saves.
+- Main RAM is `RETRO_MEMORY_SYSTEM_RAM`, where offset 0 is 0x02000000.
 
 ## 5. Sources
 
