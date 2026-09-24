@@ -1,12 +1,17 @@
 rules_version = '2';
 
-// Public read, owner-only write (docs/MVP.md §3). The owner is whoever has a
-// doc at admins/{uid}; add it in the Firebase console after signing in once.
+// Open sign-up, per-user saves (docs/MVP.md §3). Anyone reads every save; a
+// signed-in user writes only their own, under users/{uid}.
 service cloud.firestore {
   match /databases/{db}/documents {
-    function isAdmin() {
-      return request.auth != null
-        && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validName() {
+      return request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 40;
     }
 
     function isLevel(v) {
@@ -17,52 +22,61 @@ service cloud.firestore {
       return v is int && v >= 0;
     }
 
-    match /duelists/{id} {
+    match /users/{uid} {
       allow read: if true;
-      allow delete: if isAdmin();
-      allow create, update: if isAdmin()
-        && id != 'player'
-        && request.resource.data.name is string
-        && isLevel(request.resource.data.tournamentLevel)
-        && (request.resource.data.initialRating == null || isRating(request.resource.data.initialRating))
-        && request.resource.data.unlocked is bool;
+      allow create: if isOwner(uid) && validName() && request.resource.data.createdAt is timestamp;
+      allow update: if isOwner(uid) && validName() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+
+      match /duelists/{id} {
+        allow read: if true;
+        allow delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && id != 'player'
+          && request.resource.data.name is string
+          && isLevel(request.resource.data.tournamentLevel)
+          && (request.resource.data.initialRating == null || isRating(request.resource.data.initialRating))
+          && request.resource.data.unlocked is bool;
+      }
+
+      match /tournaments/{id} {
+        allow read: if true;
+        allow delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.number is int
+          && request.resource.data.playedAt is timestamp
+          && isLevel(request.resource.data.tournamentLevel)
+          && request.resource.data.entrants is list
+          && request.resource.data.entrants.size() == 8;
+      }
+
+      match /matches/{id} {
+        allow read: if true;
+        allow delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.round in ['quarterfinal', 'semifinal', 'final']
+          && request.resource.data.slot is int
+          && request.resource.data.playerAId != request.resource.data.playerBId
+          && request.resource.data.winnerId in [request.resource.data.playerAId, request.resource.data.playerBId];
+      }
+
+      match /ratingObservations/{id} {
+        allow read: if true;
+        allow delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.duelistId is string
+          && request.resource.data.duelistId != 'player'
+          && isRating(request.resource.data.rating)
+          && request.resource.data.observedAt is timestamp
+          && request.resource.data.source in ['entered', 'derived'];
+      }
     }
 
-    match /tournaments/{id} {
-      allow read: if true;
-      allow delete: if isAdmin();
-      allow create, update: if isAdmin()
-        && request.resource.data.number is int
-        && request.resource.data.playedAt is timestamp
-        && isLevel(request.resource.data.tournamentLevel)
-        && request.resource.data.entrants is list
-        && request.resource.data.entrants.size() == 8;
-    }
-
-    match /matches/{id} {
-      allow read: if true;
-      allow delete: if isAdmin();
-      allow create, update: if isAdmin()
-        && request.resource.data.round in ['quarterfinal', 'semifinal', 'final']
-        && request.resource.data.slot is int
-        && request.resource.data.playerAId != request.resource.data.playerBId
-        && request.resource.data.winnerId in [request.resource.data.playerAId, request.resource.data.playerBId];
-    }
-
-    match /ratingObservations/{id} {
-      allow read: if true;
-      allow delete: if isAdmin();
-      allow create, update: if isAdmin()
-        && request.resource.data.duelistId is string
-        && request.resource.data.duelistId != 'player'
-        && isRating(request.resource.data.rating)
-        && request.resource.data.observedAt is timestamp
-        && request.resource.data.source in ['entered', 'derived'];
-    }
-
-    match /admins/{uid} {
-      allow get: if request.auth != null && request.auth.uid == uid;
-      allow list, write: if false;
+    // The pre-migration flat collections: readable, never writable again,
+    // removed once the owner has migrated to users/{uid} (README).
+    match /{legacy}/{id} {
+      allow read: if legacy in ['duelists', 'tournaments', 'matches', 'ratingObservations'];
+      allow write: if false;
     }
   }
 }
