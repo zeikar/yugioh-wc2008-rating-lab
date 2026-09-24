@@ -36,3 +36,13 @@ ui-debug.log*
 
 # hyperclaude plans and research artifacts
 .hyperclaude/
+
+# Emulator tools: the owner's ROM and save stay on this machine
+*.nds
+*.sav
+*.dsv
+tools/emulator/game/
+tools/emulator/core/
+tools/emulator/run/
+tools/emulator/.venv/
+__pycache__/

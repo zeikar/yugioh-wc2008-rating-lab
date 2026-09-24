@@ -66,7 +66,8 @@ ends, or only when the game saves.
 ### Reading it in an emulator
 
 Checked on 2026-09-24 with the melonDS DS libretro core (v1.3.1,
-macOS arm64) driven from Python by libretro.py (0.12.0):
+macOS arm64) driven from Python by libretro.py (0.12.0).
+`tools/emulator/probe.py` does all of this:
 - The core boots the ROM with its built-in BIOS and firmware. The core
   options are `melonds_boot_mode: direct`, `melonds_console_mode: ds` and
   `melonds_sysfile_mode: builtin`.

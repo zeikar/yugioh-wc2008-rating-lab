@@ -1,0 +1,9 @@
+[project]
+name = "wc2008-emulator"
+version = "0.0.0"
+description = "Drives WC2008 in the melonDS DS libretro core to read CPU ratings"
+requires-python = ">=3.12"
+dependencies = ["libretro.py==0.12.0"]
+
+[tool.uv]
+package = false

@@ -1,0 +1,39 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "libretro-py"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/11/abb30ff480eac39e6003926984a017985b0508d37bba3da96e43c1277a7f/libretro_py-0.12.0-py3-none-any.whl", hash = "sha256:2e99f5586c20cf68336da5faa4038225d906c2d3696d79403201ced72fa402aa", size = 258505, upload-time = "2026-09-23T00:27:45.48Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/a1/e44be7b84e40be7501ecc941aaf38decaf33bf90a2272bf1d1222072b197/libretro_py-0.12.0-py3-none-macosx_10_15_x86_64.whl", hash = "sha256:a47c664699bd0589f7dc5d06585c42cb621c56e7a02bc24c7a9e5ff090f659b6", size = 430759, upload-time = "2026-09-23T00:27:47.005Z" },
+    { url = "https://files.pythonhosted.org/packages/95/98/71912ca3c231f473589ea42596a6eb90be345076bde33fc375f4cecfd9f5/libretro_py-0.12.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:50e7101ea0045c7491a06be8342d2daea2939ce6daf5756452035877bf6b77c4", size = 446647, upload-time = "2026-09-23T00:27:48.481Z" },
+    { url = "https://files.pythonhosted.org/packages/83/2c/900f34177df70a21140e1e6d0922dff8ae0b8f096010a9be1bcf15e81351/libretro_py-0.12.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a071a50d2a156d2eb14bb006e9db2e5af0dc0fc9e08b9bc7c65c66d523fbba22", size = 750460, upload-time = "2026-09-23T00:27:50.063Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/6c/4ed3ef8f87797df78567ea4328170a5ee00ab7daa9ddca13b268cc0c7506/libretro_py-0.12.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:717f5a50f86652e32ada93d489e2123a7e2517d9caa9ea6340db6405f0a60086", size = 745739, upload-time = "2026-09-23T00:27:51.502Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/16/a5b528779591d1b97686da853ccbe9567e4fd83549d0a12ba9dafa1502a5/libretro_py-0.12.0-py3-none-win_amd64.whl", hash = "sha256:ed6ad64cd42551a702bc3cff9cd0f7e9ce9f61bcc8f46efb60eaf70ce63fa189", size = 723667, upload-time = "2026-09-23T00:27:52.912Z" },
+]
+
+[[package]]
+name = "typing-extensions"
+version = "4.16.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/cc/6253133b5bb138fc3306cebfbda2c520f545d36b5be2c7255cc528bb45d6/typing_extensions-4.16.0.tar.gz", hash = "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5", size = 113555, upload-time = "2026-07-02T08:40:05.92Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl", hash = "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8", size = 45571, upload-time = "2026-07-02T08:40:04.659Z" },
+]
+
+[[package]]
+name = "wc2008-emulator"
+version = "0.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "libretro-py" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "libretro-py", specifier = "==0.12.0" }]

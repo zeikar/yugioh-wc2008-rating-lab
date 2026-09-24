@@ -33,6 +33,12 @@ This file holds only what those don't.
   so copy real data there to reproduce a bug. Only read production; never
   write to it.
 
+## Emulator tools
+
+- `tools/emulator/` runs the game headless to read ratings from RAM (see its
+  README). The ROM and save in `tools/emulator/game/` are the owner's files:
+  they are gitignored, and scripts only read them. Never commit them.
+
 ## Commits
 
 - Commit straight to `main`. The subject is `Area: what changed`, e.g.
