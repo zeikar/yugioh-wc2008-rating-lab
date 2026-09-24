@@ -3,17 +3,19 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router'
 import { subscribeOutstandingCommits, subscribeSave, type Snapshot } from '../db/repository'
 import { loadResearch } from '../db/research'
-import { buildModel } from '../domain/stats'
+import { buildModel, type Model } from '../domain/stats'
 import { auth } from '../firebase'
 import type { Dataset } from '../types'
 import { AppContext, type Access, type AppState } from './context'
 import { datasetFromPath, RESEARCH, saveRef } from './datasets'
 
 const EMPTY: Dataset = { duelists: [], tournaments: [], matches: [], observations: [] }
+const EMPTY_MODEL = buildModel(EMPTY)
 
-/** What a dataset has loaded, with the `base` of the dataset it belongs to. */
+/** What a dataset has loaded and its model, with the `base` of the dataset it belongs to. */
 interface Loaded extends Snapshot {
   base: string
+  model: Model
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -42,20 +44,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setError({ message: `Could not load data: ${e.message}. Reload the page to try again.`, load: true })
       setFailedFor(dataset.base)
     }
+    // Derived as it arrives. Anyone's save can hold rules-valid data the derivation still trips on
+    // (MVP §3); that fails like a load instead of taking the whole app down above the page boundary.
+    const arrived = (s: Snapshot) => {
+      if (!live) return
+      let model: Model
+      try {
+        model = buildModel(s.data)
+      } catch (e) {
+        failed(e instanceof Error ? e : new Error(String(e)))
+        return
+      }
+      setLoaded({ ...s, base: dataset.base, model })
+    }
     let unsubscribe = () => {}
     if (dataset.kind === 'save') {
-      unsubscribe = subscribeSave(
-        dataset.uid,
-        (s) => {
-          if (live) setLoaded({ ...s, base: dataset.base })
-        },
-        failed,
-      )
+      unsubscribe = subscribeSave(dataset.uid, arrived, failed)
     } else {
-      loadResearch().then((data) => {
-        // A static file: nothing to sync and no partial cache.
-        if (live) setLoaded({ base: dataset.base, data, profile: null, pendingWrites: false, fromCache: false })
-      }, failed)
+      // A static file: nothing to sync and no partial cache.
+      loadResearch().then((data) => arrived({ data, profile: null, pendingWrites: false, fromCache: false }), failed)
     }
     return () => {
       live = false
@@ -80,8 +87,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const current = dataset !== null && loaded?.base === dataset.base ? loaded : null
   const loadFailed = dataset !== null && failedFor === dataset.base
-  const data = current?.data ?? EMPTY
-  const model = useMemo(() => buildModel(data), [data])
+  const model = current?.model ?? EMPTY_MODEL
 
   // Editing controls show only on your own save (MVP §3); the security rules are what enforce it.
   const access: Access = dataset?.kind === 'save' && user?.uid === dataset.uid ? { canEdit: true, dataset } : { canEdit: false, dataset }

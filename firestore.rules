@@ -23,7 +23,8 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read: if true;
+      // get, not list: a save opens by its link, but nobody can enumerate every uid and save name.
+      allow get: if true;
       allow create: if isOwner(uid) && validName() && request.resource.data.createdAt is timestamp;
       allow update: if isOwner(uid) && validName() && request.resource.data.createdAt == resource.data.createdAt;
       allow delete: if false;

@@ -1,5 +1,5 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing'
-import { deleteDoc, doc, getDoc, setDoc, Timestamp, updateDoc, writeBatch } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc, writeBatch } from 'firebase/firestore'
 import { readFileSync } from 'node:fs'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 
@@ -33,6 +33,14 @@ describe('firestore.rules', () => {
     await assertSucceeds(getDoc(doc(env.authenticatedContext('bob').firestore(), 'users/alice/ratingObservations/existing')))
   })
 
+  it('lets anyone get a profile and list its collections, but not list every save', async () => {
+    for (const db of [env.unauthenticatedContext().firestore(), env.authenticatedContext('bob').firestore()]) {
+      await assertSucceeds(getDoc(doc(db, 'users/alice')))
+      await assertSucceeds(getDocs(collection(db, 'users/alice/ratingObservations')))
+      await assertFails(getDocs(collection(db, 'users')))
+    }
+  })
+
   it('blocks anonymous writes to a save', async () => {
     const db = env.unauthenticatedContext().firestore()
     await assertFails(setDoc(doc(db, 'users/alice/ratingObservations/x'), observation))
@@ -46,6 +54,7 @@ describe('firestore.rules', () => {
     await assertFails(deleteDoc(doc(db, 'users/alice/ratingObservations/existing')))
     // set on the already-seeded profile hits the update rule.
     await assertFails(setDoc(doc(db, 'users/alice'), profile))
+    await assertFails(updateDoc(doc(db, 'users/alice'), { name: 'Bob' }))
     // create on an unseeded profile hits the create rule.
     await assertFails(setDoc(doc(db, 'users/carol'), { name: 'Carol', createdAt: Timestamp.now() }))
   })
@@ -58,7 +67,16 @@ describe('firestore.rules', () => {
 
   it('lets a user rename their own save', async () => {
     const db = env.authenticatedContext('alice').firestore()
-    await assertSucceeds(updateDoc(doc(db, 'users/alice'), { name: 'Alicia' }))
+    // The rename the Data page sends: the name alone, never createdAt.
+    const batch = writeBatch(db)
+    batch.update(doc(db, 'users/alice'), { name: 'Alicia' })
+    await assertSucceeds(batch.commit())
+    await assertSucceeds(updateDoc(doc(db, 'users/alice'), { name: 'Alice' }))
+  })
+
+  it('never lets a profile be deleted, even by its user', async () => {
+    await assertFails(deleteDoc(doc(env.authenticatedContext('alice').firestore(), 'users/alice')))
+    await assertFails(deleteDoc(doc(env.authenticatedContext('bob').firestore(), 'users/alice')))
   })
 
   it('lets a new user create their profile', async () => {
@@ -102,6 +120,15 @@ describe('firestore.rules', () => {
     // Roster sync refreshes only static fields of an existing duelist.
     await assertSucceeds(updateDoc(doc(db, 'users/alice/duelists/blowback-dragon'), { name: 'Blowback Dragon', tournamentLevel: 2, initialRating: 1350, category: 'monster', aliases: ['ブローバック・ドラゴン'] }))
     await assertSucceeds(updateDoc(doc(db, 'users/alice/duelists/blowback-dragon'), { unlocked: true, notes: 'gambler' }))
+  })
+
+  it('accepts a first roster setup that also creates the profile', async () => {
+    const db = env.authenticatedContext('carol').firestore()
+    const batch = writeBatch(db)
+    batch.set(doc(db, 'users/carol/duelists/blowback-dragon'), { name: 'Blowback Dragon', tournamentLevel: 2, initialRating: 1350, unlocked: false, category: 'monster', aliases: [] })
+    batch.set(doc(db, 'users/carol/ratingObservations/r1'), { ...observation, note: 'Roster setup' })
+    batch.set(doc(db, 'users/carol'), { name: 'WC2008 save', createdAt: Timestamp.now() })
+    await assertSucceeds(batch.commit())
   })
 
   it('lets anyone read the legacy collections but never write them', async () => {

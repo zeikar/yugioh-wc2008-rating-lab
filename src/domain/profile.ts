@@ -7,3 +7,6 @@ export function parseSaveName(text: string): string | null {
   const name = text.trim()
   return name.length >= 1 && name.length <= 40 ? name : null
 }
+
+/** The name field's starting value on a save not named yet (MVP §5). */
+export const DEFAULT_SAVE_NAME = 'WC2008 save'

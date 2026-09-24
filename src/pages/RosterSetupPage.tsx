@@ -9,7 +9,7 @@ import { Rating, RatingMark } from '../components/Rating'
 import { ROSTER } from '../data/duelists'
 import { saveRosterSetup } from '../db/repository'
 import { parseRating } from '../domain/draft'
-import { parseSaveName } from '../domain/profile'
+import { DEFAULT_SAVE_NAME, parseSaveName } from '../domain/profile'
 import { ratingsToFill, rosterSetupPayload, withSaveFill, type RosterRowEdit } from '../domain/roster'
 import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
 
@@ -23,12 +23,13 @@ export function RosterSetupPage() {
   const [edits, setEdits] = useState<Record<string, RosterRowEdit>>({})
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null)
   const [saving, setSaving] = useState(false)
-  const [saveName, setSaveName] = useState('WC2008 save')
+  const [saveName, setSaveName] = useState(DEFAULT_SAVE_NAME)
   const saveFileInput = useRef<HTMLInputElement>(null)
 
   const stored = model.duelistById
   const payload = useMemo(() => rosterSetupPayload(ROSTER, model.data.duelists, edits), [model.data.duelists, edits])
-  const pending = payload.create.length + payload.update.length + payload.readings.length
+  // A save with no profile yet, such as one filled by an import, also has its profile to create (MVP §5).
+  const pending = payload.create.length + payload.update.length + payload.readings.length + (profile === null ? 1 : 0)
   const baseUnlocked = (id: string) => stored.get(id)?.unlocked ?? ROSTER.find((d) => d.id === id)!.unlocked
   const unlockedOf = (id: string) => edits[id]?.unlocked ?? baseUnlocked(id)
   const unlockedCount = ROSTER.filter((d) => unlockedOf(d.id)).length
@@ -71,8 +72,9 @@ export function RosterSetupPage() {
     setEdits((all) => Object.fromEntries(ROSTER.map((d) => [d.id, { unlocked, rating: all[d.id]?.rating ?? '' }])))
 
   const save = () => {
-    const counts = `${payload.create.length} added, ${payload.update.length} updated, ${plural(payload.readings.length, 'rating')} recorded`
     const profileName = profile === null && !nameInvalid ? saveName.trim() : undefined
+    const named = profileName === undefined ? '' : `, save named “${profileName}”`
+    const counts = `${payload.create.length} added, ${payload.update.length} updated, ${plural(payload.readings.length, 'rating')} recorded${named}`
     setSaving(true)
     setMessage({ text: 'Saving… (waiting for the server)' })
     // Edits stay until the server accepts the save, so a rejection loses nothing.

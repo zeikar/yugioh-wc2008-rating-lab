@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet, Route, Routes } from 'react-router'
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
 import { useApp } from './app/context'
 import { RESEARCH, saveRef } from './app/datasets'
 import { Layout } from './components/Layout'
@@ -26,6 +26,10 @@ const PAGES = (
 )
 
 export function App() {
+  const { pathname, search, hash } = useLocation()
+  // GitHub Pages answers /research with a redirect to /research/, since public/research/ is a
+  // real folder. The app's paths have no trailing slash, and NavLink matches only those.
+  if (pathname !== '/' && pathname.endsWith('/')) return <Navigate replace to={{ pathname: pathname.replace(/\/+$/, '') || '/', search, hash }} />
   return (
     <Layout>
       <Routes>

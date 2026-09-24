@@ -77,7 +77,8 @@ export function buildTimeline(data: Pick<Dataset, 'tournaments' | 'matches' | 'o
     const tournament = o.tournamentId ? tournamentById.get(o.tournamentId) : undefined
     const match = o.matchId ? matchById.get(o.matchId) : undefined
     let point: HistoryPoint
-    if (tournament && match) {
+    // A match of its own tournament always has a key, since that tournament is on the timeline.
+    if (tournament && match?.tournamentId === tournament.id) {
       point = { observation: o, kind: 'post-match', tournament, match, key: [...matchKeys.get(match.id)!.slice(0, 5), 1, o.createdAt.getTime()] }
     } else if (tournament && !o.matchId) {
       point = { observation: o, kind: 'entry', tournament, key: [...base.get(tournament.id)!, 0, 0, 0, o.createdAt.getTime()] }

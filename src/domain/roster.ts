@@ -12,7 +12,7 @@ export interface RosterRowEdit {
 type StaticFields = Pick<Duelist, 'name' | 'tournamentLevel' | 'initialRating' | 'category' | 'aliases'>
 
 export interface RosterSetupPayload {
-  /** Roster duelists not in the database yet, created with every field. */
+  /** Roster duelists not in the save yet, created with every field. */
   create: Duelist[]
   /** Existing duelists whose static fields or unlocked flag differ. `notes` is never touched. */
   update: { id: string; fields: StaticFields & { unlocked: boolean } }[]
@@ -26,9 +26,9 @@ function staticFields(d: Duelist): StaticFields {
 }
 
 /**
- * Everything one "Save roster" writes (MVP §5): brings the database in line
- * with the built-in roster, applies the unlocked flags, and records the
- * current ratings the owner typed. Rows without an edit keep their stored
+ * Everything one "Save roster" writes (MVP §5): brings the save in line with
+ * the built-in roster, applies the unlocked flags, and records the current
+ * ratings typed on the page. Rows without an edit keep their stored
  * unlocked flag (or the roster default for a new duelist).
  */
 export function rosterSetupPayload(roster: readonly Duelist[], existing: Duelist[], edits: Readonly<Record<string, RosterRowEdit>>): RosterSetupPayload {
@@ -55,8 +55,8 @@ export function rosterSetupPayload(roster: readonly Duelist[], existing: Duelist
 /**
  * The save-file ratings worth filling into the form (MVP §5): those that
  * differ from the app's current rating, or whose current rating is stale. A
- * CPU with no history is compared with the roster's initial rating, which
- * the same Save writes to the database.
+ * CPU with no history is compared with the roster's initial rating, which the
+ * same "Save roster" stores with the duelist.
  */
 export function ratingsToFill(
   roster: readonly Duelist[],

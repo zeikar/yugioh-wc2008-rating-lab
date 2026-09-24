@@ -19,6 +19,22 @@ describe('timeline ordering', () => {
     expect(idx.history.get('manju')!.at(-1)!.kind).toBe('standalone')
   })
 
+  // Rules-valid in anyone's save: the reading's links point at docs that exist, just not at matching ones.
+  it('makes a reading standalone when its match belongs to no tournament', () => {
+    const t1 = tournament('t1', ['a', 'b', null, null, null, null, null, null])
+    const orphan = match('gone', 'quarterfinal', 0, 'a', 'b', 'a')
+    const idx = buildTimeline({ tournaments: [t1], matches: [orphan], observations: [post(t1, orphan, 'a', 1040)] })
+    expect(idx.history.get('a')!.map((p) => p.kind)).toEqual(['standalone'])
+  })
+
+  it("makes a reading standalone when its match is another tournament's", () => {
+    const t1 = tournament('t1', ['a', 'b', null, null, null, null, null, null])
+    const t2 = tournament('t2', ['a', 'b', null, null, null, null, null, null], later(24), 2)
+    const other = match('t2', 'quarterfinal', 0, 'a', 'b', 'a')
+    const idx = buildTimeline({ tournaments: [t1, t2], matches: [other], observations: [post(t1, other, 'a', 1040)] })
+    expect(idx.history.get('a')!.map((p) => p.kind)).toEqual(['standalone'])
+  })
+
   it('orders tournaments by playedAt, not number', () => {
     const a = tournament('a', [], later(2), 1)
     const b = tournament('b', [], later(1), 2)

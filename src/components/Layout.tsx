@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { Component, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { useApp } from '../app/context'
 import { RESEARCH, RESEARCH_NAME, saveRef, switchPath } from '../app/datasets'
 import { useStartTournament } from '../app/useStartTournament'
 import { USE_EMULATORS } from '../firebase'
+import { Empty } from './Empty'
 import { RatingMark } from './Rating'
 
 /** Page paths inside a dataset, after its base. */
@@ -16,8 +17,8 @@ const NAV = [
 ]
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { user, authReady, dataset, base, profile, canEdit, signIn, signOut, pendingWrites, synced, error, dismissError, loading, loadFailed } = useApp()
-  const { pathname } = useLocation()
+  const { model, user, authReady, dataset, base, profile, canEdit, signIn, signOut, pendingWrites, synced, error, dismissError, loading, loadFailed } = useApp()
+  const { pathname, key: locationKey } = useLocation()
   const start = useStartTournament()
   // A save shows its own name, never the account's (MVP §3); none until it has loaded.
   const name = dataset?.kind === 'research' ? RESEARCH_NAME : dataset && !loading && !loadFailed ? (profile?.name ?? 'Unnamed save') : null
@@ -48,7 +49,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
+          <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             {USE_EMULATORS && <span className="rounded bg-warn-soft px-1.5 py-0.5 text-xs font-medium text-warn">emulator</span>}
             {/* Only your own writes sync. After a failed load the error banner says what to do; a sync state would mislead. */}
             {canEdit && !loading && !loadFailed && (
@@ -106,10 +107,67 @@ export function Layout({ children }: { children: ReactNode }) {
       <main key={base} className="mx-auto max-w-7xl px-4 py-6">
         {/* Pages wait for their data here, so none shows an empty state that isn't true, and on a
             save for the sign-in state too, so your own doesn't pass for read-only meanwhile. */}
-        {loading || (dataset?.kind === 'save' && !authReady) ? <p className="text-ink-2">Loading…</p> : children}
+        {loading || (dataset?.kind === 'save' && !authReady) ? (
+          <p className="text-ink-2">Loading…</p>
+        ) : (
+          <PageBoundary
+            resetKeys={[locationKey, model]}
+            fallback={(message) => (
+              <Empty>
+                This page couldn't be shown.{' '}
+                <Link to={base} className="text-accent underline">
+                  Back to the dashboard
+                </Link>
+                <br />
+                <span className="text-ink-3">{message}</span>
+              </Empty>
+            )}
+          >
+            {children}
+          </PageBoundary>
+        )}
       </main>
     </div>
   )
+}
+
+interface PageBoundaryProps {
+  /**
+   * A change in any of them retries the children: the location's key (any
+   * navigation, even to the same page) and the model (new data, such as a fix).
+   */
+  resetKeys: readonly unknown[]
+  fallback: (message: string) => ReactNode
+  children: ReactNode
+}
+
+interface PageBoundaryState {
+  /** The thrown error's message; null while the page renders. */
+  message: string | null
+  resetKeys: readonly unknown[]
+}
+
+/**
+ * With open sign-up, anyone's save can hold data the rules don't check in
+ * depth (MVP §3), and a page that throws on it, or on an app bug, would blank
+ * the whole app. This keeps the header usable instead. Inside `main`, which
+ * is keyed on the dataset, so a switch starts it over too. React still logs
+ * the error.
+ */
+class PageBoundary extends Component<PageBoundaryProps, PageBoundaryState> {
+  state: PageBoundaryState = { message: null, resetKeys: this.props.resetKeys }
+
+  static getDerivedStateFromError(error: unknown) {
+    return { message: error instanceof Error ? error.message : String(error) }
+  }
+
+  static getDerivedStateFromProps(props: PageBoundaryProps, state: PageBoundaryState) {
+    return props.resetKeys.every((k, i) => Object.is(k, state.resetKeys[i])) ? null : { message: null, resetKeys: props.resetKeys }
+  }
+
+  render() {
+    return this.state.message === null ? this.props.children : this.props.fallback(this.state.message)
+  }
 }
 
 export function PageTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {

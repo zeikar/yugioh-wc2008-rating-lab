@@ -5,9 +5,9 @@ import { PageTitle } from '../components/Layout'
 import { Tag } from '../components/Rating'
 import { Link } from 'react-router'
 import { ROSTER } from '../data/duelists'
-import { replaceAll, saveProfile } from '../db/repository'
+import { createSave, renameSave, replaceAll } from '../db/repository'
 import { parseBackup, toBackup } from '../domain/backup'
-import { parseSaveName } from '../domain/profile'
+import { DEFAULT_SAVE_NAME, parseSaveName } from '../domain/profile'
 import type { Dataset, SaveProfile } from '../types'
 
 export function DataPage() {
@@ -60,8 +60,14 @@ export function DataPage() {
 
       {canEdit && (
         <Block title="This save">
-          {/* Waits for the load so the field starts from the real name, not a stale empty one (MVP §4). */}
-          {!loading && !loadFailed && <SaveNameEditor uid={dataset.uid} profile={profile} reportError={reportError} />}
+          {/* Waits for the server, not the local cache, so the field starts from the real name and a stale
+              "no profile" never creates one over it (MVP §4). Keyed on the name, so a rename elsewhere resets it.
+              After a failed load the error banner says what to do instead. */}
+          {synced ? (
+            <SaveNameEditor key={profile?.name ?? ''} uid={dataset.uid} profile={profile} reportError={reportError} />
+          ) : (
+            !loadFailed && <NeedsServer synced={false} />
+          )}
           <p className="mt-4 max-w-prose text-sm text-ink-2">
             {model.data.duelists.length === 0
               ? `The roster isn't set up yet. Add the ${ROSTER.length} tournament CPUs, mark which are unlocked in your save and record their current ratings.`
@@ -91,12 +97,13 @@ export function DataPage() {
   )
 }
 
-/** Names or renames this save (MVP §4, §6.7). Keeps `createdAt` on a rename; the rules reject a changed one. */
+/** Names or renames this save (MVP §4, §6.7). */
 function SaveNameEditor({ uid, profile, reportError }: { uid: string; profile: SaveProfile | null; reportError: (e: Error) => void }) {
-  const [name, setName] = useState(profile?.name ?? '')
+  const [name, setName] = useState(profile?.name ?? DEFAULT_SAVE_NAME)
   const parsed = parseSaveName(name)
   const invalid = parsed === null
-  const changed = name !== (profile?.name ?? '')
+  // A save with no profile yet always has something to write: its first name.
+  const changed = profile === null || name !== profile.name
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <label className="flex items-center gap-2">
@@ -114,7 +121,8 @@ function SaveNameEditor({ uid, profile, reportError }: { uid: string; profile: S
           disabled={invalid}
           onClick={() => {
             if (parsed === null) return
-            saveProfile(uid, { name: parsed, createdAt: profile?.createdAt ?? new Date() }, reportError)
+            if (profile) renameSave(uid, parsed, reportError)
+            else createSave(uid, parsed, new Date(), reportError)
           }}
         >
           Save name
@@ -146,6 +154,8 @@ function ImportBlock({ uid, current, exportFirst, synced }: { uid: string; curre
         className="mt-3 block text-sm"
         onChange={async (e) => {
           const file = e.target.files?.[0]
+          // Cleared, so choosing the same file again (to see its counts after an import) fires change.
+          e.target.value = ''
           setConfirm('')
           setProgress(null)
           setParsed(file ? parseBackup(await file.text()) : null)

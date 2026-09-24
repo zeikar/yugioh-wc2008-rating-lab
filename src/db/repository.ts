@@ -222,11 +222,18 @@ export function deleteReading(uid: string, id: string, onError: (e: Error) => vo
   void commitInBackground(batch, onError)
 }
 
-/** Creates or renames the save (MVP §4). The rules require a rename to keep `createdAt`. */
-export function saveProfile(uid: string, profile: SaveProfile, onError: (e: Error) => void): Promise<void> {
+/** Names a save that has no profile yet, creating `users/{uid}` (MVP §4). */
+export function createSave(uid: string, name: string, now: Date, onError: (e: Error) => void): void {
   const batch = writeBatch(db)
-  batch.set(profileDoc(uid), { name: profile.name, createdAt: Timestamp.fromDate(profile.createdAt) })
-  return commitInBackground(batch, onError)
+  batch.set(profileDoc(uid), { name, createdAt: Timestamp.fromDate(now) })
+  void commitInBackground(batch, onError)
+}
+
+/** Renames the save. Only `name` is sent: the rules reject a changed `createdAt`, so none is ever re-sent. */
+export function renameSave(uid: string, name: string, onError: (e: Error) => void): void {
+  const batch = writeBatch(db)
+  batch.update(profileDoc(uid), { name })
+  void commitInBackground(batch, onError)
 }
 
 const BATCH_LIMIT = 450

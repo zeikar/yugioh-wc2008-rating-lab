@@ -35,7 +35,7 @@ export interface TournamentRatings {
 
 /**
  * Walks one tournament's matches in round order and works out every CPU's
- * pre- and post-match rating from the owner's entered values.
+ * pre- and post-match rating from the entered values.
  *
  * Rules (MVP §4): only CPU-vs-CPU duels change ratings, they are zero-sum,
  * and pre-match ratings come only from this tournament (entry rating, then
