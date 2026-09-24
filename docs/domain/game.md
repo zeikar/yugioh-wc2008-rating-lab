@@ -300,8 +300,12 @@ save in melonDS DS (2026-09-24):
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.
-3. **Bracket:** is there a bracket screen, and what order are the quarterfinal
-   pairings in?
+3. **Bracket:** does the game play the quarterfinals in bracket order, with
+   QF winners 1–2 and 3–4 meeting in the semifinals? Every emulator run so
+   far is consistent with this: the semifinals paired the quarterfinal
+   winners 1–2 and 3–4 in play order. But the duel log records no seats, and
+   in every run the player was in the first quarterfinal pair. (There is a
+   bracket screen, §2.1.)
 4. **Entrants:** are the 7 CPUs always distinct? How are they drawn: which
    lower levels mix in, and how often? Are only unlocked duelists eligible?
    Can DL duelists appear?

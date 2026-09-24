@@ -43,6 +43,11 @@ This file holds only what those don't.
 - `tools/emulator/` runs the game headless to read ratings from RAM (see its
   README). The ROM and save in `tools/emulator/game/` are the owner's files:
   they are gitignored, and scripts only read them. Never commit them.
+- After editing `src/data/duelists.ts`, regenerate the research dataset with
+  `cd tools/emulator && uv run tournament.py --count 0` when the fork is
+  available: the export copies the roster's display fields. Duelist ids must
+  not change. `research.py` parses each `ROSTER` entry with a strict one-line
+  pattern, so keep that entry format.
 
 ## Commits
 

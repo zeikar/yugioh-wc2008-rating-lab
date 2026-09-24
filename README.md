@@ -65,7 +65,10 @@ Then in the app:
 
 1. **Sign in with Google.** The emulator shows a fake sign-in page; add any
    account.
-2. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings or fill them from your save file, and press **Save roster**.
+2. Switch to **My save** in the header: signing in keeps you on the research
+   dataset. Then open **Roster setup** from the Data page, tick the unlocked
+   CPUs, optionally type their current ratings or fill them from your save
+   file, and press **Save roster**.
 3. Press **+ New tournament** and start recording.
 
 The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
@@ -94,25 +97,51 @@ they can run beside other projects' emulators.
   - Authentication → Settings → Authorized domains → add **zeikar.dev**.
 - **Migrating the single-owner data:** the site used to have one owner and a
   single flat dataset; moving that data into a save under `users/{uid}` is a
-  one-time, manual move. First, finish (save) or discard any tournament form
-  still open on the old site — drafts are kept per browser under the old key,
-  and the new site won't list them. Then, in order:
-  1. On the live (old) site, Data → Export JSON, and record nothing on it
-     afterwards (later writes are lost).
-  2. `pnpm deploy:rules` — from here the old site is read-only (the legacy
-     rules block keeps its data readable), and nothing can be written until
-     step 4.
+  one-time, manual move. In order:
+  0. On the old site, finish (save) or discard any tournament form still
+     open, in every browser you record in, and let the header reach
+     "Synced". Drafts are kept per browser under the old key, and the new
+     site won't list them.
+  1. `pnpm deploy:rules`. From here no browser or device can write the flat
+     data, so the export below can't miss anything. The legacy block in
+     `firestore.rules` keeps that data readable, so the old site still shows
+     and exports it.
+  2. On the old site, wait until the header says "Synced", not "Connecting…"
+     (which means only this browser's cached copy is shown), then Data →
+     Export JSON. Keep this file.
   3. Push this change to `main` and wait for the Pages deploy to finish
-     (watch the run in the repo's **Actions** tab); a new site under the old
-     rules could read no save, which is why the rules go first.
-  4. Sign in, Data → name the save, Import the file. If the import fails
-     partway, re-importing the same file finishes it; nothing is lost.
-  5. Delete the flat collections and `admins/` in the console, remove the
-     legacy block from `firestore.rules`, run `pnpm deploy:rules` again.
+     (watch the run in the repo's **Actions** tab).
+  4. Sign in and switch to **My save** in the header (signing in keeps you on
+     the research dataset). On the Data page, name the save, then import the
+     file. A failed import is safe to re-run: importing the same file again
+     finishes it.
+  5. Before deleting anything, check the new save against the file. Choose
+     the file in the import again (nothing is written without the typed
+     confirmation) to see its counts, and compare them with the Dashboard's:
+     duelists, tournaments, matches and ratings.
+  6. Clean up: in the Firebase console, delete the flat collections
+     (`duelists`, `tournaments`, `matches`, `ratingObservations`) and
+     `admins/`. Remove the legacy block from `firestore.rules` and its tests
+     from `tests/rules/firestore.rules.test.ts`: the legacy-collections test
+     and the `ratingObservations/legacy` doc its `beforeEach` seeds. Update
+     AGENTS.md's note about the flat collections and delete this migration
+     section from the README, then commit, push, and run
+     `pnpm deploy:rules`.
 
-  If the site was pushed before the export, the previous commit run locally
-  with the `.env.production` values (emulators off) still exports the flat
-  data.
+  If the Pages deploy in step 3 fails, the old site stays read-only until you
+  either fix the deploy and push again, or reopen its writes with the
+  previous rules:
+  `git checkout 036ee46 -- firestore.rules && pnpm deploy:rules`, then
+  `git checkout HEAD -- firestore.rules` to restore the file. Anything
+  recorded after that isn't in the export, so the next attempt starts again
+  from step 0.
+
+  If this change reached the site before the export, export from `036ee46`
+  run locally against production instead. Check it out, or use
+  `git worktree add <dir> 036ee46` and run `pnpm install` there, then run
+  `pnpm exec vite --mode production`: that mode loads `.env.production`,
+  whose values win over `.env`'s and keep the emulators off. `pnpm dev`
+  would load `.env` and use the emulators.
 
 ## Scripts
 

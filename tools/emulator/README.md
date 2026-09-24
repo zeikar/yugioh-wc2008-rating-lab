@@ -47,7 +47,9 @@ platform, pick the matching core build from the same release.
 1. Boots from `run/fork/wc2008.sav`. The first run copies `game/wc2008.sav`
    (which stays untouched) to both `run/fork/wc2008.sav` and
    `run/fork/origin.sav`, the save the fork started from, kept for the
-   export (fork-point ratings and unlock flags).
+   export (fork-point ratings and unlock flags). If the fork's
+   `wc2008.sav` is missing but its `origin.sav` or `duels.jsonl` is still
+   there, it stops instead of starting over them.
 2. Follows the route below into a tournament and checks that the fee was
    paid.
 3. Loses the player's duel at once by setting the player's LP to 0. It does
@@ -63,9 +65,11 @@ Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
 `src/data/duelists.ts`), both ratings before and after, the transfer, whether
 it was zero-sum, and `player_frame`, the frame the player's own duel started
 at (the same value on all six duels of a tournament), which tells which
-quarterfinal slot the player had. A fork is its own rating ecosystem, so its
-data reaches the app only as the research dataset (below). `--fork DIR` starts
-or continues another one.
+quarterfinal slot the player had. If the script misses the player's duel, it
+warns and logs that tournament without `player_frame`, since the fork's save
+already holds it. A fork is its own rating ecosystem, so its data reaches the
+app only as the research dataset (below). `--fork DIR` starts or continues
+another one.
 
 ## Research dataset
 
@@ -74,8 +78,18 @@ out with `research.py`, as an export in the app's backup format
 (`src/domain/backup.ts`). The site's file, `public/research/emulator.json`,
 comes from the default fork `run/fork`. Any other fork writes
 `FORK/emulator.json` instead, so it never overwrites the site's file, unless
-`--export PATH` says otherwise. A run that stops early writes no export. The
-file holds:
+`--export PATH` says otherwise. A run that stops early writes no export.
+
+`run/fork` is the only source of the site's file: its `duels.jsonl` exists
+nowhere else, so back the folder up and never delete it. The site's file is
+only ever extended. A default run checks, before playing and
+again before writing, that the new export has the site's fork-point readings
+and starts with the site's tournaments in the same order, with new ones only
+after them. If not, as after a reset or recreated fork, or one that lost its
+log, it stops and leaves the file alone. An explicit `--export PATH` skips the
+check.
+
+The file holds:
 
 - the roster, with the unlocked flags of `origin.sav`;
 - a "Fork point" reading of every CPU's rating from `origin.sav`, a minute
@@ -84,17 +98,19 @@ file holds:
 - each tournament's entry ratings and both CPUs' post-match ratings of every
   CPU duel. These are read from RAM, so they count as entered.
 
-The seats come from the order the game plays the duels in: the quarterfinals
-in bracket order, then SF 0, SF 1 and the final. The player's opponent is the
+The seats come from the order the game plays the duels in, taken to be the
+quarterfinals in bracket order, then SF 0, SF 1 and the final (an assumption
+every run so far fits; docs/MVP.md §4). The player's opponent is the
 semifinalist who won no CPU quarterfinal; call its semifinal *k*. The
 player's quarterfinal slot is the number of CPU quarterfinals that ended
-before `player_frame`. Tournaments logged before `player_frame` existed give
-the player slot 2*k*, the first of the two quarterfinals that feed semifinal
-*k*. If the player really had 2*k*+1, only those two quarterfinals trade
-places, and both still feed the same semifinal. The log doesn't say who sat
-on which side of a duel, so the winner (and the player) take the first seat
-of each pair. Before writing, the script checks that every rating going into
-a duel is what `origin.sav` or that CPU's previous duel left.
+before `player_frame`. Tournaments logged without `player_frame` (from before
+it existed, or with a missed player's duel) give the player slot 2*k*, the
+first of the two quarterfinals that feed semifinal *k*. If the player really
+had 2*k*+1, only those two quarterfinals trade places, and both still feed
+the same semifinal. The log doesn't say who sat on which side of a duel, so
+the winner (and the player) take the first seat of each pair. Before writing,
+the script checks that every rating going into a duel is what `origin.sav` or
+that CPU's previous duel left.
 
 Tournament times come from the labels, read in this machine's time zone, and
 `exportedAt` is the last tournament's time, so an unchanged log always gives
@@ -142,6 +158,8 @@ save's menus (the World Championship menu opens on Free Duel).
 The runner icon at the top left of the bracket screen is the CPU duel speed:
 choosing Fast turns it on (a running figure), and `x` toggles it off and on.
 
-The scripts only read `game/`. Everything the emulator writes goes to `run/`.
+The scripts only read `game/`. They write to `run/`, apart from the site's
+research dataset (above). `run/` is not scratch space: `run/fork` is that
+dataset's only source.
 `step.py`'s states hold the save memory too, so they are for exploring only:
 never resume recorded play from one.

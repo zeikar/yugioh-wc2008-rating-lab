@@ -49,10 +49,18 @@ says which:
   `users/{uid}/` (§4). It holds what that user records from their own game.
 - **The research dataset:** `/research/…`. Tournaments the emulator tools
   play on a forked save (tools/emulator), shipped as a static file with the
-  site (§8). Nobody writes it through the app.
+  site (§8). Nobody writes it through the app. Its Research page (§7.3) is
+  at `/research/research`.
 - `/` opens your own save when you're signed in, and the research dataset
-  otherwise. A header switch moves between the research dataset and your
-  save and keeps the current page.
+  otherwise.
+
+The header names the dataset on view: "Research: emulator" for the research
+dataset, or the save's name. Its switch reads **Emulator | My save** when
+you're signed in. Signed out there is no save of yours to switch to: the
+research dataset shows no switch, and someone else's save shows a single
+**Emulator** link. Switching keeps the current page, except that a
+tournament's page opens the other dataset's tournament list, since tournament
+ids belong to one dataset.
 
 Who may do what:
 - **Open sign-up.** Sign-in uses Firebase Auth's Google provider only. Any
@@ -72,8 +80,8 @@ Rules (`firestore.rules`) in outline:
 ```
 function isOwner(uid) { return request.auth != null && request.auth.uid == uid; }
 match /users/{uid} {
-  allow read: if true;
-  allow write: if isOwner(uid) && <field checks>;
+  allow get: if true;  // one save at a time, by its link; nobody can list them all
+  allow create, update: if isOwner(uid) && <field checks>;  // never deleted
   // each of the four collections in §4:
   match /tournaments/{id} { allow read: if true; allow write: if isOwner(uid) && <field checks>; }
 }
@@ -171,8 +179,10 @@ Assumptions (domain/game.md §6):
 - each round is a single duel;
 - the 7 CPUs are distinct;
 - the in-game bracket pairs QF winners 1–2 and 3–4 in the semifinals, and
-  plays the quarterfinals in bracket order. The emulator runs confirmed this
-  one.
+  plays the quarterfinals in bracket order. Every emulator run so far is
+  consistent with this: the semifinals paired the quarterfinal winners 1–2
+  and 3–4 in play order. But the duel log records no seats, and in every run
+  the player was in the first quarterfinal pair, so it isn't confirmed.
 
 If any turns out false, the match model needs revisiting.
 
@@ -364,9 +374,8 @@ Consequences:
 
 Navigation: **Dashboard · Duelists · Tournaments · Research · Data**, plus a
 prominent **"+ New tournament"** button, which is the main input flow and
-shows only on your own save. The header names the dataset on view (the
-research dataset, or a save's name) and holds the switch between the research
-dataset and your save (§3). Every page works the same on any dataset.
+shows only on your own save. The header names the dataset on view and holds
+the switch between datasets (§3). Every page works the same on any dataset.
 
 ### 6.1 Dashboard
 - Counts: duelists, unlocked duelists, tournaments, matches, observations.
@@ -631,11 +640,11 @@ firestore.rules, firestore.indexes.json, firebase.json
   It converts Firestore docs into domain types (Timestamp → Date). Every path
   goes through the save's `users/{uid}`.
 - Data loading: one save's collections are small (hundreds to low thousands
-  of docs), so the app subscribes to the viewed save's four collections with
-  `onSnapshot`, keeps them in a React context, and derives everything
-  client-side through `buildModel()`. The research dataset goes through the
-  same `buildModel()`. This keeps the stats logic pure and testable. Revisit
-  if a save grows large.
+  of docs), so the app subscribes to the viewed save's profile doc and four
+  collections with `onSnapshot`, keeps them in a React context, and derives
+  everything client-side through `buildModel()`. The research dataset goes
+  through the same `buildModel()`. This keeps the stats logic pure and
+  testable. Revisit if a save grows large.
 - The research dataset is a static file, not Firestore, so it grows without
   costing Firestore reads: every visitor would otherwise read every doc.
 - Writes don't wait for the server. Offline, a Firestore commit only resolves

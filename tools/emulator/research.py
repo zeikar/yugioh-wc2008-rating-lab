@@ -68,9 +68,10 @@ def read_log(path: Path) -> list[list[dict]]:
 def bracket(events: list[dict]) -> tuple[list[str], list[dict]]:
     """One tournament's seats and its 7 matches in round order, from its 6 CPU duels.
 
-    The game plays the quarterfinals in bracket order, then SF 0, SF 1 and the
-    final (docs/MVP.md §4), and the player always loses their quarterfinal:
-    duels 1-3 are the CPU quarterfinals, 4 and 5 the semifinals, 6 the final.
+    It assumes the game plays the quarterfinals in bracket order, then SF 0,
+    SF 1 and the final (docs/MVP.md §4). The player always loses their
+    quarterfinal, so duels 1-3 are the CPU quarterfinals, 4 and 5 the
+    semifinals, 6 the final.
     Each match is {round, slot, a, b, winner, duel}, with duel None for the
     player's quarterfinal.
     """
@@ -133,9 +134,9 @@ def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[st
     played = [datetime.strptime(events[0]["tournament"], "%Y%m%d-%H%M%S").astimezone() for events in tournaments]
     # A standalone reading at the same instant as a tournament sorts after it
     # (src/domain/timeline.ts), so the fork point sits a minute before the first.
-    fork_point = iso(played[0] - timedelta(seconds=60) if played else now)
+    forked_at = iso(played[0] - timedelta(seconds=60) if played else now)
     observations = [
-        {"id": f"origin_{d['id']}", "duelistId": d["id"], "rating": origin[d["id"]], "observedAt": fork_point, "source": "entered", "note": "Fork point", "createdAt": fork_point}
+        {"id": f"origin_{d['id']}", "duelistId": d["id"], "rating": origin[d["id"]], "observedAt": forked_at, "source": "entered", "note": "Fork point", "createdAt": forked_at}
         for d in duelists
     ]
     out_tournaments, out_matches = [], []
@@ -170,7 +171,7 @@ def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[st
 
     return {
         "schemaVersion": 1,
-        "exportedAt": out_tournaments[-1]["playedAt"] if out_tournaments else fork_point,
+        "exportedAt": out_tournaments[-1]["playedAt"] if out_tournaments else forked_at,
         "duelists": [{**d, "unlocked": unlocked[d["id"]]} for d in duelists],
         "tournaments": out_tournaments,
         "matches": out_matches,
@@ -178,18 +179,26 @@ def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[st
     }
 
 
-def write_export(fork: Path, out: Path) -> None:
-    """Writes the research dataset for FORK: fork-point ratings and unlock flags from its origin.sav, tournaments from its duels.jsonl."""
+def fork_point(export: dict) -> dict[str, int]:
+    """Each CPU's fork-point rating in an export from build_export: its origin_{id} reading."""
+    return {o["duelistId"]: o["rating"] for o in export["ratingObservations"] if o["id"].startswith("origin_")}
+
+
+def fork_export(fork: Path) -> dict:
+    """The research dataset for FORK: fork-point ratings and unlock flags from its origin.sav, tournaments from its duels.jsonl."""
     data = wcsave.game_data((fork / "origin.sav").read_bytes())
     duelists = roster()
     ids = [d["id"] for d in duelists]
-    export = build_export(
+    return build_export(
         duelists,
         dict(zip(ids, wcsave.ratings(data))),
         dict(zip(ids, wcsave.unlocked(data))),
         read_log(fork / "duels.jsonl"),
         datetime.now(UTC),
     )
+
+
+def write_export(export: dict, out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(export, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Wrote {len(export['tournaments'])} tournaments to {out.resolve()}")

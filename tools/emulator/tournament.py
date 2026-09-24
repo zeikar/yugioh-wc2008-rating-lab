@@ -8,11 +8,15 @@ so the next tournament carries on from it.
 
     uv run tournament.py [--fork run/fork] [--level 1] [--count 1] [--export PATH]
 
-The fork starts as a copy of game/wc2008.sav; game/ is only read. Each duel
+The fork starts as a copy of game/wc2008.sav, never over a folder that still
+has a fork's origin.sav or duels.jsonl; game/ is only read. Each duel
 goes to FORK/duels.jsonl. After playing, the whole log is written out as the
 research dataset (research.py): the site's public/research/emulator.json for
 the default fork run/fork, FORK/emulator.json for any other, unless --export
-says otherwise. --count 0 only rewrites that file.
+says otherwise. --count 0 only rewrites that file. The site's file is only
+ever extended: a default run whose export has another fork point, or doesn't
+start with the site's tournaments, stops instead (an explicit --export skips
+that check).
 """
 
 import argparse
@@ -24,7 +28,7 @@ from pathlib import Path
 
 import wcsave
 from emulator import HERE, RUN, SAVE, frames_for, running
-from research import roster, write_export
+from research import fork_export, fork_point, roster, write_export
 
 # Duel state in RAM, Korean release (docs/domain/internals.md §4).
 LEFT_LP = 0x022CA200  # int16; the player's LP in the player's duels, a CPU's otherwise
@@ -150,7 +154,10 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
         print(f"[{label}] done at frame {game.frame}; the fork's save holds the new ratings")
 
     if player_frame is None:
-        raise SystemExit(f"[{label}] the player's duel was never zeroed")
+        # Its duels are kept: the fork's save already holds this tournament,
+        # and research.py seats the player without player_frame (at slot 2k).
+        print(f"[{label}] warning: the player's duel was never zeroed, so its CPU duels are logged without player_frame")
+        return events
     # The player's duel can fall before, between or after the logged CPU
     # duels, so player_frame isn't known when each event is appended above.
     for event in events:
@@ -158,16 +165,55 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
     return events
 
 
+def check_extends_site(export: dict, before_play: bool) -> None:
+    """Refuses a default export that doesn't extend the site's file (README.md: Research dataset).
+
+    run/fork is that file's only source. A reset or recreated fork, or one
+    that lost its log, would otherwise replace it with another fork point and
+    fewer tournaments. Run before playing too, so such a fork plays nothing.
+    """
+    if not SITE_DATASET.exists():
+        return
+    site = json.loads(SITE_DATASET.read_text(encoding="utf-8"))
+    kept, ids = [t["id"] for t in site["tournaments"]], [t["id"] for t in export["tournaments"]]
+    if fork_point(export) != fork_point(site):
+        problem = "its origin.sav gives other fork-point ratings than the site's"
+    elif ids[: len(kept)] != kept:
+        problem = f"its log doesn't start with the site's {len(kept)} tournaments ({kept[0]} to {kept[-1]}); it has {len(ids)}"
+    else:
+        return
+    refusal = (
+        "Not playing: run/fork's dataset would not continue public/research/emulator.json"
+        if before_play
+        else "Not writing public/research/emulator.json: run/fork's dataset would not continue it"
+    )
+    raise SystemExit(
+        f"{refusal}, since {problem}. "
+        "run/fork is the only source of the site's dataset: restore it from a backup, "
+        "or write this fork's dataset elsewhere with --export PATH."
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--fork", type=Path, default=DEFAULT_FORK, help="folder with the fork's wc2008.sav, origin.sav and duels.jsonl")
     parser.add_argument("--level", type=int, choices=sorted(ENTRY_FEE), default=1)
     parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each; 0 only rewrites the export")
-    parser.add_argument("--export", type=Path, help="where to write the research dataset (default: public/research/emulator.json for run/fork, FORK/emulator.json for any other fork)")
+    parser.add_argument("--export", type=Path, help="where to write the research dataset (default: public/research/emulator.json for run/fork, only if the new file extends it; FORK/emulator.json for any other fork)")
     args = parser.parse_args()
-    export = args.export or (SITE_DATASET if args.fork.resolve() == DEFAULT_FORK.resolve() else args.fork / "emulator.json")
+    to_site = args.export is None and args.fork.resolve() == DEFAULT_FORK.resolve()
+    export = args.export or (SITE_DATASET if to_site else args.fork / "emulator.json")
 
     if not (args.fork / "wc2008.sav").exists():
+        # Starting a fork writes game/wc2008.sav over origin.sav and appends to duels.jsonl,
+        # and a fork's origin.sav and log exist nowhere else.
+        left = [name for name in ("origin.sav", "duels.jsonl") if (args.fork / name).exists()]
+        if left:
+            raise SystemExit(
+                f"Not starting a fork at {args.fork}: it has {' and '.join(left)} but no wc2008.sav, "
+                "so it's an existing fork that lost its save, and a new one there would mix with or overwrite what's left. "
+                f"Restore {args.fork}/wc2008.sav from a backup, or use another --fork."
+            )
         if args.count == 0:
             raise SystemExit(f"No fork at {args.fork}: --count 0 only rewrites an existing fork's export, and starting a fork needs a run that plays.")
         args.fork.mkdir(parents=True, exist_ok=True)
@@ -182,13 +228,18 @@ def main() -> None:
             "for a fork copied from another fork, that fork's origin.sav."
         )
     ids = [d["id"] for d in roster()]
+    if to_site and args.count > 0:
+        check_extends_site(fork_export(args.fork), before_play=True)
     for _ in range(args.count):
         label = datetime.now().strftime("%Y%m%d-%H%M%S")
         events = play_tournament(args.fork, args.level, ids, label)
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:
                 log.write(json.dumps(event) + "\n")
-    write_export(args.fork, export)
+    dataset = fork_export(args.fork)
+    if to_site:
+        check_extends_site(dataset, before_play=False)
+    write_export(dataset, export)
 
 
 if __name__ == "__main__":
