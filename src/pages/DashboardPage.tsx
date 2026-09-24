@@ -24,8 +24,7 @@ function best<T>(items: T[], score: (x: T) => number | null, dir: 1 | -1 = 1): T
 }
 
 export function DashboardPage() {
-  const { model, loading } = useApp()
-  if (loading) return <p className="text-ink-2">Loading…</p>
+  const { model, base, canEdit } = useApp()
   const { data, rows } = model
   const recorded = (r: DuelistRow) => (r.rating.current.kind === 'entered' || r.rating.current.kind === 'derived' ? r.rating.current.value : null)
 
@@ -55,7 +54,7 @@ export function DashboardPage() {
           <h2 className="mb-2 text-xl font-semibold">Top 10 by current rating</h2>
           <div className="panel overflow-x-auto">
             {top.length === 0 ? (
-              <Empty>No ratings recorded yet. Record a tournament to start the table.</Empty>
+              <Empty>No ratings recorded yet.{canEdit ? ' Record a tournament to start the table.' : ''}</Empty>
             ) : (
               <table className="table">
                 <thead>
@@ -107,7 +106,7 @@ export function DashboardPage() {
                 {upset ? (
                   <span>
                     <DuelistLink id={upset.winnerId} /> ({upset.winnerBefore}) beat <DuelistLink id={upset.loserId} /> ({upset.loserBefore}),{' '}
-                    <Link className="text-ink-3 hover:underline" to={`/tournaments/${upset.tournament.id}`}>
+                    <Link className="text-ink-3 hover:underline" to={`${base}/tournaments/${upset.tournament.id}`}>
                       #{upset.tournament.number}
                     </Link>
                   </span>
@@ -142,7 +141,7 @@ export function DashboardPage() {
                 const champ = championOf(data.matches, t.id)
                 return (
                   <li key={t.id} className="flex items-center justify-between gap-3 px-4 py-2">
-                    <Link to={`/tournaments/${t.id}`} className="font-medium text-accent hover:underline">
+                    <Link to={`${base}/tournaments/${t.id}`} className="font-medium text-accent hover:underline">
                       #{t.number}, Level {t.tournamentLevel}
                     </Link>
                     <span className="text-ink-2">{champ ? champ === PLAYER_ID ? 'You won' : <>Won by <DuelistLink id={champ} /></> : 'No final recorded'}</span>

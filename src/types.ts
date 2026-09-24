@@ -62,3 +62,9 @@ export interface Dataset {
   matches: Match[]
   observations: RatingObservation[]
 }
+
+/** A user's save's own doc, `users/{uid}` (MVP §4). */
+export interface SaveProfile {
+  name: string
+  createdAt: Date
+}

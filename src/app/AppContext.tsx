@@ -1,74 +1,112 @@
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { subscribeAdmin, subscribeAll, subscribeOutstandingCommits } from '../db/repository'
+import { useLocation } from 'react-router'
+import { subscribeOutstandingCommits, subscribeSave, type Snapshot } from '../db/repository'
+import { loadResearch } from '../db/research'
 import { buildModel } from '../domain/stats'
 import { auth } from '../firebase'
 import type { Dataset } from '../types'
-import { AppContext, type AppState } from './context'
+import { AppContext, type Access, type AppState } from './context'
+import { datasetFromPath, RESEARCH, saveRef } from './datasets'
 
 const EMPTY: Dataset = { duelists: [], tournaments: [], matches: [], observations: [] }
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<Dataset>(EMPTY)
-  const [loading, setLoading] = useState(true)
-  const [pendingWrites, setPendingWrites] = useState(false)
-  const [outstanding, setOutstanding] = useState(0)
-  const [fromCache, setFromCache] = useState(true)
-  const [loadFailed, setLoadFailed] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  // The uid whose admins/{uid} doc exists; compared with the current user so a sign-out needs no reset.
-  const [adminUid, setAdminUid] = useState<string | null>(null)
+/** What a dataset has loaded, with the `base` of the dataset it belongs to. */
+interface Loaded extends Snapshot {
+  base: string
+}
 
-  useEffect(
-    () =>
-      subscribeAll(
+export function AppProvider({ children }: { children: ReactNode }) {
+  // Both tagged with their dataset: the first render after a switch has the
+  // new URL but still this state, and it must not pass for the new dataset's.
+  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [failedFor, setFailedFor] = useState<string | null>(null)
+  const [outstanding, setOutstanding] = useState(0)
+  // A load error belongs to its dataset and goes when it does; a failed write or sign-in stays.
+  const [error, setError] = useState<{ message: string; load: boolean } | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+
+  const inPath = datasetFromPath(useLocation().pathname)
+  const kind = inPath?.kind ?? null
+  const viewedUid = inPath?.kind === 'save' ? inPath.uid : null
+  // The same object while only the page changes, so moving around a dataset doesn't reload it.
+  const dataset = useMemo(() => (kind === 'research' ? RESEARCH : viewedUid !== null ? saveRef(viewedUid) : null), [kind, viewedUid])
+
+  useEffect(() => {
+    if (!dataset) return
+    // Cleared on cleanup, so a late answer about a dataset no longer on view is dropped.
+    let live = true
+    const failed = (e: Error) => {
+      if (!live) return
+      setError({ message: `Could not load data: ${e.message}. Reload the page to try again.`, load: true })
+      setFailedFor(dataset.base)
+    }
+    let unsubscribe = () => {}
+    if (dataset.kind === 'save') {
+      unsubscribe = subscribeSave(
+        dataset.uid,
         (s) => {
-          setData(s.data)
-          setPendingWrites(s.pendingWrites)
-          setFromCache(s.fromCache)
-          setLoading(false)
+          if (live) setLoaded({ ...s, base: dataset.base })
         },
-        (e) => {
-          setError(`Could not load data: ${e.message}. Reload the page to try again.`)
-          setLoadFailed(true)
-          setLoading(false)
-        },
-      ),
-    [],
-  )
+        failed,
+      )
+    } else {
+      loadResearch().then((data) => {
+        // A static file: nothing to sync and no partial cache.
+        if (live) setLoaded({ base: dataset.base, data, profile: null, pendingWrites: false, fromCache: false })
+      }, failed)
+    }
+    return () => {
+      live = false
+      unsubscribe()
+      // Leaving the dataset: its data, failure and load error go with it, and coming back starts over.
+      setLoaded(null)
+      setFailedFor(null)
+      setError((e) => (e?.load ? null : e))
+    }
+  }, [dataset])
 
   useEffect(() => subscribeOutstandingCommits(setOutstanding), [])
 
-  useEffect(() => onAuthStateChanged(auth, setUser), [])
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, (u) => {
+        setUser(u)
+        setAuthReady(true)
+      }),
+    [],
+  )
 
-  const uid = user?.uid ?? null
-  useEffect(() => {
-    if (!uid) return
-    return subscribeAdmin(uid, (admin) => setAdminUid((current) => (admin ? uid : current === uid ? null : current)))
-  }, [uid])
-  const isAdmin = uid !== null && adminUid === uid
-
+  const current = dataset !== null && loaded?.base === dataset.base ? loaded : null
+  const loadFailed = dataset !== null && failedFor === dataset.base
+  const data = current?.data ?? EMPTY
   const model = useMemo(() => buildModel(data), [data])
 
+  // Editing controls show only on your own save (MVP §3); the security rules are what enforce it.
+  const access: Access = dataset?.kind === 'save' && user?.uid === dataset.uid ? { canEdit: true, dataset } : { canEdit: false, dataset }
+
   const value: AppState = {
+    ...access,
     model,
-    loading,
+    base: (dataset ?? RESEARCH).base,
+    profile: current?.profile ?? null,
+    loading: dataset !== null && current === null && !loadFailed,
     loadFailed,
-    synced: !loading && !loadFailed && !fromCache,
-    pendingWrites: pendingWrites || outstanding > 0,
-    error,
+    synced: current !== null && !current.fromCache && !loadFailed,
+    pendingWrites: (current?.pendingWrites ?? false) || outstanding > 0,
+    error: error?.message ?? null,
     user,
-    isAdmin,
+    authReady,
     signIn: () => {
       signInWithPopup(auth, new GoogleAuthProvider()).catch((e: Error) => {
-        if (!/popup-closed|cancelled-popup/.test(e.message)) setError(`Sign-in failed: ${e.message}`)
+        if (!/popup-closed|cancelled-popup/.test(e.message)) setError({ message: `Sign-in failed: ${e.message}`, load: false })
       })
     },
     signOut: () => {
-      signOut(auth).catch((e: Error) => setError(`Sign-out failed: ${e.message}`))
+      signOut(auth).catch((e: Error) => setError({ message: `Sign-out failed: ${e.message}`, load: false }))
     },
-    reportError: (e) => setError(`Save failed: ${e.message}`),
+    reportError: (e) => setError({ message: `Save failed: ${e.message}`, load: false }),
     dismissError: () => setError(null),
   }
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

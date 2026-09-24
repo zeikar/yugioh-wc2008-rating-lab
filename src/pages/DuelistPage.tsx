@@ -33,12 +33,12 @@ function describe(model: Model, duelistId: string, p: HistoryPoint): string[] {
 
 export function DuelistPage() {
   const { id = '' } = useParams()
-  const { model, isAdmin } = useApp()
+  const { model, base, dataset, canEdit } = useApp()
   const row = model.rowById.get(id)
   if (!row) {
     return (
       <Empty>
-        No duelist with this id. <Link to="/duelists" className="text-accent underline">Back to duelists</Link>
+        No duelist with this id. <Link to={`${base}/duelists`} className="text-accent underline">Back to duelists</Link>
       </Empty>
     )
   }
@@ -130,7 +130,7 @@ export function DuelistPage() {
                     <th className="num">Rating</th>
                     <th className="num">Change</th>
                     <th>Context</th>
-                    {isAdmin && <th />}
+                    {canEdit && <th />}
                   </tr>
                 </thead>
                 <tbody>
@@ -149,16 +149,16 @@ export function DuelistPage() {
                         </td>
                         <td className="text-ink-2">
                           {p.tournament ? (
-                            <Link to={`/tournaments/${p.tournament.id}`} className="hover:text-accent hover:underline">
+                            <Link to={`${base}/tournaments/${p.tournament.id}`} className="hover:text-accent hover:underline">
                               {describe(model, id, p).join('. ')}
                             </Link>
                           ) : (
                             describe(model, id, p).join('. ')
                           )}
                         </td>
-                        {isAdmin && (
+                        {canEdit && (
                           <td className="text-right">
-                            {p.kind === 'standalone' && <ReadingActions duelistId={id} point={p} />}
+                            {p.kind === 'standalone' && <ReadingActions uid={dataset.uid} duelistId={id} point={p} />}
                           </td>
                         )}
                       </tr>
@@ -168,7 +168,7 @@ export function DuelistPage() {
             )}
           </div>
           {/* Keyed so half-typed input never carries over to another duelist's page. */}
-          {isAdmin && <AddReading key={duelist.id} duelist={duelist} />}
+          {canEdit && <AddReading key={duelist.id} uid={dataset.uid} duelist={duelist} />}
         </section>
 
         <section>
@@ -193,7 +193,7 @@ export function DuelistPage() {
               </table>
             )}
           </div>
-          {isAdmin && <OwnerControls key={duelist.id} duelist={duelist} />}
+          {canEdit && <EditControls key={duelist.id} uid={dataset.uid} duelist={duelist} />}
         </section>
       </div>
     </>
@@ -267,7 +267,7 @@ function Stat({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function AddReading({ duelist }: { duelist: Duelist }) {
+function AddReading({ uid, duelist }: { uid: string; duelist: Duelist }) {
   const { reportError } = useApp()
   const [rating, setRating] = useState('')
   // Empty means "when I press Add": a reading must not predate a tournament saved since the page opened.
@@ -280,7 +280,7 @@ function AddReading({ duelist }: { duelist: Duelist }) {
       onSubmit={(e) => {
         e.preventDefault()
         if (!valid) return
-        saveReading({ duelistId: duelist.id, rating: Number(rating), observedAt: at === '' ? new Date() : new Date(at), note: note.trim() || undefined }, reportError)
+        saveReading(uid, { duelistId: duelist.id, rating: Number(rating), observedAt: at === '' ? new Date() : new Date(at), note: note.trim() || undefined }, reportError)
         setRating('')
         setAt('')
         setNote('')
@@ -305,7 +305,7 @@ function AddReading({ duelist }: { duelist: Duelist }) {
   )
 }
 
-function ReadingActions({ duelistId, point }: { duelistId: string; point: HistoryPoint }) {
+function ReadingActions({ uid, duelistId, point }: { uid: string; duelistId: string; point: HistoryPoint }) {
   const { reportError } = useApp()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(String(point.observation.rating))
@@ -318,7 +318,7 @@ function ReadingActions({ duelistId, point }: { duelistId: string; point: Histor
           disabled={!/^\d{1,5}$/.test(value.trim())}
           onClick={() => {
             const o = point.observation
-            saveReading({ id: o.id, duelistId, rating: Number(value), observedAt: o.observedAt, note: o.note, createdAt: o.createdAt }, reportError)
+            saveReading(uid, { id: o.id, duelistId, rating: Number(value), observedAt: o.observedAt, note: o.note, createdAt: o.createdAt }, reportError)
             setEditing(false)
           }}
         >
@@ -332,20 +332,20 @@ function ReadingActions({ duelistId, point }: { duelistId: string; point: Histor
       <button className="text-accent hover:underline" onClick={() => setEditing(true)}>
         Edit
       </button>
-      <button className="text-down hover:underline" onClick={() => deleteReading(point.observation.id, reportError)}>
+      <button className="text-down hover:underline" onClick={() => deleteReading(uid, point.observation.id, reportError)}>
         Delete
       </button>
     </span>
   )
 }
 
-function OwnerControls({ duelist }: { duelist: Duelist }) {
+function EditControls({ uid, duelist }: { uid: string; duelist: Duelist }) {
   const { reportError } = useApp()
   const [notes, setNotes] = useState(duelist.notes ?? '')
   return (
     <div className="mt-6 space-y-3 text-sm">
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={duelist.unlocked} onChange={(e) => updateDuelist(duelist.id, { unlocked: e.target.checked }, reportError)} />
+        <input type="checkbox" checked={duelist.unlocked} onChange={(e) => updateDuelist(uid, duelist.id, { unlocked: e.target.checked }, reportError)} />
         Unlocked in my save
       </label>
       <label className="flex flex-col gap-1">
@@ -353,7 +353,7 @@ function OwnerControls({ duelist }: { duelist: Duelist }) {
         <textarea className="field min-h-20" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </label>
       {notes !== (duelist.notes ?? '') && (
-        <button className="btn" onClick={() => updateDuelist(duelist.id, { notes }, reportError)}>
+        <button className="btn" onClick={() => updateDuelist(uid, duelist.id, { notes }, reportError)}>
           Save notes
         </button>
       )}

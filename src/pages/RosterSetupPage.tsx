@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link } from 'react-router'
 import { useApp } from '../app/context'
+import { saveRef } from '../app/datasets'
 import { Empty } from '../components/Empty'
 import { plural } from '../components/format'
 import { PageTitle } from '../components/Layout'
@@ -12,12 +13,12 @@ import { ratingsToFill, rosterSetupPayload, withSaveFill, type RosterRowEdit } f
 import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
 
 /**
- * Brings the database in line with the built-in roster and records where the
- * owner's save stands: which CPUs are unlocked and their current ratings
+ * Brings the save in line with the built-in roster and records where the
+ * user's game stands: which CPUs are unlocked and their current ratings
  * (MVP §5). Rows are in the game's own list order.
  */
 export function RosterSetupPage() {
-  const { model, isAdmin, synced, reportError } = useApp()
+  const { model, base, dataset, canEdit, user, synced, reportError } = useApp()
   const [edits, setEdits] = useState<Record<string, RosterRowEdit>>({})
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null)
   const [saving, setSaving] = useState(false)
@@ -43,7 +44,18 @@ export function RosterSetupPage() {
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
 
-  if (!isAdmin) return <Empty>Only the owner can set up the roster. Sign in on the Data page.</Empty>
+  if (!canEdit) {
+    if (dataset?.kind === 'research') return <Empty>The research dataset is read-only.</Empty>
+    if (!user) return <Empty>Sign in to set up your own save.</Empty>
+    return (
+      <Empty>
+        This isn't your save, so its roster is read-only.{' '}
+        <Link to={`${saveRef(user.uid).base}/roster`} className="text-accent underline">
+          Open your own roster
+        </Link>
+      </Empty>
+    )
+  }
 
   const edit = (id: string, fn: (e: RosterRowEdit) => RosterRowEdit) => {
     setEdits((all) => ({ ...all, [id]: fn(all[id] ?? { unlocked: unlockedOf(id), rating: '' }) }))
@@ -57,7 +69,7 @@ export function RosterSetupPage() {
     setSaving(true)
     setMessage({ text: 'Saving… (waiting for the server)' })
     // Edits stay until the server accepts the save, so a rejection loses nothing.
-    saveRosterSetup(payload, new Date(), reportError).then(
+    saveRosterSetup(dataset.uid, payload, new Date(), reportError).then(
       () => {
         setEdits({})
         setSaving(false)
@@ -155,7 +167,7 @@ export function RosterSetupPage() {
           become the starting point of each CPU's history. Leave a rating empty to record nothing for that CPU.
         </p>
         <p>
-          The initial column is the rating on a fresh save, from the guides (<Link to="/duelists" className="text-accent underline">details per duelist</Link>
+          The initial column is the rating on a fresh save, from the guides (<Link to={`${base}/duelists`} className="text-accent underline">details per duelist</Link>
           ). Enter moves to the next rating; typing a rating ticks Unlocked.
         </p>
         <p>

@@ -55,7 +55,7 @@ function SortHeader({ column, sort, onSort, className = '' }: { column: ColumnKe
 }
 
 export function DuelistsPage() {
-  const { model } = useApp()
+  const { model, base, canEdit, loadFailed } = useApp()
   const [sort, setSort] = useState<{ key: ColumnKey; dir: number }>({ key: 'current', dir: -1 })
   const [level, setLevel] = useState<'all' | '1' | '2' | '3'>('all')
   const [lock, setLock] = useState<'all' | 'unlocked' | 'locked'>('unlocked')
@@ -104,7 +104,13 @@ export function DuelistsPage() {
       <div className="panel overflow-x-auto">
         {model.rows.length === 0 ? (
           <Empty>
-            The roster is empty. The owner sets it up in <Link to="/roster" className="text-accent underline">Roster setup</Link>.
+            {loadFailed ? 'Nothing loaded.' : canEdit ? "Your roster isn't set up yet." : "This save's roster isn't set up yet."}
+            {canEdit && !loadFailed && (
+              <>
+                {' '}
+                Set it up in <Link to={`${base}/roster`} className="text-accent underline">Roster setup</Link>.
+              </>
+            )}
           </Empty>
         ) : rows.length === 0 ? (
           <Empty>No duelist matches these filters.</Empty>
@@ -134,7 +140,7 @@ export function DuelistsPage() {
                     <span className="flex items-center gap-2">
                       <Avatar duelist={r.duelist} className={`size-7 ${r.duelist.unlocked ? '' : 'opacity-50 grayscale'}`} />
                       <span>
-                        <Link to={`/duelists/${r.duelist.id}`} className="font-medium hover:text-accent hover:underline">
+                        <Link to={`${base}/duelists/${r.duelist.id}`} className="font-medium hover:text-accent hover:underline">
                           {r.duelist.name}
                         </Link>
                         {!r.duelist.unlocked && <span className="ml-2 text-xs">locked</span>}

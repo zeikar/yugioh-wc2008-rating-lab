@@ -34,10 +34,12 @@ Background on the game and the full CPU roster with sources:
 - **Save file:** Roster setup reads every CPU's current rating from the
   game's save file (the Korean release's layout) and fills in the ones the
   app doesn't know yet.
-- **Backups:** export everything as JSON; import replaces all data after the
-  file is checked.
+- **Backups:** export everything as JSON; import replaces your save's data
+  after the file is checked.
 
-Anyone can view. Only the owner, signed in with Google, can edit.
+The site shows the research dataset (tournaments the emulator tools played,
+read-only) and, once you sign in with Google, your own save to record your
+tournaments in. Every save is public at its `/u/{uid}` link.
 
 ## Tech stack
 
@@ -62,9 +64,8 @@ Then in the app:
 
 1. **Sign in with Google.** The emulator shows a fake sign-in page; add any
    account.
-2. On **Data**, press **Make me the owner (emulator only)**.
-3. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings or fill them from your save file, and press **Save roster**.
-4. Press **+ New tournament** and start recording.
+2. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings or fill them from your save file, and press **Save roster**.
+3. Press **+ New tournament** and start recording.
 
 The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
 they can run beside other projects' emulators.

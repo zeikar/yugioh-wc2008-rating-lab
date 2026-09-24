@@ -29,14 +29,13 @@ import { PLAYER_ID, ROUNDS, type Duelist, type Round, type Tournament, type Tour
 
 export function TournamentPage() {
   const { id = '' } = useParams()
-  const { model, isAdmin, loading } = useApp()
-  if (loading) return <p className="text-ink-2">Loading…</p>
+  const { model, base, dataset, canEdit } = useApp()
   const saved = model.tournamentById.get(id)
-  if (isAdmin) return <TournamentEditor key={id} id={id} saved={saved} />
+  if (canEdit) return <TournamentEditor key={id} uid={dataset.uid} id={id} saved={saved} />
   if (!saved) {
     return (
       <Empty>
-        No saved tournament here. <Link to="/tournaments" className="text-accent underline">Back to tournaments</Link>
+        No saved tournament here. <Link to={`${base}/tournaments`} className="text-accent underline">Back to tournaments</Link>
       </Empty>
     )
   }
@@ -75,8 +74,8 @@ function TournamentView({ tournament }: { tournament: Tournament }) {
   )
 }
 
-function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undefined }) {
-  const { model, reportError, synced } = useApp()
+function TournamentEditor({ uid, id, saved }: { uid: string; id: string; saved: Tournament | undefined }) {
+  const { model, base, reportError, synced } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
   const docs = useSavedDocs(id, saved)
@@ -84,7 +83,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   // first draft also arrives through navigation state, for when storage is blocked.
   const [edits, setEdits] = useState<TournamentDraft | null>(() => {
     const passed = (location.state as { draft?: TournamentDraft } | null)?.draft
-    return loadDraft(id) ?? (passed?.id === id ? passed : null)
+    return loadDraft(uid, id) ?? (passed?.id === id ? passed : null)
   })
   const fromSaved = useMemo(() => (saved ? draftFromSaved(saved, docs.matches, docs.observations) : null), [saved, docs])
   // What was just saved, normalized like fromSaved. Shown until the server
@@ -146,7 +145,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   if (!draft || !ev || !historyIndex) {
     return (
       <Empty>
-        This tournament doesn't exist or was discarded. <Link to="/tournaments" className="text-accent underline">Back to tournaments</Link>
+        This tournament doesn't exist or was discarded. <Link to={`${base}/tournaments`} className="text-accent underline">Back to tournaments</Link>
       </Empty>
     )
   }
@@ -156,7 +155,7 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
       // A fresh edit session remembers which saved version it started from.
       const next = current ? structuredClone(current) : { ...structuredClone(draft), baseVersion: justSaved ? draftFingerprint(justSaved) : savedVersion }
       fn(next)
-      storeDraft(next)
+      storeDraft(uid, next)
       return next
     })
     setMessage(null)
@@ -175,21 +174,21 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
     const sent = draftFromSaved(payload.tournament, payload.matches, payload.observations)
     // The local copy stays in storage until the server accepts the save, so a
     // rejected or interrupted save loses nothing.
-    storeDraft({ ...sent, baseVersion: draft.baseVersion ?? null })
+    storeDraft(uid, { ...sent, baseVersion: draft.baseVersion ?? null })
     setJustSaved(sent)
     setEdits(null)
     setSaving(true)
     setMessage(null)
-    saveTournament(payload, reportError).then(
+    saveTournament(uid, payload, reportError).then(
       () => {
-        const stored = loadDraft(id)
-        if (stored && draftFingerprint(stored) === draftFingerprint(sent)) discardDraft(id)
+        const stored = loadDraft(uid, id)
+        if (stored && draftFingerprint(stored) === draftFingerprint(sent)) discardDraft(uid, id)
         setJustSaved(null)
         setSaving(false)
         setMessage(`Saved tournament #${sent.number}.`)
       },
       () => {
-        setEdits(loadDraft(id) ?? sent)
+        setEdits(loadDraft(uid, id) ?? sent)
         setJustSaved(null)
         setSaving(false)
         setMessage('The save was rejected, so your entries are kept here. Fix the problem above and save again.')
@@ -198,16 +197,16 @@ function TournamentEditor({ id, saved }: { id: string; saved: Tournament | undef
   }
 
   const discard = () => {
-    discardDraft(id)
+    discardDraft(uid, id)
     setEdits(null)
     setJustSaved(null)
-    if (!saved) navigate('/tournaments')
+    if (!saved) navigate(`${base}/tournaments`)
   }
 
   const remove = () => {
-    deleteTournament(id, model.data, reportError)
-    discardDraft(id)
-    navigate('/tournaments')
+    deleteTournament(uid, id, model.data, reportError)
+    discardDraft(uid, id)
+    navigate(`${base}/tournaments`)
   }
 
   return (

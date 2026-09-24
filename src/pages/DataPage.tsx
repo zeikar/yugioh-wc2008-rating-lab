@@ -1,15 +1,15 @@
 import { useState, type ReactNode } from 'react'
 import { useApp } from '../app/context'
+import { saveRef } from '../app/datasets'
 import { PageTitle } from '../components/Layout'
 import { Link } from 'react-router'
 import { ROSTER } from '../data/duelists'
-import { grantAdminInEmulator, replaceAll } from '../db/repository'
+import { replaceAll } from '../db/repository'
 import { parseBackup, toBackup } from '../domain/backup'
-import { USE_EMULATORS } from '../firebase'
 import type { Dataset } from '../types'
 
 export function DataPage() {
-  const { model, user, isAdmin, signIn, reportError, synced, loadFailed } = useApp()
+  const { model, base, dataset, user, canEdit, signIn, signOut, synced, loadFailed } = useApp()
 
   const exportJson = () => {
     const blob = new Blob([toBackup(model.data, new Date())], { type: 'application/json' })
@@ -25,41 +25,44 @@ export function DataPage() {
     <>
       <PageTitle>Data</PageTitle>
 
+      {/* No email or Google name: a save shows only its own name (MVP §3). */}
       <Block title="Account">
         {user ? (
           <p className="text-sm">
-            Signed in as {user.email ?? user.uid}. {isAdmin ? 'You can edit.' : 'This account can only view.'}
+            Signed in.{' '}
+            {canEdit ? (
+              'This is your save.'
+            ) : (
+              <>
+                <Link to={`${saveRef(user.uid).base}/data`} className="text-accent underline">
+                  Open your save
+                </Link>
+                .
+              </>
+            )}{' '}
+            <button className="text-accent underline" onClick={signOut}>
+              Sign out
+            </button>
           </p>
         ) : (
           <p className="text-sm">
-            Anyone can view. Only the owner can edit.{' '}
             <button className="text-accent underline" onClick={signIn}>
               Sign in with Google
-            </button>
+            </button>{' '}
+            to get your own save and record your tournaments in it.
           </p>
         )}
-        {user && !isAdmin && (
-          <div className="mt-2 text-sm text-ink-2">
-            <p>
-              To make this account the owner, create a document <code className="rounded bg-paper px-1">admins/{user.uid}</code> in the Firebase console.
-            </p>
-            {USE_EMULATORS && (
-              <button className="btn mt-2" onClick={() => grantAdminInEmulator(user.uid).catch(reportError)}>
-                Make me the owner (emulator only)
-              </button>
-            )}
-          </div>
-        )}
+        <p className="mt-2 text-sm text-ink-2">Every save is public: anyone with its link can view it.</p>
       </Block>
 
-      {isAdmin && (
+      {canEdit && (
         <Block title="Roster">
           <p className="max-w-prose text-sm text-ink-2">
             {model.data.duelists.length === 0
               ? `The roster isn't set up yet. Add the ${ROSTER.length} tournament CPUs, mark which are unlocked in your save and record their current ratings.`
               : 'Mark which CPUs are unlocked in your save and record their current ratings, all in one list in the game\'s order.'}
           </p>
-          <Link to="/roster" className="btn btn-primary mt-3 inline-block">
+          <Link to={`${base}/roster`} className="btn btn-primary mt-3 inline-block">
             Open roster setup
           </Link>
         </Block>
@@ -75,12 +78,12 @@ export function DataPage() {
         </button>
       </Block>
 
-      {isAdmin && <ImportBlock current={model.data} exportFirst={exportJson} synced={synced} />}
+      {canEdit && <ImportBlock uid={dataset.uid} current={model.data} exportFirst={exportJson} synced={synced} />}
     </>
   )
 }
 
-function ImportBlock({ current, exportFirst, synced }: { current: Dataset; exportFirst: () => void; synced: boolean }) {
+function ImportBlock({ uid, current, exportFirst, synced }: { uid: string; current: Dataset; exportFirst: () => void; synced: boolean }) {
   const [parsed, setParsed] = useState<{ ok: true; data: Dataset } | { ok: false; errors: string[] } | null>(null)
   const [confirm, setConfirm] = useState('')
   const [progress, setProgress] = useState<string | null>(null)
@@ -134,7 +137,7 @@ function ImportBlock({ current, exportFirst, synced }: { current: Dataset; expor
             onClick={async () => {
               setBusy(true)
               try {
-                await replaceAll(current, parsed.data, (done, total) => setProgress(`Writing… ${done} / ${total}`))
+                await replaceAll(uid, current, parsed.data, (done, total) => setProgress(`Writing… ${done} / ${total}`))
                 setProgress('Import finished.')
                 setParsed(null)
               } catch (e) {

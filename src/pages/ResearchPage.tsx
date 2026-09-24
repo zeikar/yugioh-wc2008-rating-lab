@@ -11,7 +11,7 @@ import { continuity, entrantMix, headToHead, integrityIssues, summarizeTransfers
 import { displayName, upsets } from '../domain/stats'
 
 export function ResearchPage() {
-  const { model } = useApp()
+  const { model, base } = useApp()
   const rows = transferRows(model)
   const summary = summarizeTransfers(rows)
   // Duels whose transfer is known but one pre-match rating isn't stay in the table, not the plot.
@@ -86,7 +86,7 @@ export function ResearchPage() {
                     {rows.map((r) => (
                       <tr key={r.ratings.match.id}>
                         <td>
-                          <Link className="text-accent hover:underline" to={`/tournaments/${r.tournament.id}`}>
+                          <Link className="text-accent hover:underline" to={`${base}/tournaments/${r.tournament.id}`}>
                             #{r.tournament.number}
                           </Link>{' '}
                           <span className="text-ink-3">LV{r.tournament.tournamentLevel}</span>
@@ -121,7 +121,7 @@ export function ResearchPage() {
             <ul className="panel divide-y divide-rule text-sm">
               {issues.map(({ ratings: r, tournament: t }) => (
                 <li key={r.match.id} className="px-4 py-2">
-                  <Link className="text-accent hover:underline" to={`/tournaments/${t.id}`}>
+                  <Link className="text-accent hover:underline" to={`${base}/tournaments/${t.id}`}>
                     #{t.number}
                   </Link>{' '}
                   {displayName(model, r.match.playerAId)} vs {displayName(model, r.match.playerBId)}
@@ -144,7 +144,7 @@ export function ResearchPage() {
                   {contChanged.map((c) => (
                     <tr key={`${c.tournament.id}-${c.duelistId}`}>
                       <td>
-                        <Link className="text-accent hover:underline" to={`/tournaments/${c.tournament.id}`}>
+                        <Link className="text-accent hover:underline" to={`${base}/tournaments/${c.tournament.id}`}>
                           #{c.tournament.number}
                         </Link>
                       </td>
