@@ -7,6 +7,7 @@ import { PageTitle } from '../components/Layout'
 import { Rating, RatingMark } from '../components/Rating'
 import { ROSTER } from '../data/duelists'
 import { saveRosterSetup } from '../db/repository'
+import { parseRating } from '../domain/draft'
 import { ratingsToFill, rosterSetupPayload, withSaveFill, type RosterRowEdit } from '../domain/roster'
 import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
 
@@ -192,11 +193,14 @@ export function RosterSetupPage() {
               const row = edits[d.id]
               const unlocked = unlockedOf(d.id)
               const known = model.rowById.get(d.id)?.rating.current
+              // Marked in the row itself: the error list at the top is off-screen from most of the table.
+              const invalid = parseRating(row?.rating) === 'invalid'
               return (
                 <tr key={d.id} className={`[&>td]:py-1 ${unlocked ? '' : 'text-ink-3'}`}>
                   <td className="num text-ink-3">{i + 1}</td>
                   <td>
-                    <span className="font-medium">{d.name}</span>
+                    {/* Red too: on a phone the table opens scrolled left, with the rating input off-screen. */}
+                    <span className={`font-medium ${invalid ? 'text-down' : ''}`}>{d.name}</span>
                     {d.aliases?.[0] && <span className="ml-2 text-xs text-ink-3">{d.aliases[0]}</span>}
                   </td>
                   <td>{d.tournamentLevel}</td>
@@ -216,7 +220,8 @@ export function RosterSetupPage() {
                       <input
                         data-roster-rating
                         aria-label={`Current rating of ${d.name}`}
-                        className="field w-20 py-0.5 text-right"
+                        className={`field w-20 py-0.5 text-right ${invalid ? 'border-down' : ''}`}
+                        aria-invalid={invalid || undefined}
                         inputMode="numeric"
                         value={row?.rating ?? ''}
                         onKeyDown={nextOnEnter}
@@ -235,7 +240,11 @@ export function RosterSetupPage() {
       </div>
       {/* 78 rows scroll the top button out of reach. */}
       <div className="mt-4 flex items-center justify-end gap-3 text-sm">
-        {message && <span className={message.error ? 'text-down' : 'text-ink-2'}>{message.text}</span>}
+        {payload.errors.length > 0 ? (
+          <span className="font-medium text-down">Fix {plural(payload.errors.length, 'rating')} marked in red to save.</span>
+        ) : (
+          message && <span className={message.error ? 'text-down' : 'text-ink-2'}>{message.text}</span>
+        )}
         <button className="btn btn-primary" disabled={saveDisabled} onClick={save}>
           Save roster
         </button>
