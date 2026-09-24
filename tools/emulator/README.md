@@ -41,6 +41,7 @@ platform, pick the matching core build from the same release.
 | `research.py` | Builds the research dataset from a fork (below) |
 | `uv run replay.py LABEL` | Plays a logged tournament again from its starting save and draws each CPU duel turn by turn (below) |
 | `uv run draw.py SAVE --level N` | The game's entrant draw rebuilt in Python: the bracket a save draws, each CPU's chance to enter over random seeds (`--odds N`), or a check of every logged tournament against its draw (`--check`) |
+| `uv run viewmode.py --save SAVE --pair A,B` | Plays View Mode duels between chosen CPUs and logs who won and how (below) |
 | `board.py` | Reads both sides' duel board from RAM, and card names from the ROM. `uv run python board.py DUMP` prints a main-RAM dump's board |
 
 ## Forked runs
@@ -160,6 +161,20 @@ that its CPU duels come out as logged. It writes one sheet per CPU duel to
 duel is decided. Only tournaments played since the starting saves were kept
 can be replayed. Don't run it while `tournament.py` runs: both use
 `run/tournament/` for the core's files.
+
+## View Mode
+
+View Mode, Free Duel's CPU-vs-CPU spectating, moves no rating (internals.md
+§4), so its duels are matchup data. `uv run viewmode.py --save SAVE --pair
+LEFT,RIGHT` plays the pairs `--repeat` times and logs each duel to
+`run/viewmode/duels.jsonl`: both CPUs, the winner, the frame counter it was
+seeded with, and `end` as in the tournament log.
+- SAVE is only read. The script sets View Mode's unlock bit on a copy in
+  memory, and the game's saves after each duel stay in the emulator.
+- Both CPUs must be unlocked in SAVE; `run/fork/wc2008.sav` has them all.
+- Each duel's frame counter is set at random, since it seeds the whole duel.
+- On Fast a duel takes about 5 s, so one process plays some 700 an hour. It
+  runs in `run/viewmode/`, so it can run beside `tournament.py`.
 
 ## Routes
 
