@@ -323,6 +323,22 @@ save in melonDS DS (2026-09-24):
      first 2 on a fork with every CPU unlocked.
    - Draws also repeat a lot. Those 2 tournaments shared 6 of 7 CPUs, and 3
      CPUs played in all 5 on the owner's save.
+   - **Level 2 looks gated by the current rating** [emulator, 2026-09-25].
+     On the fresh fork's first 125 Level 2 tournaments, no entrant stood
+     below 1085.
+     - The six LV2 CPUs that start at 750–1050 never entered, so their
+       ratings never moved: Molten Zombie, Sand Moth, White Magician Pikeru,
+       Water Dragon, Sabersaurus and D.D. Warrior Lady.
+     - On a scratch copy with those six set to 1300, Molten Zombie entered
+       all 3 Level 2 tournaments played.
+     - Silpheed starts at 750 too, but entered Level 2 after its Level 3
+       duels had raised its rating.
+     - So in play as it stands, those six never get in.
+   - **Level 3 has three fixed guests.** Silpheed (LV2), Aquarian Alessa
+     (LV1) and Great Shogun Shien (LV2) entered all 125 Level 3
+     tournaments, each time beside 4 LV3 CPUs.
+   - **Level 1 draws narrowed over time.** Its first 25 tournaments had 23
+     distinct CPUs and its last 25 only 16.
 5. **Format:** one duel per round or best-of-3?
 6. **Labels:** what do the Korean release's English menus call the rounds?
    The other labels are in §5.
