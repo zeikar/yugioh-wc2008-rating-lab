@@ -586,8 +586,9 @@ firestore.rules, firestore.indexes.json, firebase.json
   collections grow large.
 - Writes don't wait for the server. Offline, a Firestore commit only resolves
   once it syncs, but the local cache and every listener already have the
-  write. Failures surface as an error banner; the header shows
-  "Syncing…" while writes are pending.
+  write. Failures surface as an error banner. The header shows "Syncing…"
+  while writes are pending, and "Connecting…" while the data shown is only
+  the local cache.
 - `useApp()` exposes the model plus `{ user, isAdmin }`.
 - The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
   they can run beside other projects' emulators.

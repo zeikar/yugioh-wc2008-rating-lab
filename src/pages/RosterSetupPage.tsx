@@ -137,6 +137,17 @@ export function RosterSetupPage() {
         Roster setup
       </PageTitle>
 
+      {/* Every status note sits right under the buttons, above the instructions. */}
+      <div className="max-w-prose text-sm">
+        {/* Always mounted: screen readers skip a live region that appears together with its text. */}
+        <div role="status">{message && <p className={`mb-2 font-medium ${message.error ? 'text-down' : 'text-ink'}`}>{message.text}</p>}</div>
+        {!synced && <p className="mb-2 font-medium text-warn">Waiting for a connection to the server. Saving works only on fully loaded data.</p>}
+        {payload.errors.map((e) => (
+          <p key={e} className="mb-2 font-medium text-down">
+            {e}.
+          </p>
+        ))}
+      </div>
       <div className="mb-4 max-w-prose space-y-2 text-sm text-ink-2">
         <p>
           Tick the CPUs unlocked in your save and type each one's current rating as the game shows it. Saving records those ratings as readings taken now, which
@@ -151,14 +162,6 @@ export function RosterSetupPage() {
           app doesn't know yet, replacing any ratings already typed. Use a save from after your last recorded tournament.
         </p>
         {firstSetup && <p className="font-medium text-ink">The roster isn't in the database yet. Saving adds all {ROSTER.length} duelists.</p>}
-        {!synced && <p className="text-warn">Waiting for a connection to the server. Saving works only on fully loaded data.</p>}
-        {payload.errors.map((e) => (
-          <p key={e} className="text-down">
-            {e}.
-          </p>
-        ))}
-        {/* Always mounted: screen readers skip a live region that appears together with its text. */}
-        <div role="status">{message && <p className={message.error ? 'text-down' : 'text-ink'}>{message.text}</p>}</div>
       </div>
 
       <div className="panel overflow-x-auto">

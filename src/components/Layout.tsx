@@ -14,7 +14,7 @@ const NAV = [
 ]
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { user, isAdmin, signIn, signOut, pendingWrites, error, dismissError, loading } = useApp()
+  const { user, isAdmin, signIn, signOut, pendingWrites, synced, error, dismissError, loading, loadFailed } = useApp()
   const start = useStartTournament()
   return (
     <div className="min-h-screen">
@@ -38,7 +38,12 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm">
             {USE_EMULATORS && <span className="rounded bg-warn-soft px-1.5 py-0.5 text-xs font-medium text-warn">emulator</span>}
-            {!loading && <span className="text-ink-3">{pendingWrites ? 'Syncing…' : 'Synced'}</span>}
+            {/* After a failed load the error banner says what to do; a sync state would mislead. */}
+            {!loading && !loadFailed && (
+              <span className="text-ink-3" title={!pendingWrites && !synced ? 'Showing the copy saved on this device until the server answers' : undefined}>
+                {pendingWrites ? 'Syncing…' : synced ? 'Synced' : 'Connecting…'}
+              </span>
+            )}
             {isAdmin && (
               <button className="btn btn-primary" onClick={start}>
                 + New tournament
