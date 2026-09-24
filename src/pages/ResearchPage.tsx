@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useApp } from '../app/context'
 import { Delta } from '../components/Delta'
@@ -12,6 +12,8 @@ import { displayName, upsets } from '../domain/stats'
 
 export function ResearchPage() {
   const { model, base } = useApp()
+  // Every CPU duel is thousands of rows on the research dataset, so the table is drawn only when opened.
+  const [showAll, setShowAll] = useState(false)
   const rows = transferRows(model)
   const summary = summarizeTransfers(rows)
   // Duels whose transfer is known but one pre-match rating isn't stay in the table, not the plot.
@@ -67,47 +69,49 @@ export function ResearchPage() {
                 point to a fixed formula.
               </p>
             )}
-            <details className="mt-3">
+            <details className="mt-3" onToggle={(e) => setShowAll(e.currentTarget.open)}>
               <summary className="cursor-pointer text-sm font-medium text-accent">Show all {rows.length} duels</summary>
-              <div className="panel mt-2 overflow-x-auto">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Tournament</th>
-                      <th>Winner</th>
-                      <th className="num">Before</th>
-                      <th>Loser</th>
-                      <th className="num">Before</th>
-                      <th className="num">Gap</th>
-                      <th className="num">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r) => (
-                      <tr key={r.ratings.match.id}>
-                        <td>
-                          <Link className="text-accent hover:underline" to={`${base}/tournaments/${r.tournament.id}`}>
-                            #{r.tournament.number}
-                          </Link>{' '}
-                          <span className="text-ink-3">LV{r.tournament.tournamentLevel}</span>
-                        </td>
-                        <td>
-                          <DuelistLink id={r.winnerId} />
-                        </td>
-                        <td className="num">{r.winnerPre ?? '—'}</td>
-                        <td>
-                          <DuelistLink id={r.loserId} />
-                        </td>
-                        <td className="num">{r.loserPre ?? '—'}</td>
-                        <td className="num">
-                          <Delta value={r.gap} />
-                        </td>
-                        <td className="num font-semibold">{r.transfer}</td>
+              {showAll && (
+                <div className="panel mt-2 overflow-x-auto">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Tournament</th>
+                        <th>Winner</th>
+                        <th className="num">Before</th>
+                        <th>Loser</th>
+                        <th className="num">Before</th>
+                        <th className="num">Gap</th>
+                        <th className="num">Points</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => (
+                        <tr key={r.ratings.match.id}>
+                          <td>
+                            <Link className="text-accent hover:underline" to={`${base}/tournaments/${r.tournament.id}`}>
+                              #{r.tournament.number}
+                            </Link>{' '}
+                            <span className="text-ink-3">LV{r.tournament.tournamentLevel}</span>
+                          </td>
+                          <td>
+                            <DuelistLink id={r.winnerId} />
+                          </td>
+                          <td className="num">{r.winnerPre ?? '—'}</td>
+                          <td>
+                            <DuelistLink id={r.loserId} />
+                          </td>
+                          <td className="num">{r.loserPre ?? '—'}</td>
+                          <td className="num">
+                            <Delta value={r.gap} />
+                          </td>
+                          <td className="num font-semibold">{r.transfer}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </details>
           </>
         )}
