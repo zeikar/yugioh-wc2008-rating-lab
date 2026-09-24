@@ -31,6 +31,9 @@ Background on the game and the full CPU roster with sources:
 - **Research:** points moved against the rating gap for every CPU duel,
   tournaments to save again after a correction, which levels mix in
   lower-level duelists, initial rating against current, upsets and rivalries.
+- **Save file:** Roster setup reads every CPU's current rating from the
+  game's save file (the Korean release's layout) and fills in the ones the
+  app doesn't know yet.
 - **Backups:** export everything as JSON; import replaces all data after the
   file is checked.
 
@@ -60,7 +63,7 @@ Then in the app:
 1. **Sign in with Google.** The emulator shows a fake sign-in page; add any
    account.
 2. On **Data**, press **Make me the owner (emulator only)**.
-3. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings, and press **Save roster**.
+3. Open **Roster setup** from the Data page. Tick the unlocked CPUs, optionally type their current ratings or fill them from your save file, and press **Save roster**.
 4. Press **+ New tournament** and start recording.
 
 The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
@@ -90,7 +93,7 @@ they can run beside other projects' emulators.
 - **Becoming the owner:** sign in once on the site, then create the Firestore
   document `admins/<your uid>`. The uid is shown on the Data page. Then open
   **Roster setup** from the Data page, tick the unlocked CPUs, type their
-  current ratings, and save.
+  current ratings or fill them from the save file, and save.
 
 ## Scripts
 

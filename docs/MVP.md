@@ -300,10 +300,15 @@ Consequences:
     Delta's `.dsv`) in the browser, following domain/internals.md. It fills
     the rating input of every CPU whose save value tells the app something
     new: the value differs from the app's current rating (the initial rating
-    when the CPU has no history yet), or that current rating is stale. It
-    fills nothing else and doesn't tick Unlocked. The owner reviews the
-    filled values and saves as usual.
+    when the CPU has no history yet), or that current rating is stale. The
+    save covers every CPU, so it replaces the whole rating column: every
+    other rating input is cleared, including values typed earlier or left by
+    an earlier fill. It doesn't tick Unlocked. It works only once the data is
+    loaded from the server, like saving. The owner reviews the filled values
+    and saves as usual.
   - The file is refused when:
+    - it is larger than 1 MiB, checked before reading it (a save is
+      256 KiB);
     - it has no `TDGY` block with a matching CRC;
     - it doesn't decompress to 0x26F0 bytes;
     - its 78 ratings don't add up to the documented initial sum. CPU duels

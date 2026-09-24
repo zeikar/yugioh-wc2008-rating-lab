@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link } from 'react-router'
 import { useApp } from '../app/context'
 import { Empty } from '../components/Empty'
+import { plural } from '../components/format'
 import { PageTitle } from '../components/Layout'
 import { Rating, RatingMark } from '../components/Rating'
 import { ROSTER } from '../data/duelists'
 import { saveRosterSetup } from '../db/repository'
-import { rosterSetupPayload, type RosterRowEdit } from '../domain/roster'
+import { ratingsToFill, rosterSetupPayload, withSaveFill, type RosterRowEdit } from '../domain/roster'
+import { MAX_SAVE_FILE_SIZE, readSaveRatings } from '../domain/saveFile'
 
 /**
  * Brings the database in line with the built-in roster and records where the
@@ -16,19 +18,23 @@ import { rosterSetupPayload, type RosterRowEdit } from '../domain/roster'
 export function RosterSetupPage() {
   const { model, isAdmin, synced, reportError } = useApp()
   const [edits, setEdits] = useState<Record<string, RosterRowEdit>>({})
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null)
   const [saving, setSaving] = useState(false)
+  const saveFileInput = useRef<HTMLInputElement>(null)
 
   const stored = model.duelistById
   const payload = useMemo(() => rosterSetupPayload(ROSTER, model.data.duelists, edits), [model.data.duelists, edits])
   const pending = payload.create.length + payload.update.length + payload.readings.length
-  const unlockedOf = (id: string) => edits[id]?.unlocked ?? stored.get(id)?.unlocked ?? ROSTER.find((d) => d.id === id)!.unlocked
+  const baseUnlocked = (id: string) => stored.get(id)?.unlocked ?? ROSTER.find((d) => d.id === id)!.unlocked
+  const unlockedOf = (id: string) => edits[id]?.unlocked ?? baseUnlocked(id)
   const unlockedCount = ROSTER.filter((d) => unlockedOf(d.id)).length
   const firstSetup = model.data.duelists.length === 0
   const saveDisabled = saving || !synced || pending === 0 || payload.errors.length > 0
 
   // Typed ratings live only in this page; don't lose them to a stray reload.
-  const dirty = Object.keys(edits).length > 0
+  // A row cleared back to how it was, by hand or by a save-file fill, doesn't count.
+  // While saving, the stored flags already show the local write; keep warning until the server accepts it.
+  const dirty = saving || Object.entries(edits).some(([id, e]) => e.rating.trim() !== '' || e.unlocked !== baseUnlocked(id))
   useEffect(() => {
     if (!dirty) return
     const warn = (e: BeforeUnloadEvent) => e.preventDefault()
@@ -46,21 +52,49 @@ export function RosterSetupPage() {
     setEdits((all) => Object.fromEntries(ROSTER.map((d) => [d.id, { unlocked, rating: all[d.id]?.rating ?? '' }])))
 
   const save = () => {
-    const counts = `${payload.create.length} added, ${payload.update.length} updated, ${payload.readings.length} ratings recorded`
+    const counts = `${payload.create.length} added, ${payload.update.length} updated, ${plural(payload.readings.length, 'rating')} recorded`
     setSaving(true)
-    setMessage('Saving… (waiting for the server)')
+    setMessage({ text: 'Saving… (waiting for the server)' })
     // Edits stay until the server accepts the save, so a rejection loses nothing.
     saveRosterSetup(payload, new Date(), reportError).then(
       () => {
         setEdits({})
         setSaving(false)
-        setMessage(`Roster saved: ${counts}.`)
+        setMessage({ text: `Roster saved: ${counts}.` })
       },
       () => {
         setSaving(false)
-        setMessage('The save was rejected, so nothing changed and your entries are still here.')
+        setMessage({ text: 'The save was rejected, so nothing changed and your entries are still here.', error: true })
       },
     )
+  }
+
+  const fillFromSave = async (file: File) => {
+    // Checked before reading: with no accept filter, a video picked by mistake could crash the tab.
+    if (file.size > MAX_SAVE_FILE_SIZE) {
+      setMessage({ text: `${file.name} can't be used. It's too large to be a WC2008 save file (256 KiB).`, error: true })
+      return
+    }
+    let bytes: Uint8Array
+    try {
+      bytes = new Uint8Array(await file.arrayBuffer())
+    } catch (e) {
+      setMessage({ text: `Couldn't read ${file.name}: ${(e as Error).message}.`, error: true })
+      return
+    }
+    const read = readSaveRatings(bytes, ROSTER)
+    if (!read.ok) {
+      setMessage({ text: `${file.name} can't be used. ${read.error}.`, error: true })
+      return
+    }
+    const fill = ratingsToFill(ROSTER, read.ratings, (id) => model.rowById.get(id)?.rating.current)
+    const cleared = Object.entries(edits).filter(([id, e]) => e.rating.trim() !== '' && !fill.has(id)).length
+    setEdits((all) => withSaveFill(all, fill, unlockedOf))
+    const result =
+      fill.size > 0
+        ? `Filled ${plural(fill.size, 'rating')} from ${file.name}. Check them, then save.`
+        : `${file.name} matches every rating the app knows, so there is nothing to fill.`
+    setMessage({ text: cleared > 0 ? `${result} Cleared ${plural(cleared, 'rating')} entered earlier.` : result })
   }
 
   // Enter moves down the rating column, so a whole list goes in without the mouse.
@@ -77,8 +111,23 @@ export function RosterSetupPage() {
         aside={
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="text-ink-2">
-              {unlockedCount} of {ROSTER.length} unlocked, {payload.readings.length} ratings to record
+              {unlockedCount} of {ROSTER.length} unlocked, {plural(payload.readings.length, 'rating')} to record
             </span>
+            {/* Needs the loaded ratings to tell what's new, like Save. */}
+            <button className="btn" disabled={saving || !synced} onClick={() => saveFileInput.current?.click()}>
+              Fill from save file
+            </button>
+            {/* No accept filter: iOS greys out extensions it doesn't know, such as Delta's .dsv. */}
+            <input
+              ref={saveFileInput}
+              type="file"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = '' // picking the same file again still fires
+                if (file) void fillFromSave(file)
+              }}
+            />
             <button className="btn btn-primary" disabled={saveDisabled} onClick={save}>
               Save roster
             </button>
@@ -97,6 +146,10 @@ export function RosterSetupPage() {
           The initial column is the rating on a fresh save, from the guides (<Link to="/duelists" className="text-accent underline">details per duelist</Link>
           ). Enter moves to the next rating; typing a rating ticks Unlocked.
         </p>
+        <p>
+          <strong>Fill from save file</strong> reads the ratings from your save file (such as the <code>.dsv</code> Delta exports) and fills in the ones the
+          app doesn't know yet, replacing any ratings already typed. Use a save from after your last recorded tournament.
+        </p>
         {firstSetup && <p className="font-medium text-ink">The roster isn't in the database yet. Saving adds all {ROSTER.length} duelists.</p>}
         {!synced && <p className="text-warn">Waiting for a connection to the server. Saving works only on fully loaded data.</p>}
         {payload.errors.map((e) => (
@@ -104,7 +157,8 @@ export function RosterSetupPage() {
             {e}.
           </p>
         ))}
-        {message && <p className="text-ink">{message}</p>}
+        {/* Always mounted: screen readers skip a live region that appears together with its text. */}
+        <div role="status">{message && <p className={message.error ? 'text-down' : 'text-ink'}>{message.text}</p>}</div>
       </div>
 
       <div className="panel overflow-x-auto">
@@ -178,7 +232,7 @@ export function RosterSetupPage() {
       </div>
       {/* 78 rows scroll the top button out of reach. */}
       <div className="mt-4 flex items-center justify-end gap-3 text-sm">
-        {message && <span className="text-ink-2">{message}</span>}
+        {message && <span className={message.error ? 'text-down' : 'text-ink-2'}>{message.text}</span>}
         <button className="btn btn-primary" disabled={saveDisabled} onClick={save}>
           Save roster
         </button>

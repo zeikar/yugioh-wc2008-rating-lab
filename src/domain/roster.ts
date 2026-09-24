@@ -1,5 +1,6 @@
 import type { Duelist } from '../types'
 import { parseRating } from './draft'
+import type { CurrentRating } from './timeline'
 
 /** One row of the roster setup form, as typed. */
 export interface RosterRowEdit {
@@ -49,6 +50,45 @@ export function rosterSetupPayload(roster: readonly Duelist[], existing: Duelist
     else if (rating !== null) payload.readings.push({ duelistId: d.id, rating })
   }
   return payload
+}
+
+/**
+ * The save-file ratings worth filling into the form (MVP §5): those that
+ * differ from the app's current rating, or whose current rating is stale. A
+ * CPU with no history is compared with the roster's initial rating, which
+ * the same Save writes to the database.
+ */
+export function ratingsToFill(
+  roster: readonly Duelist[],
+  saved: ReadonlyMap<string, number>,
+  currentOf: (id: string) => CurrentRating | undefined,
+): Map<string, number> {
+  const fill = new Map<string, number>()
+  for (const d of roster) {
+    const rating = saved.get(d.id)
+    if (rating === undefined) continue
+    const current = currentOf(d.id)
+    const recorded = current?.kind === 'entered' || current?.kind === 'derived'
+    if (rating !== (recorded ? current.value : d.initialRating) || current?.stale) fill.set(d.id, rating)
+  }
+  return fill
+}
+
+/**
+ * The form after a save-file fill (MVP §5). The save covers every CPU, so it
+ * replaces the whole rating column: filled rows get the save's rating and
+ * every other rating is cleared, including leftovers from an earlier fill.
+ * Unlocked stays as it was.
+ */
+export function withSaveFill(
+  edits: Readonly<Record<string, RosterRowEdit>>,
+  fill: ReadonlyMap<string, number>,
+  unlockedOf: (id: string) => boolean,
+): Record<string, RosterRowEdit> {
+  const next: Record<string, RosterRowEdit> = {}
+  for (const [id, e] of Object.entries(edits)) next[id] = { ...e, rating: '' }
+  for (const [id, rating] of fill) next[id] = { unlocked: edits[id]?.unlocked ?? unlockedOf(id), rating: String(rating) }
+  return next
 }
 
 /** Duelists in the game's own list order (the roster order); unknown ids last, by name. */
