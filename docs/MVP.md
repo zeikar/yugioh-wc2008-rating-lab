@@ -19,7 +19,7 @@ them. It is an observation tool, not a rating engine: no Elo, no prediction,
 no simulation.
 
 The one exception is a game rule, not a formula: **CPU-vs-CPU duels are
-zero-sum**. The app treats this as fixed. When the owner enters only one CPU's
+zero-sum**. The app treats this as fixed. When the user enters only one CPU's
 post-match rating, the app fills in the opponent's from that rule and saves
 both (§4). The filled-in value is stored with `source: 'derived'` so it can be
 told apart from what was typed. If data ever contradicts the rule, it is
@@ -34,43 +34,56 @@ handled as a bug report, not by the app.
 | Routing | React Router |
 | Charts | Recharts |
 | Persistence | Firebase Firestore (canonical store) |
-| Auth | Firebase Authentication, Google provider (owner-only writes) |
+| Auth | Firebase Authentication, Google provider (each user writes only their own save) |
 | Tests | Vitest (+ Firestore emulator for rules tests) |
 
 No custom backend, no Dexie, and no separate IndexedDB layer. Offline support
 comes from Firestore's persistent local cache (`persistentLocalCache` with
 `persistentMultipleTabManager`).
 
-## 3. Access model
+## 3. Access model and datasets
 
-- **Public read.** Anyone can view all data without logging in.
-- **Single admin = the owner's Google account.** Sign-in uses Firebase Auth's
-  Google provider only. Writes are allowed only for a signed-in user who has a
-  doc at `admins/{uid}`. Firestore security rules enforce this; hiding buttons
-  in the UI is not enough.
-- Clients can never write `admins/`. Setup: sign in once, then create
-  `admins/<uid>` in the Firebase console; the Data page shows the uid. Neither
-  the UID nor an email lands in the repo, and the same rules work in the
-  emulator. There, a dev-only button creates the doc through the emulator's
-  owner bypass.
-- The UI shows a "Sign in with Google" control. Editing controls appear only
-  when the user's own `admins/{uid}` doc exists, which the rules let that user
-  read. Anyone else, signed in or not, sees the read-only app.
-- Firebase config comes from `VITE_FIREBASE_*` env vars. Provide `.env.example`.
+The app shows one **dataset** at a time, one rating ecosystem, and the URL
+says which:
+- **A user's save:** `/u/{uid}/…`. Anyone who signs in gets one, stored under
+  `users/{uid}/` (§4). It holds what that user records from their own game.
+- **The research dataset:** `/research/…`. Tournaments the emulator tools
+  play on a forked save (tools/emulator), shipped as a static file with the
+  site (§8). Nobody writes it through the app.
+- `/` opens your own save when you're signed in, and the research dataset
+  otherwise. A header switch moves between the research dataset and your
+  save and keeps the current page.
+
+Who may do what:
+- **Open sign-up.** Sign-in uses Firebase Auth's Google provider only. Any
+  signed-in user can write their own save and nothing else. There is no admin
+  role and no allowlist. Firestore security rules enforce this; hiding
+  buttons in the UI is not enough.
+- **Every save is public.** Anyone can read any save, signed in or not, and
+  share it by its `/u/{uid}` link. There are no private saves.
+- **No personal data on show.** A save shows its own name (`users/{uid}`,
+  §4), never the account's email or Google name.
+- **Editing controls** appear only while you're viewing your own save.
+- Firebase config comes from `VITE_FIREBASE_*` env vars. Provide
+  `.env.example`.
 
 Rules (`firestore.rules`) in outline:
 
 ```
-function isAdmin() {
-  return request.auth != null
-    && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
+function isOwner(uid) { return request.auth != null && request.auth.uid == uid; }
+match /users/{uid} {
+  allow read: if true;
+  allow write: if isOwner(uid) && <field checks>;
+  // each of the four collections in §4:
+  match /tournaments/{id} { allow read: if true; allow write: if isOwner(uid) && <field checks>; }
 }
-// every collection: allow read: if true; allow write: if isAdmin() && <field checks>
-// admins/{uid}: allow get: if request.auth.uid == uid; allow list, write: if false
 ```
 
 Add basic field validation (types, required fields) to the rules where it is
 cheap to do.
+
+Open writes mean anyone can use up the Firebase free tier. That is accepted
+for now; there are no per-user quotas (§13).
 
 ## 4. Data model
 
@@ -79,7 +92,19 @@ Store facts and derive statistics. Never persist `currentRating`, `peakRating`,
 summaries are ever needed for performance, they are caches only, never the
 canonical history.
 
-Top-level flat collections. No subcollections.
+Each save lives under `users/{uid}`: a profile doc and four collections,
+flat inside it. The collections below are those four; they look the same in
+every save. The static roster and decks stay in the code (§5).
+
+### `users/{uid}`
+
+| Field | Type | Notes |
+|---|---|---|
+| name | string | The save's display name, chosen by its user, 1–40 characters |
+| createdAt | Timestamp | |
+
+The first Roster setup (§5) or naming the save on the Data page (§6.7)
+creates it. Until then the save shows as unnamed.
 
 ### `duelists/{slug}`
 
@@ -91,7 +116,7 @@ Document ID is a stable slug: `spirit-of-the-pharaoh`, `blowback-dragon`,
 | name | string | English name |
 | tournamentLevel | 1 \| 2 \| 3 | The documented tournament classification and unlock tier. It is **not** a rating tier (an LV1 duelist can start at 1800), **not** a limit on which tournaments the duelist appears in (higher levels mix in lower ones), and **not** the Free Duel list page number. |
 | initialRating | number \| null | Rating on a fresh save. `null` = unknown. Never guess. |
-| unlocked | boolean | Don't assume everyone is unlocked |
+| unlocked | boolean | Unlocked in this save. Don't assume everyone is unlocked |
 | category | `'monster' \| 'anime-character'` | |
 | aliases | string[]? | Japanese/Korean names and nicknames; used by search |
 | notes | string? | |
@@ -142,11 +167,12 @@ validation checks them:
   seat order consistent with the known pairings is acceptable. Seat positions
   only matter for which matches feed which.
 
-Assumptions. These come from the owner's description and are not yet verified
-(domain/game.md §6):
+Assumptions (domain/game.md §6):
 - each round is a single duel;
 - the 7 CPUs are distinct;
-- the in-game bracket pairs QF winners 1–2 and 3–4 in the semifinals.
+- the in-game bracket pairs QF winners 1–2 and 3–4 in the semifinals, and
+  plays the quarterfinals in bracket order. The emulator runs confirmed this
+  one.
 
 If any turns out false, the match model needs revisiting.
 
@@ -159,7 +185,7 @@ If any turns out false, the match model needs revisiting.
 | observedAt | Timestamp | When it was observed. For tournament-written observations, this is set to the tournament's `playedAt` on every save. |
 | tournamentId | string? | see the meanings below |
 | matchId | string? | see the meanings below (requires `tournamentId`) |
-| source | `'entered' \| 'derived'` | `'entered'` = typed or accepted by the owner. `'derived'` = the opponent's post-match rating, filled in from the zero-sum rule (§4). Only post-match observations can be `'derived'`. |
+| source | `'entered' \| 'derived'` | `'entered'` = typed or accepted by the save's user, or read from RAM in the research dataset (§8). `'derived'` = the opponent's post-match rating, filled in from the zero-sum rule (§4). Only post-match observations can be `'derived'`. |
 | note | string? | |
 | createdAt | Timestamp | Final tie-break. Preserved when a re-save overwrites the doc. |
 
@@ -187,7 +213,7 @@ ID itself is generated on the client when the form opens and kept in the local
 draft, so saving twice or saving after a reload never creates a second
 tournament. Standalone readings use auto IDs.
 
-**Deleting a tournament** (admin, on the tournament page, with an inline
+**Deleting a tournament** (your own save, on the tournament page, with an inline
 two-step confirm) deletes the tournament, its matches and every observation
 with its `tournamentId`, in one batch. It is offered only while the app is
 synced with the server, so the linked docs it sees are all of them.
@@ -289,8 +315,8 @@ Consequences:
   own slugs, e.g. `blowback-dragon-dl`.
 - Default `unlocked` to `false`, except for the 3 duelists available from the
   start.
-- **Roster setup** (`/roster`, owner only) sets up and maintains the roster
-  in one list:
+- **Roster setup** (your own save only) sets up and maintains your save's
+  roster in one list:
   - All 78 CPUs appear in the game's own list order, with their initial
     rating and last known rating.
   - Each row has an **Unlocked** checkbox (plus "all" and "none") and a
@@ -304,7 +330,7 @@ Consequences:
     save covers every CPU, so it replaces the whole rating column: every
     other rating input is cleared, including values typed earlier or left by
     an earlier fill. It doesn't tick Unlocked. It works only once the data is
-    loaded from the server, like saving. The owner reviews the filled values
+    loaded from the server, like saving. The user reviews the filled values
     and saves as usual.
   - The file is refused when:
     - it is larger than 1 MiB, checked before reading it (a save is
@@ -316,12 +342,17 @@ Consequences:
       doesn't match, such as another region's.
   - Use a save exported after the last recorded tournament. The readings are
     timestamped when saved, like typed ones.
-- One **Save roster** batch does four things:
+  - On a save's first setup (it has no profile yet, §4), the page also
+    asks for the save's name: 1–40 characters, "My save" by default,
+    required to save.
+- One **Save roster** batch does five things:
   - creates duelists missing from the database, with every field;
   - on existing docs, updates only changed `name`, `tournamentLevel`,
     `initialRating`, `category` and `aliases`, plus the `unlocked` flag set on
     the page (`notes` is never touched);
   - records each typed current rating as a standalone reading taken now;
+  - on a save's first setup, creates its profile (`users/{uid}`, §4) with the
+    save name the page asks for;
   - keeps typed values on the page until the server accepts the save.
 - Those readings are where each CPU's history starts when tracking begins in
   a save that is already under way. The documented `initialRating` stays the
@@ -332,7 +363,10 @@ Consequences:
 ## 6. Pages
 
 Navigation: **Dashboard · Duelists · Tournaments · Research · Data**, plus a
-prominent **"+ New tournament"** button, which is the main input flow.
+prominent **"+ New tournament"** button, which is the main input flow and
+shows only on your own save. The header names the dataset on view (the
+research dataset, or a save's name) and holds the switch between the research
+dataset and your save (§3). Every page works the same on any dataset.
 
 ### 6.1 Dashboard
 - Counts: duelists, unlocked duelists, tournaments, matches, observations.
@@ -371,7 +405,7 @@ prominent **"+ New tournament"** button, which is the main input flow.
   the point is linked to a match, the opponent, W/L and *N*.
 - A table of the last ~10 observations.
 - Head-to-head record vs. each opponent (cheap to add, useful).
-- Admin controls, all inline:
+- On your own save, controls, all inline:
   - toggle `unlocked`;
   - edit `notes`;
   - add, edit and delete **standalone readings** (rating, observedAt
@@ -387,8 +421,8 @@ prominent **"+ New tournament"** button, which is the main input flow.
 
 ### 6.5 Tournament form: the core workflow
 One page records an entire tournament, filled in **live while playing**, with
-the DS in hand. The same page shows a saved tournament (read-only for
-visitors) and edits it (admin).
+the DS in hand. The same page shows a saved tournament (read-only unless
+it's in your own save) and edits it (your own save).
 
 The bracket shape is fixed, so the form is fixed too. It is not a
 drag-and-drop bracket editor.
@@ -452,7 +486,7 @@ Saving:
   tournament's docs and deletes ones that were removed.
 - **Conflicts:** a draft remembers which saved version it started from. If
   the saved tournament changes in another tab or on another device before
-  Save, the form says so. The owner then either loads the latest (dropping
+  Save, the form says so. The user then either loads the latest (dropping
   the edits) or keeps the edits and overwrites.
 
 This page also shows the tournament's per-match transfers (§7.3).
@@ -461,9 +495,10 @@ This page also shows the tournament's per-match transfers (§7.3).
 See §7.3.
 
 ### 6.7 Data (Settings)
-- Sign in / sign out, with the current admin status shown.
-- A link to Roster setup (§5).
-- Export and import JSON (§8).
+- Sign in / sign out.
+- On your own save: its name (editable), a link to Roster setup (§5), and
+  import (§8).
+- Export of the dataset on view, whichever it is (§8).
 
 ## 7. Derived statistics
 
@@ -530,7 +565,7 @@ and only displays it; the MVP fits no formula. The main questions:
 - **Export** downloads one JSON file:
   `{ schemaVersion, exportedAt, duelists, tournaments, matches, ratingObservations }`.
   Include document IDs, and serialize Timestamps as ISO strings.
-- **Import** (admin only):
+- **Import** (into your own save only):
   1. Parse the file and validate it with a schema (zod). Check referential
      integrity too: matches → tournaments/duelists (or `'player'`),
      observations → duelists/tournaments/matches, and winner ∈ {A, B}. Also
@@ -557,6 +592,20 @@ and only displays it; the MVP fits no formula. The main questions:
      from the entered ones.
 - Export works for anonymous visitors too, since the data is public.
 
+**The research dataset** is an export file, `public/research/emulator.json`,
+that `tools/emulator/tournament.py` writes from its duel log and that is
+committed and deployed with the site. The app fetches it and runs the same
+parsing and validation as an import, then shows it read-only. What it holds:
+- the roster, with the fork's unlocked flags;
+- a standalone reading for every CPU at the fork point, where its history
+  starts;
+- every tournament, with its entrants in seat order and all 7 matches. The
+  seats come from the order the duels were played in (quarterfinals in
+  bracket order, then the semifinals, then the final; §4);
+- entry ratings, and both CPUs' post-match ratings of every CPU duel. They
+  are read from RAM, so they count as entered, and the integrity check
+  (§4) applies to them.
+
 ## 9. Architecture
 
 ```
@@ -569,6 +618,7 @@ src/
                     timeline, stats, research, draft (form ↔ docs), backup
   firebase.ts       app init, Firestore with persistent cache, auth, emulators
   db/repository.ts  the only Firestore module: converters, live queries, writes
+  db/research.ts    loads the research dataset file
   app/              context (data + auth), local drafts, hooks
   components/       shared UI (rating mark, delta, picker, charts, portraits,
                     layout)
@@ -578,18 +628,23 @@ firestore.rules, firestore.indexes.json, firebase.json
 ```
 
 - The repository layer is the only place that imports `firebase/firestore`.
-  It converts Firestore docs into domain types (Timestamp → Date).
-- Data loading: the collections are small (hundreds to low thousands of docs),
-  so the MVP subscribes to each collection once with `onSnapshot`, keeps it in
-  a React context, and derives everything client-side through
-  `buildModel()`. This keeps the stats logic pure and testable. Revisit if the
-  collections grow large.
+  It converts Firestore docs into domain types (Timestamp → Date). Every path
+  goes through the save's `users/{uid}`.
+- Data loading: one save's collections are small (hundreds to low thousands
+  of docs), so the app subscribes to the viewed save's four collections with
+  `onSnapshot`, keeps them in a React context, and derives everything
+  client-side through `buildModel()`. The research dataset goes through the
+  same `buildModel()`. This keeps the stats logic pure and testable. Revisit
+  if a save grows large.
+- The research dataset is a static file, not Firestore, so it grows without
+  costing Firestore reads: every visitor would otherwise read every doc.
 - Writes don't wait for the server. Offline, a Firestore commit only resolves
   once it syncs, but the local cache and every listener already have the
   write. Failures surface as an error banner. The header shows "Syncing…"
   while writes are pending, and "Connecting…" while the data shown is only
   the local cache.
-- `useApp()` exposes the model plus `{ user, isAdmin }`.
+- `useApp()` exposes the model plus `{ user, dataset, canEdit }`: which
+  dataset is on view, and whether it is the signed-in user's own save.
 - The emulators use non-default ports (Firestore 8085, Auth 9098, UI 4005), so
   they can run beside other projects' emulators.
 
@@ -634,24 +689,26 @@ Vitest unit tests for the pure logic:
 - import validation: a good file, a bad schema, broken references, and bracket
   violations
 
-Rules tests with `@firebase/rules-unit-testing` against the emulator:
-anonymous read succeeds, anonymous write fails, non-admin write fails, admin
-write succeeds.
+Rules tests with `@firebase/rules-unit-testing` against the emulator: anyone
+reads any save, an anonymous write fails, a user's write to their own save
+succeeds, a write to someone else's save fails, and the field checks hold.
 
 Scripts: `dev`, `build`, `typecheck`, `lint`, `test`, `emulators`.
 
 ## 12. README must cover
 
 What the app is and why it exists, the tech stack, Firebase setup (creating a
-project, env vars, creating the owner's `admins/{uid}` doc, deploying rules), running
-locally with the emulator, the data model, and this statement, verbatim:
+project, env vars, deploying rules), running locally with the emulator, the
+data model and the datasets, how the research dataset is made, and this
+statement, verbatim:
 
 > The application records observed in-game ratings.
 > It does not currently attempt to reproduce the game's rating algorithm.
 
 ## 13. Non-goals (MVP)
 
-A custom backend or server functions, multiplayer, scraping, rating
+A custom backend or server functions, private saves, per-user quotas or
+moderation, sharing or merging data between saves, scraping, rating
 prediction or Elo, AI analysis, a visual bracket editor, elaborate animation,
 a native mobile app, and merge-mode import.
 
@@ -669,16 +726,16 @@ the emulator's included. A Research view could
 show each match's residual against it, clearly labeled as a hypothesis and
 never used as rating data.
 
-Emulator automation: a runner that plays tournaments on a forked save, loses
-its own duels, and reads every rating from the save or emulator RAM
-(domain/internals.md). A forked save is a separate rating ecosystem. Its data
-needs its own dataset in the same Firebase project, never mixed with the main
-save's.
+More research datasets, one per forked save or experiment, each its own
+file and ecosystem, picked from the header switch.
 
 ## 15. Definition of done
 
 `typecheck`, `lint`, `test`, and `build` all pass. The app runs against the
-emulator: an admin can sign in, sync the roster, record a full tournament
-live in the tournament form (surviving a mid-tournament reload), see charts
-and diagnostics update, and export then re-import the data. An anonymous visitor can browse everything but write
-nothing.
+emulator:
+- a user can sign in, set up their save's roster, record a full tournament
+  live in the tournament form (surviving a mid-tournament reload), see charts
+  and diagnostics update, and export then re-import the data;
+- a second user can read that save but not write it;
+- an anonymous visitor lands on the research dataset, can open any save by
+  its link, and can write nothing.
