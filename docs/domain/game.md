@@ -62,9 +62,10 @@ Source keys are listed in §8.
     ("Normal" / "Fast") before it shows the bracket.
   - The player's duels start with rock-paper-scissors; a tie repeats it, and
     the winner picks who goes first.
-- **Opponents:** drawn at random, and the player cannot choose them
-  [single: R1]. Whether only *unlocked* duelists are eligible is unclear. It
-  is implied by the unlock requirement.
+- **Opponents:** the player cannot choose them [single: R1]. R1 calls them
+  random, but emulator runs show a rule: the CPUs at fixed ranks of the
+  level's pool by current rating, plus three fixed guests at Level 3 (§6,
+  question 4). Only *unlocked* duelists seem eligible (same place).
 
 ### 2.2 Levels and unlocks
 | Tournament | Unlock condition | Confidence |
@@ -323,22 +324,32 @@ save in melonDS DS (2026-09-24):
      first 2 on a fork with every CPU unlocked.
    - Draws also repeat a lot. Those 2 tournaments shared 6 of 7 CPUs, and 3
      CPUs played in all 5 on the owner's save.
-   - **Level 2 looks gated by the current rating** [emulator, 2026-09-25].
-     On the fresh fork's first 125 Level 2 tournaments, no entrant stood
-     below 1085.
-     - The six LV2 CPUs that start at 750–1050 never entered, so their
-       ratings never moved: Molten Zombie, Sand Moth, White Magician Pikeru,
-       Water Dragon, Sabersaurus and D.D. Warrior Lady.
-     - On a scratch copy with those six set to 1300, Molten Zombie entered
-       all 3 Level 2 tournaments played.
-     - Silpheed starts at 750 too, but entered Level 2 after its Level 3
-       duels had raised its rating.
-     - So in play as it stands, those six never get in.
-   - **Level 3 has three fixed guests.** Silpheed (LV2), Aquarian Alessa
-     (LV1) and Great Shogun Shien (LV2) entered all 125 Level 3
-     tournaments, each time beside 4 LV3 CPUs.
-   - **Level 1 draws narrowed over time.** Its first 25 tournaments had 23
-     distinct CPUs and its last 25 only 16.
+   - **Entrants fill fixed rating ranks** [emulator, 2026-09-25]. Rank the
+     level's pool (every CPU of that tournament level) by current rating,
+     highest first. Each tournament then takes the CPUs at the same ranks.
+     On the fresh fork, each of these ranks was drawn in 122–125 of 125
+     tournaments per level. The misses swapped with a neighbouring rank,
+     probably between CPUs on the same rating.
+
+     | Level | Ranks drawn (pool size) |
+     |---|---|
+     | 1 | 1, 2, 3, 5, 14, 18, 24 (24) |
+     | 2 | 2, 3, 5, 7, 12, 14, 15 (24) |
+     | 3 | 3, 8, 14, 27 (30), plus three fixed guests |
+
+   - **What follows from the ranks:**
+     - Level 2 never takes its top CPU or its bottom 8. The six LV2 CPUs
+       that start lowest (Molten Zombie, Sand Moth, White Magician Pikeru,
+       Water Dragon, Sabersaurus and D.D. Warrior Lady) sit there, so they
+       never entered and their ratings never moved.
+     - On a scratch copy with those six at 1300, Molten Zombie reached a
+       drawn rank and entered all 3 Level 2 tournaments played.
+     - The same CPUs keep the same ranks. Winners climb and stay near the
+       top, and the last-ranked CPU keeps losing. So Level 1's first 25
+       tournaments had 23 distinct CPUs, and its last 25 only 16.
+   - **Level 3's guests:** Silpheed (LV2), Aquarian Alessa (LV1) and Great
+     Shogun Shien (LV2) entered all 125 Level 3 tournaments, whatever their
+     ranks in their own pools.
 5. **Format:** one duel per round or best-of-3?
 6. **Labels:** what do the Korean release's English menus call the rounds?
    The other labels are in §5.
