@@ -62,10 +62,10 @@ Source keys are listed in §8.
     ("Normal" / "Fast") before it shows the bracket.
   - The player's duels start with rock-paper-scissors; a tie repeats it, and
     the winner picks who goes first.
-- **Opponents:** the player cannot choose them [single: R1]. R1 calls them
-  random, but emulator runs show a rule: the CPUs at fixed ranks of the
-  level's pool by current rating, plus three fixed guests at Level 3 (§6,
-  question 4). Only *unlocked* duelists seem eligible (same place).
+- **Opponents:** the player cannot choose them [single: R1]. The game
+  draws 3 seeds at random from the level's 12 top-rated unlocked CPUs (15 at
+  Level 3), and 4 more at random from the rest of the level and the
+  unlocked CPUs of lower levels [ROM code, 2026-09-25; §6, question 4].
 
 ### 2.2 Levels and unlocks
 | Tournament | Unlock condition | Confidence |
@@ -324,32 +324,45 @@ save in melonDS DS (2026-09-24):
      first 2 on a fork with every CPU unlocked.
    - Draws also repeat a lot. Those 2 tournaments shared 6 of 7 CPUs, and 3
      CPUs played in all 5 on the owner's save.
-   - **Entrants fill fixed rating ranks** [emulator, 2026-09-25]. Rank the
-     level's pool (every CPU of that tournament level) by current rating,
-     highest first. Each tournament then takes the CPUs at the same ranks.
-     On the fresh fork, each of these ranks was drawn in 122–125 of 125
-     tournaments per level. The misses swapped with a neighbouring rank,
-     probably between CPUs on the same rating.
-
-     | Level | Ranks drawn (pool size) |
-     |---|---|
-     | 1 | 1, 2, 3, 5, 14, 18, 24 (24) |
-     | 2 | 2, 3, 5, 7, 12, 14, 15 (24) |
-     | 3 | 3, 8, 14, 27 (30), plus three fixed guests |
-
-   - **What follows from the ranks:**
-     - Level 2 never takes its top CPU or its bottom 8. The six LV2 CPUs
-       that start lowest (Molten Zombie, Sand Moth, White Magician Pikeru,
-       Water Dragon, Sabersaurus and D.D. Warrior Lady) sit there, so they
-       never entered and their ratings never moved.
-     - On a scratch copy with those six at 1300, Molten Zombie reached a
-       drawn rank and entered all 3 Level 2 tournaments played.
-     - The same CPUs keep the same ranks. Winners climb and stay near the
-       top, and the last-ranked CPU keeps losing. So Level 1's first 25
-       tournaments had 23 distinct CPUs, and its last 25 only 16.
-   - **Level 3's guests:** Silpheed (LV2), Aquarian Alessa (LV1) and Great
-     Shogun Shien (LV2) entered all 125 Level 3 tournaments, whatever their
-     ranks in their own pools.
+   - **How the game draws them** [ROM code and emulator, 2026-09-25]. The
+     code is in overlay 19 (internals.md §4). For a singles tournament of
+     level L:
+     1. The pool is the unlocked CPUs of level L, in list order. If fewer
+        than 7 are unlocked, it takes the whole level, locked ones too.
+     2. It sorts the pool by current rating, lowest first, with a quicksort
+        that isn't stable. Then it makes 100 random swaps inside the top 12
+        (the top 15 at Level 3) and takes the top 3 as seeds.
+     3. The other 4 are distinct, uniform random picks. They come from the
+        rest of the level plus every unlocked CPU of the lower levels, in
+        list order. Level 1 adds none, Level 2 adds LV1, and Level 3 adds LV1
+        and LV2.
+     4. The player and the 3 seeds take one seat of each quarterfinal, and
+        the 4 picks take the other. The seats are then shuffled.
+   - **What follows from the draw:**
+     - Every quarterfinal is the player or a seed against a pick. Two
+       lower-level CPUs never meet in a quarterfinal, and the player's first
+       opponent is never a seed.
+     - In normal play, Level 2 gets about 2.1 LV1 CPUs on average, and none
+       about 4% of the time. Level 3 gets about 2.6 lower-level CPUs.
+     - At Level 2, a top-12 CPU enters about 32% of the time, and any other
+       eligible CPU about 9%.
+     - Locking any eligible CPU changes the pool sizes, and with them every
+       pick.
+     - A Python rebuild of the draw matched all 41 brackets captured in
+       experiments, and all 398 fork tournaments logged with a starting save.
+   - **The emulator's "fixed ranks" were an artifact.** The draw uses the
+     game's `rand()`. On `tournament.py`'s route its state stays 1 from
+     power-on until the draw, so every freshly booted draw got the same
+     numbers. The 375 fork tournaments of 2026-09-24 and 25 therefore always
+     took the same places:
+     - Level 1: rating ranks 1, 2, 3, 5, 14, 18 and 24.
+     - Level 2: rating ranks 2, 3, 5, 7, 12, 14 and 15.
+     - Level 3: rating ranks 3, 8 and 14, plus the same lower-level list
+       positions: Silpheed, Aquarian Alessa and Great Shogun Shien.
+     That is why six LV2 CPUs never entered and Level 1's field narrowed.
+     The owner's real Level 2 bracket, with 3 LV1 CPUs, fits the draw. The
+     game reseeds `rand()` at the first duel from a timing value, so in
+     normal play the draws that follow a duel are random.
 5. **Format:** one duel per round or best-of-3?
 6. **Labels:** what do the Korean release's English menus call the rounds?
    The other labels are in §5.

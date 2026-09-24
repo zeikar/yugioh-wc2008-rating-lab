@@ -141,6 +141,27 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
     the same all that time.
   - Checked against screenshots at 4 frames, and at the end of 6 CPU duels
     against both duelists' decks in `src/data/decks.ts`.
+- **Tournament draw** [ROM code and emulator, 2026-09-25]. The rule is in
+  game.md §6, question 4.
+  - The code is in overlay 19, 0x021D4600–0x021D4EC8. It writes the
+    entrant table at 0x021DC678: 8 u32 in bracket order, each
+    `0x80000000 |` an internal id, and 0 for the player. The level is a u16
+    at 0x021DC714.
+  - A u16 table at 0x020CA62C maps list index to internal id. The level
+    boundaries in list order, `[0, 24, 48, 78]`, are at 0x021DC03C.
+  - The sort is 0x020B9600, and its comparator 0x021D2140 compares ratings,
+    lowest first.
+  - The random numbers come from a C-style `rand()` at 0x020BD478, with its
+    state at 0x020FCD18. From power-on its state stays 1 until the draw, at
+    least on `tournament.py`'s route. The game reseeds it at the first duel
+    from a timing value, which moved by +36 and +200 after 37 and 200 extra
+    frames of waiting.
+  - So in the emulator every fresh boot draws the same entrants for the
+    same ratings and unlock flags. Each tournament's first CPU duel also
+    repeats: of 95 first-duel pairings seen more than once, 56 played out
+    the same every time, graveyards included.
+  - Entering changes only DP and a checksum in the game data. The entrants
+    aren't saved.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.
@@ -175,7 +196,8 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
   already taken.
 - **The entrant draw didn't depend on input timing.** From the same emulator
   state, a Level 1 tournament drew the same 8 entrants even with 37 or 77
-  extra frames before the inputs. What seeds the draw is unknown.
+  extra frames before the inputs. Nothing calls `rand()` before the draw
+  ("Tournament draw" above).
 - **The same save and inputs play the same tournament.** 45 tournaments
   replayed from the same fork point gave all 270 CPU duels again, to the
   frame, and `replay.py` plays a tournament again from its starting save. So
