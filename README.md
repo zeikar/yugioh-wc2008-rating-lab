@@ -131,7 +131,8 @@ What an observation means depends on its links:
 - `/u/{uid}` is a save: one signed-in user's own data, as above.
 - `/research` is `public/research/emulator.json`, written by `uv run
   tournament.py` (see [tools/emulator/README.md](tools/emulator/README.md))
-  from a forked save. It's committed and deployed with the site, and the app
+  from a fresh fork of a save: every CPU unlocked, starting at its initial
+  rating. It's committed and deployed with the site, and the app
   loads it with the same import validation as a backup file.
 
 ## How ratings are handled

@@ -30,9 +30,18 @@ against the owner's ROM and save. Source keys are listed in §5.
     length, and the CRC32 of the compressed bytes.
   - The payload is LZ10 (Nintendo LZ77, type 0x10) and decompresses to
     0x26F0 (9968) bytes.
-  - The blocks come in identical pairs. In the owner's save, blocks 3 and 4
-    had the higher version. Read the block with the highest version whose CRC
-    matches.
+  - The blocks come in identical pairs. Each save writes one pair with the
+    next version, taking turns between the pairs. In the owner's save, blocks
+    3 and 4 had the higher version (1000000628, against 1000000627 in blocks
+    1 and 2). A fresh fork starting at 1000000629 in blocks 1 and 2 then
+    ended its 4 game saves at 633 in blocks 1 and 2 and 632 in 3 and 4. Read
+    the block with the highest version whose CRC matches.
+  - The game's LZ10 never refers back just 1 byte.
+- **Writing a save** [emulator, 2026-09-24]: the game loads game data stored
+  the same way. That means the next version over the older pair, LZ10 with
+  no 1-byte references, and the CRC32. `wcsave.with_game_data` does this,
+  and `tournament.py --fresh` starts a fork with it (§4, "Seen while driving
+  it").
 
 ## 3. Decompressed game data
 
@@ -64,17 +73,27 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
 - **Duel state** [emulator, 2026-09-24]:
   - **LP:** int16, the left duelist's at 0x022CA200 (mirrored at 0x022CE2D0;
     the Action Replay LP code writes both) and the right duelist's at
-    0x022CA204. It can go negative on overkill. In the player's duels the
-    player is on the left; in CPU-vs-CPU duels both sides are CPUs.
+    0x022CA204 (mirrored at 0x022CF27C). It can go negative on overkill. The
+    player can sit on either side. On the owner's save the player always had
+    the first quarterfinal, on the left. On a fresh fork the player had the
+    third quarterfinal's second seat, on the right. In CPU-vs-CPU duels both
+    sides are CPUs.
   - **Is-CPU flags:** 0x022CBD94 for the left side and 0x022CBD98 for the
-    right. They read 0/1 in the player's duel and 1/1 in a CPU-vs-CPU duel.
-    Both are 0 before the first duel sets them.
+    right, 1 for a CPU and 0 for the player. They read 0/1 or 1/0 in the
+    player's duel and 1/1 in a CPU-vs-CPU duel.
+    - As a duel starts, both flags and both LP go to 0 together. Then the
+      flags are set, while the LP count up to 8000.
+    - The flags keep their values until the next duel starts. So
+      rock-paper-scissors before the player's duel still shows the last duel's
+      flags. Both are 0 before the first duel.
   - **Phase:** 0x022D126C, 0 = Draw … 5 = End. **Turn:** 0x022D1264, counting
     from 0.
   - **Setting the player's LP to 0** loses the duel at the next check (the
     Standby Phase): "YOU LOSE", then a results screen that waits for OK.
-    `tournament.py` does this, and only when the flags say the player's duel
-    is on, since in a CPU duel the same address is a CPU's LP.
+    `tournament.py` writes 0 to the player's side's LP and its mirror. It
+    does so only when the flags say the player's duel is on, and only on the
+    side they give the player, since in a CPU duel the same addresses are a
+    CPU's LP.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.
@@ -112,6 +131,18 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
   extra frames before the inputs. What seeds the draw is unknown. Runs forked
   from one save may play the same tournaments, so check they diverge before
   treating them as independent data.
+- **Pressing A during CPU duels changed nothing** in the one replay tried.
+  The same bracket played with and without it gave the same first two
+  duels, to the rating.
+- **A fresh fork** (`tournament.py --fresh`): every CPU unlocked at its
+  initial rating, and 9,999,999 DP, the Action Replay code's Max DP [AR].
+  - The game loads it and takes entry fees from that DP.
+  - The first time into the World Championship menu shows "A new Wardrobe has
+    been added." and "A new Duel Disk has been added.", one OK each. Closing
+    them saves nothing, so they come back on every boot until the game saves,
+    as the first tournament's fee does. After that they're gone.
+  - Tapping (128, 98) on the bottom screen hits their OK. On the plain menu
+    that spot is empty, so the route always taps it a few times.
 - **Duel results do vary.** Two replays from the same bracket, with
   different inputs in the player's duel, gave a different winner in a later
   CPU duel (game.md §3.1).

@@ -34,9 +34,10 @@ platform, pick the matching core build from the same release.
 | `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
 | `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below), then writes the research dataset |
+| `uv run tournament.py --fork DIR --fresh` | Starts a new fork as a fresh ecosystem instead of a copy of your save (below) |
 | `uv run tournament.py --count 0 [--export PATH]` | Plays nothing; only rewrites an existing fork's research dataset from its log (below) |
 | `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
-| `wcsave.py` | Save-file reader the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
+| `wcsave.py` | Save-file reader and writer the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 | `research.py` | Builds the research dataset from a fork (below) |
 
 ## Forked runs
@@ -50,13 +51,20 @@ platform, pick the matching core build from the same release.
    export (fork-point ratings and unlock flags). If the fork's
    `wc2008.sav` is missing but its `origin.sav` or `duels.jsonl` is still
    there, it stops instead of starting over them.
+   - With `--fresh`, both copies get a fresh ecosystem instead of your
+     save's: every CPU unlocked at its initial rating (from
+     `src/data/duelists.ts`), and 9,999,999 DP, so the entry fees never run
+     out. The rest of the save stays yours. `--fresh` only starts a fork,
+     never changes one.
 2. Follows the route below into a tournament and checks that the fee was
    paid.
 3. Loses the player's duel at once by setting the player's LP to 0. It does
-   that only while the is-CPU flags say the player's duel is on
-   (internals.md §4), since in CPU duels the same address holds a CPU's LP.
-4. Presses A through the player's duel and the closing screens, never during
-   a CPU duel.
+   that only while the is-CPU flags say the player's duel is on, and on the
+   side they give the player (internals.md §4), since in CPU duels the same
+   addresses hold a CPU's LP.
+4. Presses A all along: through rock-paper-scissors, the player's duel and
+   the closing screens. It changed no CPU duel in the one replay tried with
+   and without it (internals.md §4).
 5. Logs each CPU duel when its two ratings change in RAM.
 6. Writes the save memory back to the fork each time the game saves: after
    the fee, and after the results screen.
@@ -88,6 +96,11 @@ and starts with the site's tournaments in the same order, with new ones only
 after them. If not, as after a reset or recreated fork, or one that lost its
 log, it stops and leaves the file alone. An explicit `--export PATH` skips the
 check.
+
+To start the site's dataset over on purpose, delete `run/fork`, then run
+`uv run tournament.py --fresh --export ../../public/research/emulator.json`.
+Later default runs extend the new file as usual. The site's current fork was
+started this way on 2026-09-24.
 
 The file holds:
 
@@ -137,7 +150,9 @@ save's menus (the World Championship menu opens on Free Duel).
    ```
 
    In order: WORLD CHAMPIONSHIP, Tournament, Single Tournament, Level 1, YES
-   to the fee, then Fast for the CPU duel speed.
+   to the fee, then Fast for the CPU duel speed. On a fresh fork's first
+   boot, notices come up first; `tournament.py` closes them with
+   `touch:128,98` (internals.md §4).
 3. **The first duel** starts by itself after about 10 s (`wait:600`) with
    rock-paper-scissors. Touch works too: `touch:X,Y` taps the bottom screen.
 
@@ -150,7 +165,8 @@ save's menus (the World Championship menu opens on Free Duel).
      than 6 cards in hand, the discard prompt takes `a` for the highlighted
      card.
    - Tapping the DP–EP phase column does nothing.
-   - The player's LP is the u16 at `--peek 0x022CA200`. At 0 comes "YOU
+   - The player's LP is the u16 at `--peek 0x022CA200` on the left, or
+     `0x022CA204` on the right (internals.md §4). At 0 comes "YOU
      LOSE", then a small DP bonus screen.
 5. **CPU-vs-CPU duels play by themselves:** just `wait:`. Both new ratings
    reach RAM 1–8 s after the result shows (the "ratings changed" line).

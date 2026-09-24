@@ -303,12 +303,20 @@ save in melonDS DS (2026-09-24):
 3. **Bracket:** does the game play the quarterfinals in bracket order, with
    QF winners 1–2 and 3–4 meeting in the semifinals? Every emulator run so
    far is consistent with this: the semifinals paired the quarterfinal
-   winners 1–2 and 3–4 in play order. But the duel log records no seats, and
-   in every run the player was in the first quarterfinal pair. (There is a
-   bracket screen, §2.1.)
+   winners 1–2 and 3–4 in play order. But the duel log records no seats. On
+   the owner's save the player always had the first quarterfinal. On a fresh
+   fork (every CPU unlocked) the player had the third, and the bracket screen
+   showed it there, with the semifinals still pairing 1–2 and 3–4. (There is
+   a bracket screen, §2.1.)
 4. **Entrants:** are the 7 CPUs always distinct? How are they drawn: which
    lower levels mix in, and how often? Are only unlocked duelists eligible?
    Can DL duelists appear?
+   - Emulator runs point to unlocked only, 2026-09-24. Destiny Hero - Disk
+     Commander was the owner's only locked LV1 duelist. It sat out all 5
+     Level 1 tournaments on the owner's save, then played in both of the
+     first 2 on a fork with every CPU unlocked.
+   - Draws also repeat a lot. Those 2 tournaments shared 6 of 7 CPUs, and 3
+     CPUs played in all 5 on the owner's save.
 5. **Format:** one duel per round or best-of-3?
 6. **Labels:** what do the Korean release's English menus call the rounds?
    The other labels are in §5.

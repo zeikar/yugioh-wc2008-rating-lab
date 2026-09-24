@@ -181,8 +181,9 @@ Assumptions (domain/game.md §6):
 - the in-game bracket pairs QF winners 1–2 and 3–4 in the semifinals, and
   plays the quarterfinals in bracket order. Every emulator run so far is
   consistent with this: the semifinals paired the quarterfinal winners 1–2
-  and 3–4 in play order. But the duel log records no seats, and in every run
-  the player was in the first quarterfinal pair, so it isn't confirmed.
+  and 3–4 in play order. The player has sat in the first and the third
+  quarterfinal, and the bracket screen matched. But the duel log records no
+  seats, so it isn't confirmed.
 
 If any turns out false, the match model needs revisiting.
 
@@ -605,7 +606,8 @@ committed and deployed with the site. The app fetches it and runs the same
 parsing and validation as an import, then shows it read-only. What it holds:
 - the roster, with the fork's unlocked flags;
 - a standalone reading for every CPU at the fork point, where its history
-  starts;
+  starts. The site's fork starts fresh (`tournament.py --fresh`): every CPU
+  unlocked, at its initial rating;
 - every tournament, with its entrants in seat order and all 7 matches. The
   seats come from the order the duels were played in (quarterfinals in
   bracket order, then the semifinals, then the final; §4);

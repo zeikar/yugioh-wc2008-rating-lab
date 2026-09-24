@@ -1,8 +1,9 @@
 """Drives WC2008 a few inputs at a time, from a saved emulator state.
 
 Each call starts from --from STATE, or boots the game and loads the save when
-it's omitted. It plays the inputs, then writes the new state and a screenshot
-of the last frame, and prints any CPU rating in RAM that differs from the save.
+it's omitted: game/wc2008.sav, or --save PATH, such as a fork's. It plays the
+inputs, then writes the new state and a screenshot of the last frame, and
+prints any CPU rating in RAM that differs from the save.
 
     uv run step.py --to run/states/start.state
     uv run step.py --from run/states/start.state --to run/states/next.state right wait:60 a
@@ -32,13 +33,14 @@ from emulator import RUN, SAVE, frames_for, running
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--from", dest="source", type=Path, help="state to start from; boots and loads the save when omitted")
+    parser.add_argument("--save", type=Path, default=SAVE, help="save to boot and to compare ratings with (default: game/wc2008.sav)")
     parser.add_argument("--to", type=Path, required=True, help="where to write the state after the inputs")
     parser.add_argument("--peek", action="append", default=[], type=lambda v: int(v, 0), help="RAM address whose u16 and u32 to print")
     parser.add_argument("inputs", nargs="*")
     args = parser.parse_args()
     plan = [(token, None if token.startswith("shot:") else frames_for(token)) for token in args.inputs]
 
-    save = SAVE.read_bytes()
+    save = args.save.read_bytes()
     expected = wcsave.ratings(wcsave.game_data(save))
     with running("step") as game:
         emu = game.emu

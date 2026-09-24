@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "exportedAt": "2026-09-24T05:58:25Z",
+  "exportedAt": "2026-09-24T11:08:52Z",
   "duelists": [
     {
       "id": "stray-lambs",
@@ -121,7 +121,7 @@
       "aliases": [
         "Ｄ－ＨＥＲＯ ディスクガイ"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "dark-scorpion-meanae-the-thorn",
@@ -408,7 +408,7 @@
       "aliases": [
         "ネオスペース・コンダクター"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "volcanic-doomfire",
@@ -519,7 +519,7 @@
       "aliases": [
         "ネフティスの鳳凰神"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "injection-fairy-lily",
@@ -552,7 +552,7 @@
       "aliases": [
         "Ｅ－ＨＥＲＯ ヘル・ゲイナー"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "ancient-gear-gadjiltron-dragon",
@@ -563,7 +563,7 @@
       "aliases": [
         "古代の機械巨竜"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "cyberdark-dragon",
@@ -574,7 +574,7 @@
       "aliases": [
         "鎧黒竜－サイバー・ダーク・ドラゴン"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "demise-king-of-armageddon",
@@ -585,7 +585,7 @@
       "aliases": [
         "終焉の王デミス"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "gladiator-beast-heraklinos",
@@ -597,7 +597,7 @@
         "剣闘獣ヘラクレイノス"
       ],
       "notes": "Initial rating 1800 confirmed by the owner's save file (2026-09-24). atwiki had it blank; Yugipedia and GameFAQs said 1800.",
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "jaden-yuki",
@@ -608,7 +608,7 @@
       "aliases": [
         "遊城十代"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "chazz-princeton",
@@ -619,7 +619,7 @@
       "aliases": [
         "万丈目準"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "alexis-rhodes",
@@ -630,7 +630,7 @@
       "aliases": [
         "天上院明日香"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "bastion-misawa",
@@ -641,7 +641,7 @@
       "aliases": [
         "三沢大地"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "atticus-rhodes",
@@ -652,7 +652,7 @@
       "aliases": [
         "天上院吹雪"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "syrus-truesdale",
@@ -663,7 +663,7 @@
       "aliases": [
         "丸藤翔"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "tyranno-hassleberry",
@@ -674,7 +674,7 @@
       "aliases": [
         "ティラノ剣山"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "aster-phoenix",
@@ -696,7 +696,7 @@
       "aliases": [
         "ヘルカイザー亮"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "jesse-anderson",
@@ -708,7 +708,7 @@
         "ヨハン・アンデルセン",
         "Andersen"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "axel-brodie",
@@ -730,7 +730,7 @@
       "aliases": [
         "アモン・ガラム"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "marcel-bonaparte",
@@ -741,7 +741,7 @@
       "aliases": [
         "加納マルタン"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "professor-thelonius-viper",
@@ -752,7 +752,7 @@
       "aliases": [
         "プロフェッサー・コブラ"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "yubel",
@@ -763,7 +763,7 @@
       "aliases": [
         "ユベル(DU)"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "yami-yugi",
@@ -774,7 +774,7 @@
       "aliases": [
         "闇遊戯"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "seto-kaiba",
@@ -785,7 +785,7 @@
       "aliases": [
         "海馬瀬人"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "joey-wheeler",
@@ -796,7 +796,7 @@
       "aliases": [
         "城之内克也"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "maximillion-pegasus",
@@ -818,7 +818,7 @@
       "aliases": [
         "闇マリク"
       ],
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "yami-bakura",
@@ -862,2065 +862,1255 @@
       "aliases": [
         "イシズ・イシュタール"
       ],
-      "unlocked": false
+      "unlocked": true
     }
   ],
   "tournaments": [
     {
-      "id": "20260924-121234",
+      "id": "20260924-200817",
       "number": 1,
-      "playedAt": "2026-09-24T03:12:34Z",
+      "playedAt": "2026-09-24T11:08:17Z",
       "tournamentLevel": 1,
       "entrants": [
-        "player",
-        "chrysalis-dolphin",
-        "watapon",
-        "dark-magician-girl",
-        "gravekeepers-chief",
-        "kaiser-sea-horse",
-        "marie-the-fallen-one",
-        "the-unhappy-maiden"
-      ],
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121341",
-      "number": 2,
-      "playedAt": "2026-09-24T03:13:41Z",
-      "tournamentLevel": 1,
-      "entrants": [
-        "player",
-        "chrysalis-dolphin",
-        "watapon",
-        "jerry-beans-man",
-        "kaiser-sea-horse",
-        "gravekeepers-chief",
-        "hino-kagu-tsuchi",
-        "marie-the-fallen-one"
-      ],
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121414",
-      "number": 3,
-      "playedAt": "2026-09-24T03:14:14Z",
-      "tournamentLevel": 1,
-      "entrants": [
-        "player",
-        "kaiser-sea-horse",
-        "dark-magician-girl",
-        "gravekeepers-chief",
-        "watapon",
-        "chrysalis-dolphin",
-        "marie-the-fallen-one",
-        "aquarian-alessa"
-      ],
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121448",
-      "number": 4,
-      "playedAt": "2026-09-24T03:14:48Z",
-      "tournamentLevel": 1,
-      "entrants": [
-        "player",
-        "kaiser-sea-horse",
-        "marie-the-fallen-one",
-        "king-of-the-skull-servants",
-        "watapon",
+        "elemental-mistress-doriado",
         "curse-of-vampire",
-        "aquarian-alessa",
-        "elemental-hero-lady-heat"
+        "petit-dragon",
+        "destiny-hero-disk-commander",
+        "player",
+        "otohime",
+        "st-joan",
+        "stray-lambs"
       ],
-      "createdAt": "2026-09-24T03:14:48Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825",
-      "number": 5,
-      "playedAt": "2026-09-24T05:58:25Z",
+      "id": "20260924-200852",
+      "number": 2,
+      "playedAt": "2026-09-24T11:08:52Z",
       "tournamentLevel": 1,
       "entrants": [
+        "curse-of-vampire",
+        "petit-dragon",
+        "elemental-mistress-doriado",
+        "destiny-hero-disk-commander",
         "player",
-        "kaiser-sea-horse",
-        "watapon",
-        "king-of-the-skull-servants",
-        "marie-the-fallen-one",
-        "chrysalis-dolphin",
         "aquarian-alessa",
-        "elemental-hero-lady-heat"
+        "st-joan",
+        "stray-lambs"
       ],
-      "createdAt": "2026-09-24T05:58:25Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     }
   ],
   "matches": [
     {
-      "id": "20260924-121234_quarterfinal_0",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_quarterfinal_0",
+      "tournamentId": "20260924-200817",
       "round": "quarterfinal",
       "slot": 0,
-      "playerAId": "player",
-      "playerBId": "chrysalis-dolphin",
-      "winnerId": "chrysalis-dolphin",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_quarterfinal_1",
-      "tournamentId": "20260924-121234",
-      "round": "quarterfinal",
-      "slot": 1,
-      "playerAId": "watapon",
-      "playerBId": "dark-magician-girl",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_quarterfinal_2",
-      "tournamentId": "20260924-121234",
-      "round": "quarterfinal",
-      "slot": 2,
-      "playerAId": "gravekeepers-chief",
-      "playerBId": "kaiser-sea-horse",
-      "winnerId": "gravekeepers-chief",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_quarterfinal_3",
-      "tournamentId": "20260924-121234",
-      "round": "quarterfinal",
-      "slot": 3,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "the-unhappy-maiden",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_semifinal_0",
-      "tournamentId": "20260924-121234",
-      "round": "semifinal",
-      "slot": 0,
-      "playerAId": "chrysalis-dolphin",
-      "playerBId": "watapon",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_semifinal_1",
-      "tournamentId": "20260924-121234",
-      "round": "semifinal",
-      "slot": 1,
-      "playerAId": "gravekeepers-chief",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "gravekeepers-chief",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_final_0",
-      "tournamentId": "20260924-121234",
-      "round": "final",
-      "slot": 0,
-      "playerAId": "watapon",
-      "playerBId": "gravekeepers-chief",
-      "winnerId": "gravekeepers-chief",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_0",
-      "tournamentId": "20260924-121341",
-      "round": "quarterfinal",
-      "slot": 0,
-      "playerAId": "player",
-      "playerBId": "chrysalis-dolphin",
-      "winnerId": "chrysalis-dolphin",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_1",
-      "tournamentId": "20260924-121341",
-      "round": "quarterfinal",
-      "slot": 1,
-      "playerAId": "watapon",
-      "playerBId": "jerry-beans-man",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_2",
-      "tournamentId": "20260924-121341",
-      "round": "quarterfinal",
-      "slot": 2,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "gravekeepers-chief",
-      "winnerId": "kaiser-sea-horse",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_3",
-      "tournamentId": "20260924-121341",
-      "round": "quarterfinal",
-      "slot": 3,
-      "playerAId": "hino-kagu-tsuchi",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "hino-kagu-tsuchi",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_0",
-      "tournamentId": "20260924-121341",
-      "round": "semifinal",
-      "slot": 0,
-      "playerAId": "chrysalis-dolphin",
-      "playerBId": "watapon",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_1",
-      "tournamentId": "20260924-121341",
-      "round": "semifinal",
-      "slot": 1,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "hino-kagu-tsuchi",
-      "winnerId": "hino-kagu-tsuchi",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_final_0",
-      "tournamentId": "20260924-121341",
-      "round": "final",
-      "slot": 0,
-      "playerAId": "watapon",
-      "playerBId": "hino-kagu-tsuchi",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_0",
-      "tournamentId": "20260924-121414",
-      "round": "quarterfinal",
-      "slot": 0,
-      "playerAId": "player",
-      "playerBId": "kaiser-sea-horse",
-      "winnerId": "kaiser-sea-horse",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_1",
-      "tournamentId": "20260924-121414",
-      "round": "quarterfinal",
-      "slot": 1,
-      "playerAId": "dark-magician-girl",
-      "playerBId": "gravekeepers-chief",
-      "winnerId": "dark-magician-girl",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_2",
-      "tournamentId": "20260924-121414",
-      "round": "quarterfinal",
-      "slot": 2,
-      "playerAId": "watapon",
-      "playerBId": "chrysalis-dolphin",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_3",
-      "tournamentId": "20260924-121414",
-      "round": "quarterfinal",
-      "slot": 3,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "aquarian-alessa",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_0",
-      "tournamentId": "20260924-121414",
-      "round": "semifinal",
-      "slot": 0,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "dark-magician-girl",
-      "winnerId": "kaiser-sea-horse",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_1",
-      "tournamentId": "20260924-121414",
-      "round": "semifinal",
-      "slot": 1,
-      "playerAId": "watapon",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_final_0",
-      "tournamentId": "20260924-121414",
-      "round": "final",
-      "slot": 0,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_0",
-      "tournamentId": "20260924-121448",
-      "round": "quarterfinal",
-      "slot": 0,
-      "playerAId": "player",
-      "playerBId": "kaiser-sea-horse",
-      "winnerId": "kaiser-sea-horse",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_1",
-      "tournamentId": "20260924-121448",
-      "round": "quarterfinal",
-      "slot": 1,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "king-of-the-skull-servants",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_2",
-      "tournamentId": "20260924-121448",
-      "round": "quarterfinal",
-      "slot": 2,
-      "playerAId": "watapon",
+      "playerAId": "elemental-mistress-doriado",
       "playerBId": "curse-of-vampire",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:14:48Z"
+      "winnerId": "elemental-mistress-doriado",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121448_quarterfinal_3",
-      "tournamentId": "20260924-121448",
-      "round": "quarterfinal",
-      "slot": 3,
-      "playerAId": "aquarian-alessa",
-      "playerBId": "elemental-hero-lady-heat",
-      "winnerId": "aquarian-alessa",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_0",
-      "tournamentId": "20260924-121448",
-      "round": "semifinal",
-      "slot": 0,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_1",
-      "tournamentId": "20260924-121448",
-      "round": "semifinal",
-      "slot": 1,
-      "playerAId": "watapon",
-      "playerBId": "aquarian-alessa",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_final_0",
-      "tournamentId": "20260924-121448",
-      "round": "final",
-      "slot": 0,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "watapon",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_0",
-      "tournamentId": "20260924-145825",
-      "round": "quarterfinal",
-      "slot": 0,
-      "playerAId": "player",
-      "playerBId": "kaiser-sea-horse",
-      "winnerId": "kaiser-sea-horse",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_1",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_quarterfinal_1",
+      "tournamentId": "20260924-200817",
       "round": "quarterfinal",
       "slot": 1,
-      "playerAId": "watapon",
-      "playerBId": "king-of-the-skull-servants",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "petit-dragon",
+      "playerBId": "destiny-hero-disk-commander",
+      "winnerId": "petit-dragon",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825_quarterfinal_2",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_quarterfinal_2",
+      "tournamentId": "20260924-200817",
       "round": "quarterfinal",
       "slot": 2,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "chrysalis-dolphin",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "player",
+      "playerBId": "otohime",
+      "winnerId": "otohime",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825_quarterfinal_3",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_quarterfinal_3",
+      "tournamentId": "20260924-200817",
       "round": "quarterfinal",
       "slot": 3,
-      "playerAId": "aquarian-alessa",
-      "playerBId": "elemental-hero-lady-heat",
-      "winnerId": "aquarian-alessa",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "st-joan",
+      "playerBId": "stray-lambs",
+      "winnerId": "st-joan",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825_semifinal_0",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_semifinal_0",
+      "tournamentId": "20260924-200817",
       "round": "semifinal",
       "slot": 0,
-      "playerAId": "kaiser-sea-horse",
-      "playerBId": "watapon",
-      "winnerId": "watapon",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "elemental-mistress-doriado",
+      "playerBId": "petit-dragon",
+      "winnerId": "elemental-mistress-doriado",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825_semifinal_1",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_semifinal_1",
+      "tournamentId": "20260924-200817",
       "round": "semifinal",
       "slot": 1,
-      "playerAId": "marie-the-fallen-one",
-      "playerBId": "aquarian-alessa",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "otohime",
+      "playerBId": "st-joan",
+      "winnerId": "st-joan",
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-145825_final_0",
-      "tournamentId": "20260924-145825",
+      "id": "20260924-200817_final_0",
+      "tournamentId": "20260924-200817",
       "round": "final",
       "slot": 0,
-      "playerAId": "watapon",
-      "playerBId": "marie-the-fallen-one",
-      "winnerId": "marie-the-fallen-one",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "playerAId": "elemental-mistress-doriado",
+      "playerBId": "st-joan",
+      "winnerId": "elemental-mistress-doriado",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_0",
+      "tournamentId": "20260924-200852",
+      "round": "quarterfinal",
+      "slot": 0,
+      "playerAId": "curse-of-vampire",
+      "playerBId": "petit-dragon",
+      "winnerId": "curse-of-vampire",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_1",
+      "tournamentId": "20260924-200852",
+      "round": "quarterfinal",
+      "slot": 1,
+      "playerAId": "elemental-mistress-doriado",
+      "playerBId": "destiny-hero-disk-commander",
+      "winnerId": "elemental-mistress-doriado",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_2",
+      "tournamentId": "20260924-200852",
+      "round": "quarterfinal",
+      "slot": 2,
+      "playerAId": "player",
+      "playerBId": "aquarian-alessa",
+      "winnerId": "aquarian-alessa",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_3",
+      "tournamentId": "20260924-200852",
+      "round": "quarterfinal",
+      "slot": 3,
+      "playerAId": "st-joan",
+      "playerBId": "stray-lambs",
+      "winnerId": "st-joan",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_semifinal_0",
+      "tournamentId": "20260924-200852",
+      "round": "semifinal",
+      "slot": 0,
+      "playerAId": "curse-of-vampire",
+      "playerBId": "elemental-mistress-doriado",
+      "winnerId": "elemental-mistress-doriado",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_semifinal_1",
+      "tournamentId": "20260924-200852",
+      "round": "semifinal",
+      "slot": 1,
+      "playerAId": "aquarian-alessa",
+      "playerBId": "st-joan",
+      "winnerId": "st-joan",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_final_0",
+      "tournamentId": "20260924-200852",
+      "round": "final",
+      "slot": 0,
+      "playerAId": "elemental-mistress-doriado",
+      "playerBId": "st-joan",
+      "winnerId": "st-joan",
+      "createdAt": "2026-09-24T11:08:52Z"
     }
   ],
   "ratingObservations": [
     {
       "id": "origin_stray-lambs",
       "duelistId": "stray-lambs",
-      "rating": 395,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 600,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_jerry-beans-man",
       "duelistId": "jerry-beans-man",
-      "rating": 598,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 600,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_winged-kuriboh",
       "duelistId": "winged-kuriboh",
-      "rating": 496,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 600,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_reaper-on-the-nightmare",
       "duelistId": "reaper-on-the-nightmare",
-      "rating": 740,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 600,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_the-unhappy-maiden",
       "duelistId": "the-unhappy-maiden",
-      "rating": 1115,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1200,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_elemental-mistress-doriado",
       "duelistId": "elemental-mistress-doriado",
-      "rating": 1161,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_st-joan",
       "duelistId": "st-joan",
-      "rating": 1059,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_spirit-of-the-pharaoh",
       "duelistId": "spirit-of-the-pharaoh",
-      "rating": 1141,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1050,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_hino-kagu-tsuchi",
       "duelistId": "hino-kagu-tsuchi",
-      "rating": 1081,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1050,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_otohime",
       "duelistId": "otohime",
-      "rating": 831,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_destiny-hero-disk-commander",
       "duelistId": "destiny-hero-disk-commander",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_dark-scorpion-meanae-the-thorn",
       "duelistId": "dark-scorpion-meanae-the-thorn",
-      "rating": 696,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1050,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_king-of-the-skull-servants",
       "duelistId": "king-of-the-skull-servants",
-      "rating": 661,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 600,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_watapon",
       "duelistId": "watapon",
-      "rating": 1506,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_petit-dragon",
       "duelistId": "petit-dragon",
-      "rating": 1769,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1650,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_curse-of-vampire",
       "duelistId": "curse-of-vampire",
-      "rating": 929,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 750,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_kaiser-sea-horse",
       "duelistId": "kaiser-sea-horse",
-      "rating": 965,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 750,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_gravekeepers-chief",
       "duelistId": "gravekeepers-chief",
-      "rating": 1522,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1050,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_aquarian-alessa",
       "duelistId": "aquarian-alessa",
-      "rating": 1133,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_il-blud",
       "duelistId": "il-blud",
-      "rating": 1144,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1200,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_dark-magician-girl",
       "duelistId": "dark-magician-girl",
       "rating": 600,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_elemental-hero-lady-heat",
       "duelistId": "elemental-hero-lady-heat",
-      "rating": 1370,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 750,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_marie-the-fallen-one",
       "duelistId": "marie-the-fallen-one",
-      "rating": 1313,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_chrysalis-dolphin",
       "duelistId": "chrysalis-dolphin",
-      "rating": 1009,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_manju-of-the-ten-thousand-hands",
       "duelistId": "manju-of-the-ten-thousand-hands",
-      "rating": 1491,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1650,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_airknight-parshath",
       "duelistId": "airknight-parshath",
-      "rating": 1252,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_gear-golem-the-moving-fortress",
       "duelistId": "gear-golem-the-moving-fortress",
-      "rating": 1136,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1200,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_silpheed",
       "duelistId": "silpheed",
-      "rating": 839,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 750,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_woodborg-inpachi",
       "duelistId": "woodborg-inpachi",
-      "rating": 1220,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_ojama-yellow",
       "duelistId": "ojama-yellow",
-      "rating": 1396,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_luster-dragon-2",
       "duelistId": "luster-dragon-2",
       "rating": 1200,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_gemini-elf",
       "duelistId": "gemini-elf",
-      "rating": 1447,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1650,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_molten-zombie",
       "duelistId": "molten-zombie",
       "rating": 1050,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_sand-moth",
       "duelistId": "sand-moth",
-      "rating": 855,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_white-magician-pikeru",
       "duelistId": "white-magician-pikeru",
       "rating": 750,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_water-dragon",
       "duelistId": "water-dragon",
       "rating": 750,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_neo-space-pathfinder",
       "duelistId": "neo-space-pathfinder",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_volcanic-doomfire",
       "duelistId": "volcanic-doomfire",
       "rating": 1200,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_cloudian-poison-cloud",
       "duelistId": "cloudian-poison-cloud",
-      "rating": 1309,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_voltanis-the-adjudicator",
       "duelistId": "voltanis-the-adjudicator",
-      "rating": 1641,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1650,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_light-effigy",
       "duelistId": "light-effigy",
-      "rating": 1311,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_blowback-dragon",
       "duelistId": "blowback-dragon",
-      "rating": 1595,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_kozaky",
       "duelistId": "kozaky",
       "rating": 1350,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_great-shogun-shien",
       "duelistId": "great-shogun-shien",
-      "rating": 1395,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1200,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_sabersaurus",
       "duelistId": "sabersaurus",
       "rating": 900,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_dd-warrior-lady",
       "duelistId": "dd-warrior-lady",
       "rating": 900,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_sacred-phoenix-of-nephthys",
       "duelistId": "sacred-phoenix-of-nephthys",
       "rating": 1650,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_injection-fairy-lily",
       "duelistId": "injection-fairy-lily",
-      "rating": 1429,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_vortex-kong",
       "duelistId": "vortex-kong",
       "rating": 1050,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_evil-hero-infernal-gainer",
       "duelistId": "evil-hero-infernal-gainer",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_ancient-gear-gadjiltron-dragon",
       "duelistId": "ancient-gear-gadjiltron-dragon",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_cyberdark-dragon",
       "duelistId": "cyberdark-dragon",
       "rating": 1650,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_demise-king-of-armageddon",
       "duelistId": "demise-king-of-armageddon",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_gladiator-beast-heraklinos",
       "duelistId": "gladiator-beast-heraklinos",
       "rating": 1800,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_jaden-yuki",
       "duelistId": "jaden-yuki",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_chazz-princeton",
       "duelistId": "chazz-princeton",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_alexis-rhodes",
       "duelistId": "alexis-rhodes",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_bastion-misawa",
       "duelistId": "bastion-misawa",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_atticus-rhodes",
       "duelistId": "atticus-rhodes",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_syrus-truesdale",
       "duelistId": "syrus-truesdale",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_tyranno-hassleberry",
       "duelistId": "tyranno-hassleberry",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_aster-phoenix",
       "duelistId": "aster-phoenix",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_dark-zane",
       "duelistId": "dark-zane",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_jesse-anderson",
       "duelistId": "jesse-anderson",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_axel-brodie",
       "duelistId": "axel-brodie",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_adrian-gecko",
       "duelistId": "adrian-gecko",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_marcel-bonaparte",
       "duelistId": "marcel-bonaparte",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_professor-thelonius-viper",
       "duelistId": "professor-thelonius-viper",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_yubel",
       "duelistId": "yubel",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_yami-yugi",
       "duelistId": "yami-yugi",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_seto-kaiba",
       "duelistId": "seto-kaiba",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_joey-wheeler",
       "duelistId": "joey-wheeler",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_maximillion-pegasus",
       "duelistId": "maximillion-pegasus",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_yami-marik",
       "duelistId": "yami-marik",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_yami-bakura",
       "duelistId": "yami-bakura",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_mai-valentine",
       "duelistId": "mai-valentine",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_bandit-keith",
       "duelistId": "bandit-keith",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
       "id": "origin_ishizu-ishtar",
       "duelistId": "ishizu-ishtar",
       "rating": 1250,
-      "observedAt": "2026-09-24T03:11:34Z",
+      "observedAt": "2026-09-24T11:07:17Z",
       "source": "entered",
       "note": "Fork point",
-      "createdAt": "2026-09-24T03:11:34Z"
+      "createdAt": "2026-09-24T11:07:17Z"
     },
     {
-      "id": "20260924-121234_entry_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 1009,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_entry_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1500,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_watapon",
-      "duelistId": "watapon",
-      "rating": 1506,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_entry_curse-of-vampire",
+      "duelistId": "curse-of-vampire",
+      "rating": 750,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_dark-magician-girl",
-      "duelistId": "dark-magician-girl",
+      "id": "20260924-200817_entry_petit-dragon",
+      "duelistId": "petit-dragon",
+      "rating": 1650,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_entry_destiny-hero-disk-commander",
+      "duelistId": "destiny-hero-disk-commander",
+      "rating": 1800,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_entry_otohime",
+      "duelistId": "otohime",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_entry_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1350,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_entry_stray-lambs",
+      "duelistId": "stray-lambs",
       "rating": 600,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1522,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_quarterfinal_0_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1524,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 965,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_quarterfinal_0_curse-of-vampire",
+      "duelistId": "curse-of-vampire",
+      "rating": 726,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1313,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_quarterfinal_1_petit-dragon",
+      "duelistId": "petit-dragon",
+      "rating": 1743,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_1",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_entry_the-unhappy-maiden",
-      "duelistId": "the-unhappy-maiden",
-      "rating": 1115,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
+      "id": "20260924-200817_quarterfinal_1_destiny-hero-disk-commander",
+      "duelistId": "destiny-hero-disk-commander",
+      "rating": 1707,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_1",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_1_watapon",
-      "duelistId": "watapon",
-      "rating": 1523,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_1",
+      "id": "20260924-200817_quarterfinal_3_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1374,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_3",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_1_dark-magician-girl",
-      "duelistId": "dark-magician-girl",
-      "rating": 583,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_1",
+      "id": "20260924-200817_quarterfinal_3_stray-lambs",
+      "duelistId": "stray-lambs",
+      "rating": 576,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_quarterfinal_3",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_2_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1556,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_2",
+      "id": "20260924-200817_semifinal_0_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1623,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_semifinal_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_2_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 931,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_2",
+      "id": "20260924-200817_semifinal_0_petit-dragon",
+      "duelistId": "petit-dragon",
+      "rating": 1644,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_semifinal_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:17Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_3_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
+      "id": "20260924-200817_semifinal_1_otohime",
+      "duelistId": "otohime",
+      "rating": 860,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_semifinal_1",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_semifinal_1_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1414,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_semifinal_1",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_final_0_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1684,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_final_0",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200817_final_0_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1353,
+      "observedAt": "2026-09-24T11:08:17Z",
+      "tournamentId": "20260924-200817",
+      "matchId": "20260924-200817_final_0",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:17Z"
+    },
+    {
+      "id": "20260924-200852_entry_curse-of-vampire",
+      "duelistId": "curse-of-vampire",
+      "rating": 726,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_petit-dragon",
+      "duelistId": "petit-dragon",
+      "rating": 1644,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1684,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_destiny-hero-disk-commander",
+      "duelistId": "destiny-hero-disk-commander",
+      "rating": 1707,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_aquarian-alessa",
+      "duelistId": "aquarian-alessa",
+      "rating": 900,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1353,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_entry_stray-lambs",
+      "duelistId": "stray-lambs",
+      "rating": 576,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_0_curse-of-vampire",
+      "duelistId": "curse-of-vampire",
+      "rating": 868,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_0",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_0_petit-dragon",
+      "duelistId": "petit-dragon",
+      "rating": 1502,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_0",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_1_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1766,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_1",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_1_destiny-hero-disk-commander",
+      "duelistId": "destiny-hero-disk-commander",
+      "rating": 1625,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_1",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_quarterfinal_3_st-joan",
+      "duelistId": "st-joan",
       "rating": 1375,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_3",
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_3",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121234_quarterfinal_3_the-unhappy-maiden",
-      "duelistId": "the-unhappy-maiden",
-      "rating": 1053,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_quarterfinal_3",
+      "id": "20260924-200852_quarterfinal_3_stray-lambs",
+      "duelistId": "stray-lambs",
+      "rating": 554,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_quarterfinal_3",
       "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121234_semifinal_0_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 972,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_semifinal_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1560,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_semifinal_1_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1619,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_semifinal_1_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1312,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_final_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1486,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121234_final_0_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1693,
-      "observedAt": "2026-09-24T03:12:34Z",
-      "tournamentId": "20260924-121234",
-      "matchId": "20260924-121234_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:12:34Z"
-    },
-    {
-      "id": "20260924-121341_entry_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 972,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_watapon",
-      "duelistId": "watapon",
-      "rating": 1486,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_jerry-beans-man",
-      "duelistId": "jerry-beans-man",
-      "rating": 598,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 931,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1693,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_hino-kagu-tsuchi",
-      "duelistId": "hino-kagu-tsuchi",
-      "rating": 1081,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_entry_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1312,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_1_watapon",
-      "duelistId": "watapon",
-      "rating": 1504,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_1_jerry-beans-man",
-      "duelistId": "jerry-beans-man",
-      "rating": 580,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_2_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 1067,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_2_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1557,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_3_hino-kagu-tsuchi",
-      "duelistId": "hino-kagu-tsuchi",
-      "rating": 1181,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_quarterfinal_3_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1212,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_0_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 936,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1540,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_1_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 998,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_semifinal_1_hino-kagu-tsuchi",
-      "duelistId": "hino-kagu-tsuchi",
-      "rating": 1250,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_final_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1594,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121341_final_0_hino-kagu-tsuchi",
-      "duelistId": "hino-kagu-tsuchi",
-      "rating": 1196,
-      "observedAt": "2026-09-24T03:13:41Z",
-      "tournamentId": "20260924-121341",
-      "matchId": "20260924-121341_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:13:41Z"
-    },
-    {
-      "id": "20260924-121414_entry_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 998,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_dark-magician-girl",
-      "duelistId": "dark-magician-girl",
-      "rating": 583,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1557,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_watapon",
-      "duelistId": "watapon",
-      "rating": 1594,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 936,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1212,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_entry_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1133,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_1_dark-magician-girl",
-      "duelistId": "dark-magician-girl",
-      "rating": 727,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_1_gravekeepers-chief",
-      "duelistId": "gravekeepers-chief",
-      "rating": 1413,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_2_watapon",
-      "duelistId": "watapon",
-      "rating": 1622,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_2_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 908,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_3_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1284,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_quarterfinal_3_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1061,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_0_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 1053,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_0_dark-magician-girl",
-      "duelistId": "dark-magician-girl",
-      "rating": 672,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_1_watapon",
-      "duelistId": "watapon",
-      "rating": 1513,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_semifinal_1_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1393,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_final_0_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 1003,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121414_final_0_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1443,
-      "observedAt": "2026-09-24T03:14:14Z",
-      "tournamentId": "20260924-121414",
-      "matchId": "20260924-121414_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:14Z"
-    },
-    {
-      "id": "20260924-121448_entry_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 1003,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_entry_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1443,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_entry_king-of-the-skull-servants",
-      "duelistId": "king-of-the-skull-servants",
-      "rating": 661,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_entry_watapon",
-      "duelistId": "watapon",
-      "rating": 1513,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_entry_curse-of-vampire",
+      "id": "20260924-200852_semifinal_0_curse-of-vampire",
       "duelistId": "curse-of-vampire",
-      "rating": 929,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
+      "rating": 851,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_semifinal_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121448_entry_aquarian-alessa",
+      "id": "20260924-200852_semifinal_0_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1783,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_semifinal_0",
+      "source": "entered",
+      "createdAt": "2026-09-24T11:08:52Z"
+    },
+    {
+      "id": "20260924-200852_semifinal_1_aquarian-alessa",
       "duelistId": "aquarian-alessa",
-      "rating": 1061,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
+      "rating": 860,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_semifinal_1",
       "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121448_entry_elemental-hero-lady-heat",
-      "duelistId": "elemental-hero-lady-heat",
-      "rating": 1370,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
+      "id": "20260924-200852_semifinal_1_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1415,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_semifinal_1",
       "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121448_quarterfinal_1_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1465,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_1",
+      "id": "20260924-200852_final_0_elemental-mistress-doriado",
+      "duelistId": "elemental-mistress-doriado",
+      "rating": 1671,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_final_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     },
     {
-      "id": "20260924-121448_quarterfinal_1_king-of-the-skull-servants",
-      "duelistId": "king-of-the-skull-servants",
-      "rating": 639,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_1",
+      "id": "20260924-200852_final_0_st-joan",
+      "duelistId": "st-joan",
+      "rating": 1527,
+      "observedAt": "2026-09-24T11:08:52Z",
+      "tournamentId": "20260924-200852",
+      "matchId": "20260924-200852_final_0",
       "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_2_watapon",
-      "duelistId": "watapon",
-      "rating": 1546,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_2_curse-of-vampire",
-      "duelistId": "curse-of-vampire",
-      "rating": 896,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_3_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1168,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_quarterfinal_3_elemental-hero-lady-heat",
-      "duelistId": "elemental-hero-lady-heat",
-      "rating": 1263,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_0_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 962,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_0_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1506,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_1_watapon",
-      "duelistId": "watapon",
-      "rating": 1593,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_semifinal_1_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1121,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_final_0_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1593,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-121448_final_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1506,
-      "observedAt": "2026-09-24T03:14:48Z",
-      "tournamentId": "20260924-121448",
-      "matchId": "20260924-121448_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T03:14:48Z"
-    },
-    {
-      "id": "20260924-145825_entry_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 962,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_watapon",
-      "duelistId": "watapon",
-      "rating": 1506,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_king-of-the-skull-servants",
-      "duelistId": "king-of-the-skull-servants",
-      "rating": 639,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1593,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 908,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1121,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_entry_elemental-hero-lady-heat",
-      "duelistId": "elemental-hero-lady-heat",
-      "rating": 1263,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_1_watapon",
-      "duelistId": "watapon",
-      "rating": 1525,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_1_king-of-the-skull-servants",
-      "duelistId": "king-of-the-skull-servants",
-      "rating": 620,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_2_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1620,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_2_chrysalis-dolphin",
-      "duelistId": "chrysalis-dolphin",
-      "rating": 881,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_2",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_3_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1213,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_quarterfinal_3_elemental-hero-lady-heat",
-      "duelistId": "elemental-hero-lady-heat",
-      "rating": 1171,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_quarterfinal_3",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_semifinal_0_kaiser-sea-horse",
-      "duelistId": "kaiser-sea-horse",
-      "rating": 928,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_semifinal_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1559,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_semifinal_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_semifinal_1_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1665,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_semifinal_1_aquarian-alessa",
-      "duelistId": "aquarian-alessa",
-      "rating": 1168,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_semifinal_1",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_final_0_watapon",
-      "duelistId": "watapon",
-      "rating": 1489,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
-    },
-    {
-      "id": "20260924-145825_final_0_marie-the-fallen-one",
-      "duelistId": "marie-the-fallen-one",
-      "rating": 1735,
-      "observedAt": "2026-09-24T05:58:25Z",
-      "tournamentId": "20260924-145825",
-      "matchId": "20260924-145825_final_0",
-      "source": "entered",
-      "createdAt": "2026-09-24T05:58:25Z"
+      "createdAt": "2026-09-24T11:08:52Z"
     }
   ]
 }
