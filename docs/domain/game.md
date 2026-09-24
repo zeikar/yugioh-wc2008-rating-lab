@@ -53,8 +53,9 @@ Source keys are listed in §8.
 - **Surrender** is available only from turn 10 of a duel. The quick way to
   lose is to pass every turn [owner, 2026-09-23].
 - **Entering** [owner's save in melonDS DS, 2026-09-24]:
-  - The entry fee is 300 DP for Level 1 and 750 DP for Level 2. It is taken
-    when you confirm, and the game saves right away ("Saving Data...").
+  - The entry fee is 300 DP for Level 1, 750 DP for Level 2 and 1500 DP for
+    Level 3 (Level 3 on a fresh fork, 2026-09-24). It is taken when you
+    confirm, and the game saves right away ("Saving Data...").
     It saves again after the final, once you press OK on the results screen
     ("First Place" / "Second Place").
   - The 8 entrants then appear, and the game asks for the CPU duel speed
@@ -72,6 +73,11 @@ Source keys are listed in §8.
 | Level 2 ("Medium") | Level 1 open, plus 15 LV2-pool duelists unlocked | confirmed |
 | Level 3 ("Hard") | Level 2 open, plus 20 LV3-pool duelists unlocked | confirmed |
 | Tag Tournament | 15 tag teams unlocked | confirmed |
+
+For Level 3, GameFAQs and Neoseeker guides also ask for Level 1 and Level 2
+tournament wins [owner, 2026-09-24, from those guides]. A fresh fork of the
+owner's save, which has both, with every CPU unlocked, has Level 3 open
+[emulator, 2026-09-24].
 
 Sources: A1, G2, G3, B1. atwiki's wording:
 

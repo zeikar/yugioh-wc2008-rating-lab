@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from itertools import groupby
 from pathlib import Path
 
+import board
 import wcsave
 
 ROSTER_SOURCE = Path(__file__).parent / "../../src/data/duelists.ts"
@@ -119,12 +120,30 @@ def bracket(events: list[dict]) -> tuple[list[str], list[dict]]:
     return entrants, matches
 
 
+def how_it_ended(duel: dict, names: dict[int, str]) -> str | None:
+    """A match note from a duel's logged end: how and when it was won, both LP and the winner's field."""
+    if "end" not in duel:  # logged before tournament.py read the board
+        return None
+    sides = duel["end"]["board"]
+    winners = [s for s in sides if s["won"]]
+    if len(winners) != 1:
+        print(f"[{duel['tournament']}] warning: duel {duel['duel']} has {len(winners)} win flags, so it gets no note")
+        return None
+    [winner] = winners
+    [loser] = [s for s in sides if s is not winner]
+    by = {"lp": "on LP", "deck-out": "by deck-out", "exodia": "with Exodia"}.get(winner["won"])
+    if by is None:
+        print(f"[{duel['tournament']}] warning: duel {duel['duel']} was won with the unseen win code {winner['won']}")
+        by = f"by win code {winner['won']}"
+    return f"Won {by} on turn {duel['end']['turn']}, {winner['lp']} LP to {loser['lp']}. Winner's field: {board.describe(winner, names)}."
+
+
 def iso(t: datetime) -> str:
     """UTC, whole seconds, "Z": parseBackup's z.iso.datetime() rejects +hh:mm offsets."""
     return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[str, bool], tournaments: list[list[dict]], now: datetime) -> dict:
+def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[str, bool], tournaments: list[list[dict]], names: dict[int, str], now: datetime) -> dict:
     """The export dict of src/domain/backup.ts: the roster, the fork point and every logged tournament.
 
     `now` is used only when there are no tournaments, so an unchanged log
@@ -163,7 +182,10 @@ def build_export(duelists: list[dict], origin: dict[str, int], unlocked: dict[st
                 observations.append({"id": f"{label}_entry_{cpu}", "duelistId": cpu, "rating": entry[cpu], "observedAt": stamp, "tournamentId": label, "source": "entered", "createdAt": stamp})
         for m in matches:
             match_id = f"{label}_{m['round']}_{m['slot']}"
-            out_matches.append({"id": match_id, "tournamentId": label, "round": m["round"], "slot": m["slot"], "playerAId": m["a"], "playerBId": m["b"], "winnerId": m["winner"], "createdAt": stamp})
+            match = {"id": match_id, "tournamentId": label, "round": m["round"], "slot": m["slot"], "playerAId": m["a"], "playerBId": m["b"], "winnerId": m["winner"], "createdAt": stamp}
+            if m["duel"] and (note := how_it_ended(m["duel"], names)):
+                match["notes"] = note
+            out_matches.append(match)
             if duel := m["duel"]:
                 for cpu in (m["a"], m["b"]):
                     rating = duel["winner_post"] if cpu == duel["winner"] else duel["loser_post"]
@@ -194,6 +216,7 @@ def fork_export(fork: Path) -> dict:
         dict(zip(ids, wcsave.ratings(data))),
         dict(zip(ids, wcsave.unlocked(data))),
         read_log(fork / "duels.jsonl"),
+        board.card_names(),
         datetime.now(UTC),
     )
 

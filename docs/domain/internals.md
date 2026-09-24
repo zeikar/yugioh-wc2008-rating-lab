@@ -17,6 +17,16 @@ against the owner's ROM and save. Source keys are listed in §5.
 - The other releases are `YG8J` (JP), `YG8E` (US) and `YG8P` (EU) [single:
   AR]. Addresses differ between releases, so everything below applies to
   `YG8K` only unless it says otherwise.
+- **Card ids** are Konami's card database ids, YGOPRODeck's `konami_id`
+  (4007 is Blue-Eyes White Dragon) [ROM, 2026-09-24; YGO].
+  - The ROM names them in `Data_arc_pac/bin2.pac`, a Konami archive.
+    `card_intid.bin` maps id − 3900 to a card index. `card_indx_e.bin` gives
+    each index's name offset, and `card_name_e.bin` holds the English names.
+    The `_k` files are Korean (EUC-KR), `_j` Japanese.
+  - There are 2033 cards, tokens included, with ids 3900–7403.
+  - Against YGOPRODeck, 1904 names match exactly. Another 67 differ only in
+    capitals ("Elemental Hero" vs "Elemental HERO"), and 40 are older names
+    of the same cards. The other 22 are missing there, mostly tokens.
 
 ## 2. Save file
 
@@ -71,10 +81,16 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
   onto RAM (0x0211468C + 0x198C = 0x02116018). It matches the Action Replay
   code's address [AR], and §3's check confirms it.
 - **Duel state** [emulator, 2026-09-24]:
-  - **LP:** int16, the left duelist's at 0x022CA200 (mirrored at 0x022CE2D0;
-    the Action Replay LP code writes both) and the right duelist's at
-    0x022CA204 (mirrored at 0x022CF27C). It can go negative on overkill. The
-    player can sit on either side. On the owner's save the player always had
+  - **LP:** each side's is kept twice.
+    - The on-screen counters are int16: the left duelist's at 0x022CA200 and
+      the right duelist's at 0x022CA204. They can go negative on overkill.
+    - The duel board (below) holds the other copy, at 0x022CE2D0 (left) and
+      0x022CF27C (right). It stops at 0, and is most likely the real LP.
+    - The Action Replay LP code writes both left ones.
+    - They can differ. In one CPU duel, the right side's board LP read 7200
+      all duel while its counter and the screen showed 6600, likely because
+      damage landed while the counter was still counting up to 8000.
+  - **Seats:** the player can sit on either side. On the owner's save the player always had
     the first quarterfinal, on the left. On a fresh fork the player had the
     third quarterfinal's second seat, on the right. In CPU-vs-CPU duels both
     sides are CPUs.
@@ -90,10 +106,40 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
     from 0.
   - **Setting the player's LP to 0** loses the duel at the next check (the
     Standby Phase): "YOU LOSE", then a results screen that waits for OK.
-    `tournament.py` writes 0 to the player's side's LP and its mirror. It
+    `tournament.py` writes 0 to both of the player's side's LP. It
     does so only when the flags say the player's duel is on, and only on the
     side they give the player, since in a CPU duel the same addresses are a
     CPU's LP.
+- **Duel board** [emulator, 2026-09-24]: one 0xFAC-byte struct per side,
+  at 0x022CE2D0 (left) and 0x022CF27C (right), starting with that side's LP.
+  `tools/emulator/board.py` reads it.
+  - Header, u32 each: +0x00 LP, +0x0C hand count, +0x10 deck count, +0x14
+    graveyard count, +0x18 extra deck count, +0x1C banished count, +0x20 set
+    once the side drew from an empty deck.
+  - +0x2C is the win flag, set on the winner's side: 1 on LP, 2 by deck-out,
+    3 with Exodia. Code 3 was seen once in 270 CPU duels: Marcel Bonaparte
+    held all five pieces in hand. No other value has been seen.
+  - Card lists of u32 card words, as many as the count: hand at +0x120, deck
+    at +0x3A0 (top card first), extra deck at +0x620, graveyard at +0x710
+    (newest last), banished at +0xA80.
+  - Zones: 11 of 0x14 bytes from +0x30. Zones 0–4 are monsters, 5–9 spells
+    and traps, 10 the field spell. Word 0 is the card word, bit 16 of word 1
+    is Defense Position, and bit 0 of word 2 is face-up. A zone belongs to
+    its card's controller. The right side's zones are drawn mirrored: zone
+    *n* in screen column 4−*n*.
+  - A card word holds the card id in bits 0–12, the owner in bit 13 (1 =
+    right) and an instance number in bits 22–31. Mid-action a zone's card id
+    can read 0 while the instance stays; the loaded deck gives it back.
+  - The loaded decks: 0x022CBDA8 left, 0x022CBEB0 right. u32 main and extra
+    counts at +0 and +8, then u16 card ids: the main deck's from +0x0C, the
+    extra deck's from +0xCA. Instance *n* is main card *n*, then the extra
+    deck in order; tokens get higher numbers.
+  - The board stays as the duel ended until the next duel clears it,
+    1260–1740 frames after the ratings change. So it can still be read when
+    they change. In 7 duels, the board and the turn counter stayed exactly
+    the same all that time.
+  - Checked against screenshots at 4 frames, and at the end of 6 CPU duels
+    against both duelists' decks in `src/data/decks.ts`.
 - **When it appears:** at boot the game fills this area with fresh-game
   defaults (DP 1500, title screen showing NEW GAME). The block appears once
   the save is loaded, after pressing A on the title screen.
@@ -151,3 +197,4 @@ macOS arm64) driven from Python by libretro.py (0.12.0).
 
 - SE (yugioh-sav-editor, WC2008 save profile): https://github.com/chaye7417/yugioh-sav-editor
 - AR (DeadSkullzJr's Action Replay codes, mirrored for melonDS): https://github.com/Lyrx997/MelonDS-Desktop-Cheats
+- YGO (YGOPRODeck card database API, with Konami ids): https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes

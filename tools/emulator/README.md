@@ -33,12 +33,13 @@ platform, pick the matching core build from the same release.
 |---|---|
 | `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
-| `uv run tournament.py [--count N] [--level 1]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below), then writes the research dataset |
+| `uv run tournament.py [--count N] [--level 1\|2\|3]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below), then writes the research dataset |
 | `uv run tournament.py --fork DIR --fresh` | Starts a new fork as a fresh ecosystem instead of a copy of your save (below) |
 | `uv run tournament.py --count 0 [--export PATH]` | Plays nothing; only rewrites an existing fork's research dataset from its log (below) |
 | `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
 | `wcsave.py` | Save-file reader and writer the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 | `research.py` | Builds the research dataset from a fork (below) |
+| `board.py` | Reads both sides' duel board from RAM, and card names from the ROM. `uv run python board.py DUMP` prints a main-RAM dump's board |
 
 ## Forked runs
 
@@ -65,19 +66,25 @@ platform, pick the matching core build from the same release.
 4. Presses A all along: through rock-paper-scissors, the player's duel and
    the closing screens. It changed no CPU duel in the one replay tried with
    and without it (internals.md §4).
-5. Logs each CPU duel when its two ratings change in RAM.
+5. Logs each CPU duel when its two ratings change in RAM. The board still
+   shows how it ended then (internals.md §4).
 6. Writes the save memory back to the fork each time the game saves: after
    the fee, and after the results screen.
 
 Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
 `src/data/duelists.ts`), both ratings before and after, the transfer, whether
-it was zero-sum, and `player_frame`, the frame the player's own duel started
-at (the same value on all six duels of a tournament), which tells which
-quarterfinal slot the player had. If the script misses the player's duel, it
-warns and logs that tournament without `player_frame`, since the fork's save
-already holds it. A fork is its own rating ecosystem, so its data reaches the
-app only as the research dataset (below). `--fork DIR` starts or continues
-another one.
+it was zero-sum, `end` and `player_frame`.
+- `end` is the turn the duel ended on (counting from 1) and both sides'
+  board, left then right: LP, the win flag, the zones, hand, graveyard and
+  banished cards as card ids, and the deck count.
+- `player_frame` is the frame the player's own duel started at (the same
+  value on all six duels of a tournament), which tells which quarterfinal
+  slot the player had. If the script misses the player's duel, it warns and
+  logs that tournament without `player_frame`, since the fork's save
+  already holds it.
+
+A fork is its own rating ecosystem, so its data reaches the app only as the
+research dataset (below). `--fork DIR` starts or continues another one.
 
 ## Research dataset
 
@@ -109,7 +116,10 @@ The file holds:
   before the first tournament;
 - every logged tournament, with its 8 seats and all 7 matches;
 - each tournament's entry ratings and both CPUs' post-match ratings of every
-  CPU duel. These are read from RAM, so they count as entered.
+  CPU duel. These are read from RAM, so they count as entered;
+- each CPU duel's match notes, from its `end`: how (on LP, by deck-out or
+  with Exodia) and on which turn it was won, both LP and the winner's field. The card names come from the ROM, so
+  writing the file needs `game/wc2008.nds`.
 
 The seats come from the order the game plays the duels in, taken to be the
 quarterfinals in bracket order, then SF 0, SF 1 and the final (an assumption
@@ -127,8 +137,9 @@ that CPU's previous duel left.
 
 Tournament times come from the labels, read in this machine's time zone, and
 `exportedAt` is the last tournament's time, so an unchanged log always gives
-the same file. The file holds no ROM or save bytes. It is committed, and the
-app shows it read-only at `/research`.
+the same file. The file holds no ROM or save bytes, only card names read
+from the ROM. It is committed, and the app shows it read-only at
+`/research`.
 
 ## Routes
 
@@ -150,9 +161,10 @@ save's menus (the World Championship menu opens on Free Duel).
    ```
 
    In order: WORLD CHAMPIONSHIP, Tournament, Single Tournament, Level 1, YES
-   to the fee, then Fast for the CPU duel speed. On a fresh fork's first
-   boot, notices come up first; `tournament.py` closes them with
-   `touch:128,98` (internals.md §4).
+   to the fee, then Fast for the CPU duel speed. Level 2 takes one more
+   `down wait:20` after Single Tournament, and Level 3 two (1500 DP); that's
+   `tournament.py --level`. On a fresh fork's first boot, notices come up
+   first; `tournament.py` closes them with `touch:128,98` (internals.md §4).
 3. **The first duel** starts by itself after about 10 s (`wait:600`) with
    rock-paper-scissors. Touch works too: `touch:X,Y` taps the bottom screen.
 

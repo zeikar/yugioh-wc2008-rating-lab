@@ -26,6 +26,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import board
 import wcsave
 from emulator import HERE, RUN, SAVE, frames_for, running
 from research import fork_export, fork_point, roster, write_export
@@ -33,17 +34,18 @@ from research import fork_export, fork_point, roster, write_export
 # Duel state in RAM, Korean release (docs/domain/internals.md §4).
 LEFT_IS_CPU = 0x022CBD94  # 0 on the player's side, 1 on a CPU's; both set as each duel starts
 RIGHT_IS_CPU = 0x022CBD98
-# Each side's LP (int16) and its mirror. The player sits on either side, and
-# in CPU-vs-CPU duels both are CPUs' LP.
+# Each side's LP: its on-screen counter (int16) and the duel board's copy. The
+# player sits on either side, and in CPU-vs-CPU duels both are CPUs' LP.
 SIDE_LP = {0: (0x022CA200, 0x022CE2D0), 1: (0x022CA204, 0x022CF27C)}
 PLAYER_SIDE = {(0, 1): 0, (1, 0): 1}  # the is-CPU flags of the player's duel
+TURN = 0x022D1264  # u16, counting from 0
 REZERO_FRAMES = 300  # how long after the first write the player's LP is written 0 again if it comes back
 CPU_DUELS = 6  # the player loses a quarterfinal: 3 quarterfinals, 2 semifinals, the final
 POLL = 10  # frames between checks
 PRESS_EVERY = 60
 SAVE_SETTLE = 120  # frames the save memory must stay unchanged before it's written out
 FRAME_LIMIT = 120_000  # about 33 minutes of game time per tournament
-ENTRY_FEE = {1: 300, 2: 750}
+ENTRY_FEE = {1: 300, 2: 750, 3: 1500}
 DEFAULT_FORK = RUN / "fork"
 SITE_DATASET = HERE / "../../public/research/emulator.json"  # only the default fork writes here
 
@@ -53,7 +55,7 @@ SITE_DATASET = HERE / "../../public/research/emulator.json"  # only the default 
 # then Fast for CPU duels.
 MENU_WAIT = ["wait:600"]
 TO_LEVELS = "down wait:30 a wait:240".split() + "touch:128,98 wait:120".split() * 3 + "right wait:30 a wait:150 a wait:180".split()
-PICK_LEVEL = {1: [], 2: ["down", "wait:20"]}
+PICK_LEVEL = {1: [], 2: ["down", "wait:20"], 3: ["down", "wait:20", "down", "wait:20"]}
 PAY_AND_FAST = "a wait:120 a wait:900 down wait:20 a wait:420".split()
 
 
@@ -140,6 +142,8 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str) -> list[
                     "transfer": now[winner] - last[winner],
                     "zero_sum": now[winner] - last[winner] == last[loser] - now[loser],
                     "frame": game.frame,
+                    # The board stays as the duel ended until the next duel starts.
+                    "end": {"turn": game.u16(TURN) + 1, "board": board.read_board(game.ram())},
                 }
                 events.append(event)
                 last = now

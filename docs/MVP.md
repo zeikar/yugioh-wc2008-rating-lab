@@ -613,7 +613,9 @@ parsing and validation as an import, then shows it read-only. What it holds:
   bracket order, then the semifinals, then the final; §4);
 - entry ratings, and both CPUs' post-match ratings of every CPU duel. They
   are read from RAM, so they count as entered, and the integrity check
-  (§4) applies to them.
+  (§4) applies to them;
+- each CPU duel's match notes: how it was won (on LP, by deck-out or with
+  Exodia), the turn, both LP and the winner's field.
 
 ## 9. Architecture
 
