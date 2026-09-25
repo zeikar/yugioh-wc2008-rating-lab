@@ -25,7 +25,9 @@ platform, pick the matching core build from the same release.
    unzip -q core.zip -d core && rm core.zip
    ```
 
-`uv run` creates the Python environment on first use.
+`uv run` creates the Python environment on first use. Watching a run with
+`tournament.py --show` also needs `ffplay`, from [FFmpeg](https://ffmpeg.org)
+(`brew install ffmpeg`).
 
 ## Scripts
 
@@ -34,9 +36,10 @@ platform, pick the matching core build from the same release.
 | `uv run probe.py` | Boots the game, loads the save, checks that the rating table in RAM matches the save, and writes screenshots to `run/probe/shots/` |
 | `uv run step.py` | Plays a few inputs from a saved emulator state, then saves the new state and a screenshot; for exploring menus. `uv run step.py --help` lists the inputs |
 | `uv run tournament.py [--count N] [--level 1\|2\|3]` | Plays whole tournaments on a forked save and logs every CPU-vs-CPU duel (below), then writes the research dataset |
+| `uv run tournament.py --show SPEED` | Plays the same way, shown in a window at SPEED times the game's own speed (below) |
 | `uv run tournament.py --fork DIR --fresh` | Starts a new fork as a fresh ecosystem instead of a copy of your save (below) |
 | `uv run tournament.py --count 0 [--export PATH]` | Plays nothing; only rewrites an existing fork's research dataset from its log (below) |
-| `emulator.py` | What the scripts share: the core session, inputs, RAM and screenshots |
+| `emulator.py` | What the scripts share: the core session, inputs, RAM, screenshots and the `--show` window |
 | `wcsave.py` | Save-file reader and writer the scripts share (LZ10, CRC, rating table, DP, unlock flags) |
 | `research.py` | Builds the research dataset from a fork (below) |
 | `uv run replay.py LABEL` | Plays a logged tournament again from its starting save and draws each CPU duel turn by turn (below) |
@@ -78,6 +81,14 @@ platform, pick the matching core build from the same release.
    shows how it ended then (internals.md §4).
 6. Writes the save memory back to the fork each time the game saves: after
    the fee, and after the results screen.
+
+With `--show SPEED`, the run sends every SPEEDth frame to an ffplay window
+that shows 60 a second, so it plays at SPEED times the game's own speed
+rather than as fast as it can: a tournament takes 8 to 10 minutes at 1,
+and 2 to 2½ at 4. No SPEED makes it faster than a run without the window.
+The window only watches: a tournament played with it replays the same
+without it. Pausing the window (space) pauses the run, and closing it only
+stops the picture.
 
 Each duel is a line in `run/fork/duels.jsonl`: winner and loser ids (as in
 `src/data/duelists.ts`), both ratings before and after, the transfer, whether

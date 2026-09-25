@@ -1,12 +1,24 @@
-"""What the scripts share: running melonDS DS through libretro.py, inputs, RAM and screenshots."""
+"""What the scripts share: running melonDS DS through libretro.py, inputs, RAM, screenshots and a window to watch it in."""
 
+import shutil
 import struct
+import subprocess
 import zlib
 from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
 
-from libretro import RETRO_MEMORY_SAVE_RAM, RETRO_MEMORY_SYSTEM_RAM, ExplicitPathDriver, JoypadState, Pointer, Session
+from libretro import (
+    RETRO_MEMORY_SAVE_RAM,
+    RETRO_MEMORY_SYSTEM_RAM,
+    ArrayVideoDriver,
+    ExplicitPathDriver,
+    FrameBufferSpecial,
+    JoypadState,
+    PixelFormat,
+    Pointer,
+    Session,
+)
 
 import wcsave
 
@@ -79,13 +91,77 @@ def frames_for(token: str) -> list:
     raise SystemExit(f"Unknown input: {token}")
 
 
+# ffplay's names for the core's pixel formats, as their bytes lie in memory.
+FFPLAY_PIXELS = {PixelFormat.XRGB8888: "bgr0", PixelFormat.RGB565: "rgb565le", PixelFormat.RGB1555: "rgb555le"}
+
+
+class Viewer:
+    """An ffplay window that shows every SPEEDth frame at 60 fps, so the game plays at SPEED times its own speed.
+
+    Frames go to ffplay as the core draws them: libretro.py's screenshots
+    convert each pixel in Python, too slowly to keep up. ffplay reads the
+    pipe only as fast as it shows it, which is what slows the headless run
+    down, so pausing the window pauses the run. Closing it only stops the
+    picture: the run plays on. One window serves every boot of a run.
+    """
+
+    def __init__(self, speed: int):
+        if not shutil.which("ffplay"):
+            raise SystemExit("Showing the game needs ffplay, from FFmpeg (brew install ffmpeg).")
+        self.speed = speed
+        self.frames = 0
+        self.ffplay: subprocess.Popen | None = None
+        self.closed = False
+
+    def show(self, video: "ShownVideo") -> None:
+        """Takes the frame VIDEO drew last, if it drew one, and shows it if it's an SPEEDth."""
+        if video.new is None:
+            return
+        data, width, height, pitch, pixels = video.new
+        video.new = None
+        self.frames += 1
+        if self.closed or self.frames % self.speed:
+            return
+        if self.ffplay is None:
+            # Rows are PITCH bytes apart, which can be wider than the picture: crop the rest.
+            size = f"{pitch // pixels.bytes_per_pixel}x{height}"
+            command = ["ffplay", "-loglevel", "error", "-autoexit", "-window_title", "WC2008", "-f", "rawvideo"]
+            command += ["-pixel_format", FFPLAY_PIXELS[pixels], "-video_size", size, "-framerate", "60"]
+            command += ["-vf", f"crop={width}:{height}:0:0,scale=iw*2:ih*2:flags=neighbor", "-"]
+            self.ffplay = subprocess.Popen(command, stdin=subprocess.PIPE, bufsize=0)
+        try:
+            self.ffplay.stdin.write(data)
+        except BrokenPipeError:
+            self.closed = True
+            print("The window was closed; playing on without it.", flush=True)
+
+
+class ShownVideo(ArrayVideoDriver):
+    """libretro.py's usual video driver, which also keeps each new frame's raw pixels for a Viewer.
+
+    It only keeps them. This runs in the core's callback, where ctypes drops a
+    Ctrl-C, and the Viewer's write is where a run waits: Emulator.step hands
+    them on once the frame is done.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.new: tuple[bytes, int, int, int, PixelFormat] | None = None
+
+    def refresh(self, data: memoryview | FrameBufferSpecial, width: int, height: int, pitch: int) -> None:
+        super().refresh(data, width, height, pitch)
+        if isinstance(data, memoryview):
+            self.new = (bytes(data.cast("B")[: height * pitch]), width, height, pitch, self.pixel_format)
+
+
 class Emulator:
     """A running game with a per-frame input queue; nothing queued means nothing pressed."""
 
-    def __init__(self, emu: Session):
+    def __init__(self, emu: Session, viewer: Viewer | None = None):
         self.emu = emu
         self.queue: deque = deque()
         self.frame = 0
+        self.viewer = viewer
 
     def pad(self):
         while True:
@@ -99,6 +175,8 @@ class Emulator:
     def step(self) -> None:
         self.emu.run()
         self.frame += 1
+        if self.viewer:
+            self.viewer.show(self.emu.video)
 
     def ram(self) -> memoryview:
         return self.emu.core.get_memory(RETRO_MEMORY_SYSTEM_RAM)
@@ -137,18 +215,19 @@ class Emulator:
 
 
 @contextmanager
-def running(name: str):
-    """Starts the core on the ROM, with its firmware and save folders under run/NAME/."""
+def running(name: str, viewer: Viewer | None = None):
+    """Starts the core on the ROM, with its firmware and save folders under run/NAME/, shown in VIEWER if given."""
     require_game_files()
     core = str(find_core())
     for sub in ("system", "save"):
         (RUN / name / sub).mkdir(parents=True, exist_ok=True)
     path_driver = ExplicitPathDriver(core, system=str(RUN / name / "system"), save=str(RUN / name / "save"))
     holder: dict = {}
+    video = {"video": ShownVideo()} if viewer else {}
 
     def pad():
         yield from holder["emulator"].pad()
 
-    with Session(core, ROM, path=path_driver, options=OPTIONS, input=pad) as session:
-        holder["emulator"] = Emulator(session)
+    with Session(core, ROM, path=path_driver, options=OPTIONS, input=pad, **video) as session:
+        holder["emulator"] = Emulator(session, viewer)
         yield holder["emulator"]

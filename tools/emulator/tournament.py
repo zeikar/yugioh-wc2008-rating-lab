@@ -6,7 +6,7 @@ only ever in the player's own duel), then watches the six CPU-vs-CPU duels in
 RAM. Every time the game saves, the save memory is written back to the fork,
 so the next tournament carries on from it.
 
-    uv run tournament.py [--fork run/fork] [--fresh] [--level 1] [--count 1] [--export PATH]
+    uv run tournament.py [--fork run/fork] [--fresh] [--level 1] [--count 1] [--export PATH] [--show SPEED]
 
 The fork starts as a copy of game/wc2008.sav, never over a folder that still
 has a fork's origin.sav or duels.jsonl; game/ is only read. With --fresh, the
@@ -17,7 +17,8 @@ After playing, the whole log is written out as the research dataset
 run/fork, FORK/emulator.json for any other, unless --export says otherwise. --count 0 only rewrites that file. The site's file is only
 ever extended: a default run whose export has another fork point, or doesn't
 start with the site's tournaments, stops instead (an explicit --export skips
-that check).
+that check). --show plays the tournaments in an ffplay window, at SPEED times
+the game's own speed.
 """
 
 import argparse
@@ -31,7 +32,7 @@ from pathlib import Path
 
 import board
 import wcsave
-from emulator import HERE, RUN, SAVE, frames_for, running
+from emulator import HERE, RUN, SAVE, Viewer, frames_for, running
 from research import fork_export, fork_point, roster, write_export
 
 # Duel state in RAM, Korean release (docs/domain/internals.md §4).
@@ -79,7 +80,7 @@ def write_atomically(path: Path, data: bytes) -> None:
     os.replace(tmp, path)
 
 
-def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, counter: int | None, watch: Callable | None = None) -> list[dict]:
+def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, counter: int | None, watch: Callable | None = None, viewer: Viewer | None = None) -> list[dict]:
     """Plays one tournament from FORK/wc2008.sav and returns its CPU duels; WATCH(game, events) sees every poll.
 
     SEED goes into rand(), COUNTER (unless None) into the frame counter, and
@@ -91,7 +92,7 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: in
     events: list[dict] = []
     shots = RUN / "tournament/shots" / label
 
-    with running("tournament") as game:
+    with running("tournament", viewer) as game:
         game.boot(save)
         game.poke32(RAND_STATE, seed)
         if counter is not None:
@@ -240,7 +241,12 @@ def main() -> None:
     parser.add_argument("--level", type=int, choices=sorted(ENTRY_FEE), default=1)
     parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each; 0 only rewrites the export")
     parser.add_argument("--export", type=Path, help="where to write the research dataset (default: public/research/emulator.json for run/fork, only if the new file extends it; FORK/emulator.json for any other fork)")
+    parser.add_argument("--show", type=int, metavar="SPEED", help="show the game in an ffplay window at SPEED times its own speed (1 is 60 fps), which slows the run to match")
     args = parser.parse_args()
+    if args.show is not None and args.show < 1:
+        parser.error("--show takes a speed of 1 or more")
+    # One window for the whole run, opened at its first frame. It closes by itself once this process ends.
+    viewer = Viewer(args.show) if args.show and args.count > 0 else None
     to_site = args.export is None and args.fork.resolve() == DEFAULT_FORK.resolve()
     export = args.export or (SITE_DATASET if to_site else args.fork / "emulator.json")
 
@@ -284,7 +290,7 @@ def main() -> None:
         # The save it starts from, for replay.py: the same save and inputs play the same duels.
         (args.fork / "replays").mkdir(exist_ok=True)
         shutil.copyfile(args.fork / "wc2008.sav", args.fork / "replays" / f"{label}.sav")
-        events = play_tournament(args.fork, args.level, ids, label, random.getrandbits(32), random.randrange(MAX_DELAY), random.getrandbits(32))
+        events = play_tournament(args.fork, args.level, ids, label, random.getrandbits(32), random.randrange(MAX_DELAY), random.getrandbits(32), viewer=viewer)
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:
                 log.write(json.dumps(event) + "\n")
