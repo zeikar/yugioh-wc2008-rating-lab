@@ -6,7 +6,7 @@ only ever in the player's own duel), then watches the six CPU-vs-CPU duels in
 RAM. Every time the game saves, the save memory is written back to the fork,
 so the next tournament carries on from it.
 
-    uv run tournament.py [--fork run/fork] [--fresh] [--level 1] [--count 1] [--export PATH] [--show SPEED]
+    uv run tournament.py [--fork run/fork] [--fresh] [--level 1] [--count 1] [--export PATH] [--keep-starts] [--show SPEED]
 
 The fork starts as a copy of game/wc2008.sav, never over a folder that still
 has a fork's origin.sav or duels.jsonl; game/ is only read. With --fresh, the
@@ -242,6 +242,7 @@ def main() -> None:
     parser.add_argument("--level", type=int, choices=sorted(ENTRY_FEE), default=1)
     parser.add_argument("--count", type=int, default=1, help="tournaments to play, one boot each; 0 only rewrites the export")
     parser.add_argument("--export", type=Path, help="where to write the research dataset (default: public/research/emulator.json for run/fork, only if the new file extends it; FORK/emulator.json for any other fork)")
+    parser.add_argument("--keep-starts", action="store_true", help="keep each tournament's starting save as FORK/replays/LABEL.sav (256 KiB each), so replay.py can play it again")
     parser.add_argument("--show", type=int, metavar="SPEED", help="show the game in an ffplay window at SPEED times its own speed (1 is 60 fps), which slows the run to match")
     args = parser.parse_args()
     if args.show is not None and args.show < 1:
@@ -288,9 +289,10 @@ def main() -> None:
         check_extends_site(fork_export(args.fork), before_play=True)
     for _ in range(args.count):
         label = datetime.now().strftime("%Y%m%d-%H%M%S")
-        # The save it starts from, for replay.py: the same save and inputs play the same duels.
-        (args.fork / "replays").mkdir(exist_ok=True)
-        shutil.copyfile(args.fork / "wc2008.sav", args.fork / "replays" / f"{label}.sav")
+        if args.keep_starts:
+            # The save it starts from, for replay.py: the same save and inputs play the same duels.
+            (args.fork / "replays").mkdir(exist_ok=True)
+            shutil.copyfile(args.fork / "wc2008.sav", args.fork / "replays" / f"{label}.sav")
         events = play_tournament(args.fork, args.level, ids, label, random.getrandbits(32), random.randrange(MAX_DELAY), random.getrandbits(32), viewer=viewer)
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:

@@ -1,6 +1,6 @@
 """Replays a logged tournament from the save it started from, and draws each CPU duel turn by turn.
 
-tournament.py keeps the save each tournament booted from as FORK/replays/LABEL.sav.
+tournament.py --keep-starts keeps the save each tournament booted from as FORK/replays/LABEL.sav.
 The game plays the same given the same save, inputs and rand() seed, so this
 plays that save with tournament.py's own loop and the logged seed, wait and counter,
 checks that the CPU duels come out as logged, and
@@ -86,7 +86,7 @@ def main() -> None:
         raise SystemExit(f"No tournament {args.label} in {args.fork}/duels.jsonl")
     start = args.fork / "replays" / f"{args.label}.sav"
     if not start.exists():
-        raise SystemExit(f"No {start}: only tournaments played since tournament.py kept their starting saves can be replayed.")
+        raise SystemExit(f"No {start}: only tournaments played with tournament.py --keep-starts can be replayed.")
 
     out = RUN / "replay" / args.label
     shutil.rmtree(out, ignore_errors=True)

@@ -6,7 +6,7 @@ unlock flags and rand() state give the same bracket.
 
     uv run draw.py SAVE --level 2 [--seed 1]    # the bracket that save draws
     uv run draw.py SAVE --level 2 --odds 10000  # each CPU's chance to enter, over random seeds
-    uv run draw.py --check [--fork run/fork]    # every logged tournament's draw against its log
+    uv run draw.py --check [--fork run/fork]    # each tournament with a kept starting save, against its log
 """
 
 import argparse

@@ -58,7 +58,7 @@ platform, pick the matching core build from the same release.
    export (fork-point ratings and unlock flags). If the fork's
    `wc2008.sav` is missing but its `origin.sav` or `duels.jsonl` is still
    there, it stops instead of starting over them.
-   - Before each tournament, the fork's save is kept as
+   - With `--keep-starts`, the fork's save before each tournament is kept as
      `run/fork/replays/LABEL.sav` (256 KiB), for `replay.py`.
    - With `--fresh`, both copies get a fresh ecosystem instead of your
      save's: every CPU unlocked at its initial rating (from
@@ -170,9 +170,9 @@ The same save and inputs play the same tournament (internals.md §4). So
 logged `seed`, `delay` and `counter`, and checks that its CPU duels come
 out as logged. It writes one sheet per CPU duel to
 `run/replay/LABEL/duel-N.png`: the screen early in each turn, then as the
-duel is decided. Only tournaments played since the starting saves were kept
-can be replayed. It keeps the core's files in `run/replay/`, so it can run
-while `tournament.py` plays.
+duel is decided. Only tournaments played with `--keep-starts` can be
+replayed. It keeps the core's files in `run/replay/`, so it can run while
+`tournament.py` plays.
 
 ## View Mode
 
