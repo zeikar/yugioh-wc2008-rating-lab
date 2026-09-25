@@ -178,8 +178,11 @@ offset in §3 maps straight onto RAM. [owner's files in melonDS DS,
     frames of waiting.
   - So in the emulator every fresh boot draws the same entrants for the
     same ratings and unlock flags. `tournament.py` therefore writes a
-    random seed into the state after boot, and waits a random number of
-    frames at the menu to vary the first duel's reseed. Each tournament's first CPU duel also
+    random seed into the state after boot. It also writes a random start
+    into the frame counter (below), which the duels' seeds come from, and
+    waits a random number of frames at the menu.
+  - With the same seed and only the counter changed, one Level 3 tournament
+    drew the same entrants but played all 6 CPU duels differently. Each tournament's first CPU duel also
     repeats: of 95 first-duel pairings seen more than once, 56 played out
     the same every time, graveyards included.
   - Entering changes only DP and a checksum in the game data. The entrants

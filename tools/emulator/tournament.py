@@ -47,6 +47,8 @@ TURN = 0x022D1264  # u16, counting from 0
 RAND_STATE = 0x020FCD18
 # The first duel reseeds rand() from a timing value, so a random wait at the menu varies the duels too.
 MAX_DELAY = 600
+# The u32 frame counter that timing value comes from. A random start for it varies the duels far more.
+COUNTER = 0x02113298
 REZERO_FRAMES = 300  # how long after the first write the player's LP is written 0 again if it comes back
 CPU_DUELS = 6  # the player loses a quarterfinal: 3 quarterfinals, 2 semifinals, the final
 POLL = 10  # frames between checks
@@ -77,11 +79,12 @@ def write_atomically(path: Path, data: bytes) -> None:
     os.replace(tmp, path)
 
 
-def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, watch: Callable | None = None) -> list[dict]:
+def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, counter: int | None, watch: Callable | None = None) -> list[dict]:
     """Plays one tournament from FORK/wc2008.sav and returns its CPU duels; WATCH(game, events) sees every poll.
 
-    SEED goes into rand() and DELAY frames of waiting into the route, so the
-    same save, seed and delay play the same tournament again.
+    SEED goes into rand(), COUNTER (unless None) into the frame counter, and
+    DELAY frames of waiting into the route, so the same save and values play
+    the same tournament again.
     """
     save_path = fork / "wc2008.sav"
     save = save_path.read_bytes()
@@ -91,6 +94,8 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: in
     with running("tournament") as game:
         game.boot(save)
         game.poke32(RAND_STATE, seed)
+        if counter is not None:
+            game.poke32(COUNTER, counter)
         dp_before = game.u32(wcsave.RAM_GAME_DATA + wcsave.DP)
         for token in MENU_WAIT + [f"wait:{delay}"] + TO_LEVELS + PICK_LEVEL[level] + PAY_AND_FAST:
             game.play(frames_for(token))
@@ -150,6 +155,7 @@ def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: in
                     "level": level,
                     "seed": seed,
                     "delay": delay,
+                    "counter": counter,
                     "duel": len(events) + 1,
                     "winner": ids[winner],
                     "loser": ids[loser],
@@ -278,7 +284,7 @@ def main() -> None:
         # The save it starts from, for replay.py: the same save and inputs play the same duels.
         (args.fork / "replays").mkdir(exist_ok=True)
         shutil.copyfile(args.fork / "wc2008.sav", args.fork / "replays" / f"{label}.sav")
-        events = play_tournament(args.fork, args.level, ids, label, random.getrandbits(32), random.randrange(MAX_DELAY))
+        events = play_tournament(args.fork, args.level, ids, label, random.getrandbits(32), random.randrange(MAX_DELAY), random.getrandbits(32))
         with (args.fork / "duels.jsonl").open("a") as log:
             for event in events:
                 log.write(json.dumps(event) + "\n")

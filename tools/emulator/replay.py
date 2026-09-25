@@ -2,7 +2,7 @@
 
 tournament.py keeps the save each tournament booted from as FORK/replays/LABEL.sav.
 The game plays the same given the same save, inputs and rand() seed, so this
-plays that save with tournament.py's own loop and the logged seed and wait,
+plays that save with tournament.py's own loop and the logged seed, wait and counter,
 checks that the CPU duels come out as logged, and
 writes one sheet per CPU duel to run/replay/LABEL/duel-N.png: the screen early
 in each turn, then as the duel is decided.
@@ -93,9 +93,9 @@ def main() -> None:
     out.mkdir(parents=True)
     shutil.copyfile(start, out / "wc2008.sav")  # play_tournament writes the game's saves back here
     pictures = Pictures()
-    # Logged before tournament.py seeded rand(): the state was 1 and there was no extra wait.
-    seed, delay = logged[0].get("seed", 1), logged[0].get("delay", 0)
-    events = play_tournament(out, logged[0]["level"], [d["id"] for d in roster()], f"replay-{args.label}", seed, delay, watch=pictures)
+    # Logged before tournament.py seeded rand() and the frame counter: rand() was 1, with no extra wait.
+    seed, delay, counter = logged[0].get("seed", 1), logged[0].get("delay", 0), logged[0].get("counter")
+    events = play_tournament(out, logged[0]["level"], [d["id"] for d in roster()], f"replay-{args.label}", seed, delay, counter, watch=pictures)
     (out / "wc2008.sav").unlink()
 
     for duel, shots in sorted(pictures.duels.items()):
