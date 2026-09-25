@@ -80,19 +80,20 @@ def write_atomically(path: Path, data: bytes) -> None:
     os.replace(tmp, path)
 
 
-def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, counter: int | None, watch: Callable | None = None, viewer: Viewer | None = None) -> list[dict]:
+def play_tournament(fork: Path, level: int, ids: list[str], label: str, seed: int, delay: int, counter: int | None, watch: Callable | None = None, viewer: Viewer | None = None, session: str = "tournament") -> list[dict]:
     """Plays one tournament from FORK/wc2008.sav and returns its CPU duels; WATCH(game, events) sees every poll.
 
     SEED goes into rand(), COUNTER (unless None) into the frame counter, and
     DELAY frames of waiting into the route, so the same save and values play
-    the same tournament again.
+    the same tournament again. SESSION names the emulator's folder under run/,
+    so another run can play beside this one.
     """
     save_path = fork / "wc2008.sav"
     save = save_path.read_bytes()
     events: list[dict] = []
-    shots = RUN / "tournament/shots" / label
+    shots = RUN / session / "shots" / label
 
-    with running("tournament", viewer) as game:
+    with running(session, viewer) as game:
         game.boot(save)
         game.poke32(RAND_STATE, seed)
         if counter is not None:

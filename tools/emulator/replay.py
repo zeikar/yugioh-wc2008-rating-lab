@@ -95,7 +95,8 @@ def main() -> None:
     pictures = Pictures()
     # Logged before tournament.py seeded rand() and the frame counter: rand() was 1, with no extra wait.
     seed, delay, counter = logged[0].get("seed", 1), logged[0].get("delay", 0), logged[0].get("counter")
-    events = play_tournament(out, logged[0]["level"], [d["id"] for d in roster()], f"replay-{args.label}", seed, delay, counter, watch=pictures)
+    # Its own emulator folder, so it can play beside a running tournament.py.
+    events = play_tournament(out, logged[0]["level"], [d["id"] for d in roster()], f"replay-{args.label}", seed, delay, counter, watch=pictures, session="replay")
     (out / "wc2008.sav").unlink()
 
     for duel, shots in sorted(pictures.duels.items()):

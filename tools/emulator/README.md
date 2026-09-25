@@ -167,12 +167,12 @@ from the ROM. It is committed, and the app shows it read-only at
 The same save and inputs play the same tournament (internals.md §4). So
 `uv run replay.py LABEL` plays a logged tournament again from
 `run/fork/replays/LABEL.sav`, with `tournament.py`'s own loop and the
-logged `seed`, `delay` and `counter`, and checks
-that its CPU duels come out as logged. It writes one sheet per CPU duel to
+logged `seed`, `delay` and `counter`, and checks that its CPU duels come
+out as logged. It writes one sheet per CPU duel to
 `run/replay/LABEL/duel-N.png`: the screen early in each turn, then as the
 duel is decided. Only tournaments played since the starting saves were kept
-can be replayed. Don't run it while `tournament.py` runs: both use
-`run/tournament/` for the core's files.
+can be replayed. It keeps the core's files in `run/replay/`, so it can run
+while `tournament.py` plays.
 
 ## View Mode
 
