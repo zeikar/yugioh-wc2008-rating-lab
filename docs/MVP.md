@@ -738,8 +738,8 @@ domain/roster.md §3), DP tracking (the win bonus may equal rating ÷ 5, see
 domain/game.md §3.3), materialized summaries if reads get heavy, and fitting
 candidate rating formulas against the collected data (the long-term research
 goal). The first candidate is the logistic curve in domain/game.md §3.1,
-`N = floor(160 / (1 + 10^(gap / 1000)))`, which fits every duel seen so far,
-the emulator's included. A Research view could
+`N = floor(160 / (1 + 10^(gap / 1000)))`, which fits every duel seen so far:
+all 7200 of the emulator's, at gaps from −1415 to +1802. A Research view could
 show each match's residual against it, clearly labeled as a hypothesis and
 never used as rating data.
 

@@ -175,8 +175,8 @@ Sources: A1, G2, G3, B1. atwiki's wording:
   | Blowback Dragon 1433 → 1526 | Manju 1584 → 1491 | 93 | −151 |
 
 - **N depends on the pre-match ratings.** Beating a much weaker CPU moves few
-  points; an upset moves many. The formula is unknown, and it should not be
-  called Elo until the data shows it.
+  points; an upset moves many. The formula, confirmed on 7200 duels, is
+  below.
 - **Three more pairs from the emulator** (played from the owner's save in
   melonDS DS, 2026-09-24; see internals.md). They happened only in the
   emulator's copy, so they are not in the app. The last two are two runs of
@@ -203,6 +203,20 @@ Sources: A1, G2, G3, B1. atwiki's wording:
   the formula predicts. The biggest upset, Dark Magician Girl 583 over
   Gravekeeper's Chief 1557, moved 144 points. No cap or minimum has shown up
   yet.
+- **Confirmed on 7200 duels** [emulator, 2026-09-25]. The seeded fork's 1200
+  tournaments hold 7200 CPU duels, with gaps from −1415 to +1802. Every
+  transfer is exactly `floor(160 / (1 + 10^(gap / 1000)))`, and every duel is
+  zero-sum. The 78 ratings still add up to their initial 94800. Transfers
+  ran from 2 to 154; the biggest was Winged Kuriboh 284 over Gravekeeper's
+  Chief 1699.
+- **It moves points; it doesn't predict winners.** The formula looks like
+  Elo with S = 1000, but read as a win chance it overrates favourites.
+  - In those 7200 duels, the higher-rated side won 61.9%.
+  - Even 700–1200 points ahead it won only 77.7%, where the curve says
+    about 90% (and classic Elo, S = 400, over 99%).
+  - Who wins depends mostly on the deck. Win rates ran from 8% (Stray Lambs)
+    to 76% (Jaden Yuki), and they correlate only 0.34 with initial rating.
+  - The right-hand side won 51.5% (p ≈ 0.01), the same at every level.
 - **Snapshots are valid data on their own.** A reading like "Spirit of the
   Pharaoh is 1141 now" is worth recording even if the matches that led there
   are unknown. For example, the owner saw Spirit of the Pharaoh (initial 1050)
@@ -307,11 +321,11 @@ save in melonDS DS (2026-09-24):
 
 **Still open:**
 
-1. **What is the exact formula for N?** The candidate
-   `floor(160 / (1 + 10^(gap / 1000)))` (§3.1) has held for every duel so far,
-   gaps −974 to +906. Does it hold beyond that range, and is there a cap or
-   minimum? Does anything besides the rating gap matter? The app's transfer
-   table (MVP §7.3) is built to answer this.
+1. **What is the exact formula for N?** Answered for CPU duels:
+   `floor(160 / (1 + 10^(gap / 1000)))` (§3.1). It held for all 7200 emulator
+   duels, gaps −1415 to +1802, and for every duel the owner recorded. It has
+   no cap below 160 and no minimum above 0 in that range. Gaps outside it,
+   and duels against the player (which move no rating), are untested.
 2. **Do CPU-vs-CPU duels outside tournaments change ratings?** For example,
    View CPU Duel. If they do, ratings drift between tournaments. The app's
    continuity check flags this.
