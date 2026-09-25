@@ -131,7 +131,7 @@ def how_it_ended(duel: dict, names: dict[int, str]) -> str | None:
         return None
     [winner] = winners
     [loser] = [s for s in sides if s is not winner]
-    by = {"lp": "on LP", "deck-out": "by deck-out", "exodia": "with Exodia", "destiny-board": "with Destiny Board"}.get(winner["won"])
+    by = {"lp": "on LP", "deck-out": "by deck-out", "exodia": "with Exodia", "destiny-board": "with Destiny Board", "vennominaga": "with Vennominaga"}.get(winner["won"])
     if by is None:
         print(f"[{duel['tournament']}] warning: duel {duel['duel']} was won with the unseen win code {winner['won']}")
         by = f"by win code {winner['won']}"
