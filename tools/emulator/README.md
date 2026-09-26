@@ -127,7 +127,9 @@ check.
 To start the site's dataset over on purpose, delete `run/fork`, then run
 `uv run tournament.py --fresh --export ../../public/research/emulator.json`.
 Later default runs extend the new file as usual. The site's current fork was
-started this way on 2026-09-24.
+started this way on 2026-09-25, after the seeding in step 2 went in. Its
+first 1200 tournaments rotate Levels 1, 2 and 3. From the 1201st they rotate
+1, 2, 3, 3, for more Level 3 duels, whose CPUs enter no other level.
 
 The file holds:
 
