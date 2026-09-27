@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useApp } from '../app/context'
 import { listDrafts } from '../app/drafts'
@@ -5,13 +6,18 @@ import { DuelistLink } from '../components/DuelistLink'
 import { Empty } from '../components/Empty'
 import { useStartTournament } from '../app/useStartTournament'
 import { PageTitle } from '../components/Layout'
-import { championOf, groupBy } from '../domain/stats'
+import { groupBy } from '../domain/stats'
 import { PLAYER_ID } from '../types'
+
+// The research dataset holds thousands of tournaments, so the list starts with the latest ones.
+const FIRST_SHOWN = 100
 
 export function TournamentsPage() {
   const { model, base, dataset, canEdit } = useApp()
   const start = useStartTournament()
+  const [showAll, setShowAll] = useState(false)
   const tournaments = [...model.index.tournaments].reverse()
+  const shown = showAll ? tournaments : tournaments.slice(0, FIRST_SHOWN)
   const matchesBy = groupBy(model.data.matches, (m) => m.tournamentId)
   const drafts = canEdit ? listDrafts(dataset.uid).sort((a, b) => b.number - a.number) : []
 
@@ -54,8 +60,9 @@ export function TournamentsPage() {
               </tr>
             </thead>
             <tbody>
-              {tournaments.map((t) => {
-                const champion = championOf(model.data.matches, t.id)
+              {shown.map((t) => {
+                const matches = matchesBy.get(t.id) ?? []
+                const champion = matches.find((m) => m.round === 'final')?.winnerId ?? null
                 return (
                   <tr key={t.id}>
                     <td>
@@ -65,7 +72,7 @@ export function TournamentsPage() {
                     </td>
                     <td className="whitespace-nowrap">{t.playedAt.toLocaleString()}</td>
                     <td>Level {t.tournamentLevel}</td>
-                    <td className="num">{(matchesBy.get(t.id) ?? []).length} / 7</td>
+                    <td className="num">{matches.length} / 7</td>
                     <td>{champion ? champion === PLAYER_ID ? <span className="font-semibold text-accent">You</span> : <DuelistLink id={champion} /> : <span className="text-ink-3">—</span>}</td>
                     <td className="text-ink-2">{t.title}</td>
                   </tr>
@@ -75,6 +82,11 @@ export function TournamentsPage() {
           </table>
         )}
       </div>
+      {shown.length < tournaments.length && (
+        <button className="btn mt-3" onClick={() => setShowAll(true)}>
+          Show all {tournaments.length} tournaments
+        </button>
+      )}
     </>
   )
 }

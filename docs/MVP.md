@@ -428,6 +428,7 @@ shows only on your own save. The header holds the switch between datasets
 - List: #/title, date, level, recorded matches (n/7), and champion: the winner
   of the `final` match if one is recorded, shown as "You" when it is the
   player.
+- Newest first. It shows the latest 100, with a button that shows the rest.
 
 ### 6.5 Tournament form: the core workflow
 One page records an entire tournament, filled in **live while playing**, with
@@ -550,7 +551,8 @@ and only displays it; the MVP fits no formula. The main questions:
   - winner, loser, and their pre-match ratings
   - the gap `winnerPre − loserPre`, *N*, and the tournament level
 
-  Show a scatter of *N* against the gap, and summaries: the min, max and mode
+  Show a scatter of *N* against the gap, with duels at the same gap and *N*
+  drawn as one dot, and summaries: the min, max and mode
   of *N*, and *N* for upsets vs. favourites. Also show *N* for each exact gap
   value that recurs, since repeated gaps with identical *N* would point to a
   deterministic formula.

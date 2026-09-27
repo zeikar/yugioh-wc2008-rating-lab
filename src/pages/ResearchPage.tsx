@@ -8,7 +8,7 @@ import { PageTitle } from '../components/Layout'
 import { Rating } from '../components/Rating'
 import { Scatter } from '../components/Scatter'
 import { continuity, entrantMix, headToHead, integrityIssues, summarizeTransfers, transferRows } from '../domain/research'
-import { displayName, upsets } from '../domain/stats'
+import { displayName, groupBy, upsets } from '../domain/stats'
 
 export function ResearchPage() {
   const { model, base } = useApp()
@@ -18,6 +18,8 @@ export function ResearchPage() {
   const summary = summarizeTransfers(rows)
   // Duels whose transfer is known but one pre-match rating isn't stay in the table, not the plot.
   const plotted = rows.filter((r): r is typeof r & { gap: number } => r.gap !== null)
+  // One dot per (gap, points) pair: on the research dataset thousands of duels share them, and an SVG dot each is slow.
+  const dots = [...groupBy(plotted, (r) => `${r.gap} ${r.transfer}`).values()]
   const issues = integrityIssues(model)
   const cont = continuity(model)
   const contChanged = cont.filter((c) => c.status === 'changed')
@@ -37,7 +39,7 @@ export function ResearchPage() {
         many points move.
       </p>
 
-      <Section title="Points moved vs. rating gap" note="One dot per CPU duel with known before and after ratings. Left of the dashed line the underdog won.">
+      <Section title="Points moved vs. rating gap" note="One dot per CPU duel with known before and after ratings, or per group of duels at the same gap and points. Left of the dashed line the underdog won.">
         {rows.length === 0 ? (
           <Empty>No CPU duels with known ratings yet.</Empty>
         ) : (
@@ -47,12 +49,19 @@ export function ResearchPage() {
               xLabel="Rating gap (winner − loser, before the duel)"
               yLabel="Points moved"
               xRef={0}
-              points={plotted.map((r) => ({
-                x: r.gap,
-                y: r.transfer,
-                label: `${displayName(model, r.winnerId)} beat ${displayName(model, r.loserId)}`,
-                details: [`${r.winnerPre} vs ${r.loserPre}, gap ${r.gap > 0 ? '+' : ''}${r.gap}`, `${r.transfer} points moved`, `Tournament #${r.tournament.number}, Level ${r.tournament.tournamentLevel}`],
-              }))}
+              points={dots.map((same) => {
+                const [r] = same
+                const duel = (d: typeof r) => `${displayName(model, d.winnerId)} beat ${displayName(model, d.loserId)}, #${d.tournament.number}`
+                return {
+                  x: r.gap,
+                  y: r.transfer,
+                  label: same.length === 1 ? `${displayName(model, r.winnerId)} beat ${displayName(model, r.loserId)}` : `${same.length} duels`,
+                  details:
+                    same.length === 1
+                      ? [`${r.winnerPre} vs ${r.loserPre}, gap ${r.gap > 0 ? '+' : ''}${r.gap}`, `${r.transfer} points moved`, `Tournament #${r.tournament.number}, Level ${r.tournament.tournamentLevel}`]
+                      : [`Gap ${r.gap > 0 ? '+' : ''}${r.gap}, ${r.transfer} points moved`, ...same.slice(0, 3).map(duel), ...(same.length > 3 ? [`and ${same.length - 3} more`] : [])],
+                }
+              })}
             />
             <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-sm">
               <Fact label="Duels">{summary.count}</Fact>
