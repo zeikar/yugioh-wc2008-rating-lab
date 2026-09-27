@@ -109,8 +109,12 @@ export function parseBackup(text: string): BackupResult {
   return errors.length > 0 ? { ok: false, errors } : { ok: true, data }
 }
 
+/** Each id that appears more than once, in the order its first repeat appears. */
 function duplicates(ids: string[]): string[] {
-  return [...new Set(ids.filter((x, i) => ids.indexOf(x) !== i))]
+  const seen = new Set<string>()
+  const repeated = new Set<string>()
+  for (const x of ids) (seen.has(x) ? repeated : seen).add(x)
+  return [...repeated]
 }
 
 export function referenceErrors(data: Dataset): string[] {

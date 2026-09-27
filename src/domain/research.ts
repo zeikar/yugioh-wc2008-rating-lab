@@ -1,6 +1,6 @@
 import type { Duelist, Tournament, TournamentLevel } from '../types'
 import { isCpu } from './bracket'
-import type { Model } from './stats'
+import { groupBy, type Model } from './stats'
 import { ratingAtStart } from './timeline'
 import type { MatchRatings } from './tournamentRatings'
 
@@ -103,9 +103,10 @@ export interface ContinuityRow {
  */
 export function continuity(model: Model): ContinuityRow[] {
   const rows: ContinuityRow[] = []
+  // Grouped once: scanning every observation per tournament grows with their product.
+  const entries = groupBy(model.data.observations.filter((o) => o.tournamentId && !o.matchId), (o) => o.tournamentId!)
   for (const t of model.index.tournaments) {
-    for (const o of model.data.observations) {
-      if (o.tournamentId !== t.id || o.matchId) continue
+    for (const o of entries.get(t.id) ?? []) {
       const duelist = model.duelistById.get(o.duelistId)
       const now = duelist ? ratingAtStart(model.index, duelist, t.id) : null
       rows.push({ tournament: t, duelistId: o.duelistId, entry: o.rating, now, status: now === null ? 'unknown' : now === o.rating ? 'same' : 'changed' })

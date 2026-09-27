@@ -37,6 +37,13 @@ describe('backup', () => {
     expect(bad.ok).toBe(false)
   })
 
+  it('names each duplicated id once, however often it repeats', () => {
+    const data = exported()
+    const copy = data.observations[0]
+    const errors = errorsOf({ ...data, observations: [...data.observations, copy, copy] }).split('\n')
+    expect(errors.filter((e) => e.startsWith('duplicate'))).toEqual([`duplicate observation id ${copy.id}`])
+  })
+
   it('rejects ids Firestore cannot store', () => {
     const data = exported()
     expect(errorsOf({ ...data, duelists: [...data.duelists, { ...data.duelists[0], id: 'a/b' }] })).toMatch(/valid document id/)
