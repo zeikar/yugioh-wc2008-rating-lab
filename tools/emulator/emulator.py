@@ -1,5 +1,6 @@
 """What the scripts share: running melonDS DS through libretro.py, inputs, RAM, screenshots and a window to watch it in."""
 
+import logging
 import shutil
 import struct
 import subprocess
@@ -28,6 +29,13 @@ SAVE = HERE / "game/wc2008.sav"
 RUN = HERE / "run"
 # Built-in BIOS and firmware, booting straight into the game: no system files needed.
 OPTIONS = {"melonds_boot_mode": "direct", "melonds_console_mode": "ds", "melonds_sysfile_mode": "builtin"}
+# The core logs every RAM read, some 10,000 lines a tournament. libretro.py's
+# default log driver prints them all and adds a handler per session, so a
+# process's Nth session printed every line N times and kept them in memory.
+# The core's only warnings are about host network interfaces it can't use,
+# so only its errors are shown.
+CORE_LOG = logging.getLogger("melonds")
+CORE_LOG.setLevel(logging.ERROR)
 TITLE_FRAMES = 600  # the title screen is up by about 10 s (60 frames a second)
 BOOT_LIMIT = 3000
 
@@ -228,6 +236,6 @@ def running(name: str, viewer: Viewer | None = None):
     def pad():
         yield from holder["emulator"].pad()
 
-    with Session(core, ROM, path=path_driver, options=OPTIONS, input=pad, **video) as session:
+    with Session(core, ROM, path=path_driver, options=OPTIONS, input=pad, log=CORE_LOG, **video) as session:
         holder["emulator"] = Emulator(session, viewer)
         yield holder["emulator"]
