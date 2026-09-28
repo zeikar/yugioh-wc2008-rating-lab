@@ -153,5 +153,8 @@ What an observation means depends on its links:
 - The **initial rating** comes from the roster and is only a baseline. It is
   excluded from peak and low. Whether a rating was typed or filled in is kept
   in the data (`source`), but the UI shows both the same way.
-- How many points a duel moves is the open research question. The Research page
-  lays out the data.
+- **How many points a CPU duel moves** is no longer open: every duel the
+  emulator logged moved exactly `floor(160 / (1 + 10^(gap / 1000)))`, where the
+  gap is the winner's rating minus the loser's
+  ([docs/domain/game.md](docs/domain/game.md) §3.1). The app still never uses
+  the formula; the Research page lays out the data.

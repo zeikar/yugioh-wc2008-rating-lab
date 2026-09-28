@@ -35,8 +35,8 @@ export function ResearchPage() {
     <>
       <PageTitle>Research</PageTitle>
       <p className="-mt-2 mb-6 max-w-prose text-sm text-ink-2">
-        Everything here is computed from recorded ratings and nothing is predicted. CPU duels are treated as zero-sum; the open question is what decides how
-        many points move.
+        Everything here is computed from recorded ratings and nothing is predicted. CPU duels are treated as zero-sum. Every duel the emulator logged
+        moved exactly <code>floor(160 / (1 + 10^(gap / 1000)))</code> points.
       </p>
 
       <Section title="Points moved vs. rating gap" note="One dot per CPU duel with known before and after ratings, or per group of duels at the same gap and points. Left of the dashed line the underdog won.">

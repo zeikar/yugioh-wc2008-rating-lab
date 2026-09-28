@@ -12,11 +12,13 @@ with initial ratings is in [domain/roster.md](domain/roster.md).
 
 **The app records ratings. It never predicts them.**
 
-The game's rating formula is unknown. The user reads rating values off the game
+The app never computes a rating. The user reads rating values off the game
 screen and enters them by hand, or loads them from the game's save file (§5).
 The app stores those observations, derives statistics from them, and charts
 them. It is an observation tool, not a rating engine: no Elo, no prediction,
-no simulation.
+no simulation. The game's formula for how many points a CPU duel moves has
+since been found from the emulator's duels (domain/game.md §3.1), and the app
+still doesn't use it.
 
 The one exception is a game rule, not a formula: **CPU-vs-CPU duels are
 zero-sum**. The app treats this as fixed. When the user enters only one CPU's
@@ -542,8 +544,9 @@ winnerBefore`. Skip the match if either rating is unknown. Don't guess.
 ### 7.3 Rating research (diagnostics)
 The Research page collects data for the open questions (domain/game.md §6)
 and only displays it; the MVP fits no formula. The main questions:
-- What determines the transfer *N*? It grows with upsets, and a candidate
-  curve is in domain/game.md §3.1.
+- What determines the transfer *N*? Answered: every emulator duel moved
+  exactly `floor(160 / (1 + 10^(gap / 1000)))` (domain/game.md §3.1). The
+  page still shows only the data.
 - How does the ecosystem evolve?
 
 - **Transfer table.** This is the core research dataset. It has one row for
@@ -737,13 +740,12 @@ Merge import, CSV export, badges (Hot Streak, Biggest Climber, Biggest
 Collapse), entering the game's own per-CPU W/L records as separate snapshots
 (kept distinct from recorded matches), a visual bracket, tag tournaments (roster in
 domain/roster.md §3), DP tracking (the win bonus may equal rating ÷ 5, see
-domain/game.md §3.3), materialized summaries if reads get heavy, and fitting
-candidate rating formulas against the collected data (the long-term research
-goal). The first candidate is the logistic curve in domain/game.md §3.1,
+domain/game.md §3.3), materialized summaries if reads get heavy, and checking
+recorded duels against the rating formula in domain/game.md §3.1,
 `N = floor(160 / (1 + 10^(gap / 1000)))`, which fits every duel seen so far:
-all 7200 of the emulator's, at gaps from −1415 to +1802. A Research view could
-show each match's residual against it, clearly labeled as a hypothesis and
-never used as rating data.
+all 9600 of the emulator's, at gaps from −1612 to +1912. A Research view could
+show each match's residual against it, labeled as a check and never used as
+rating data.
 
 More research datasets, one per forked save or experiment, each its own
 file and ecosystem, picked from the header switch.
